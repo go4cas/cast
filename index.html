@@ -37,8 +37,7 @@
       }
 
       .controls,
-      .card,
-      .gallery-section {
+      .card {
         border: 1px solid #e2e8f0;
         border-radius: 24px;
         background: #fff;
@@ -69,39 +68,10 @@
         font: inherit;
       }
 
-      .grid,
-      .gallery-grid {
+      .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 18px;
-      }
-
-      .gallery-section {
-        margin-top: 24px;
-        padding: 24px;
-      }
-
-      .gallery-section h2 {
-        margin: 0;
-        font-size: 1.5rem;
-        letter-spacing: -0.03em;
-      }
-
-      .gallery-section p {
-        margin: 4px 0 20px;
-        color: #64748b;
-      }
-
-      .style-group + .style-group {
-        margin-top: 28px;
-      }
-
-      .style-group h3 {
-        margin: 0 0 12px;
-        color: #1e293b;
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
       }
 
       .card {
@@ -110,17 +80,6 @@
         gap: 12px;
         padding: 24px;
         text-align: center;
-      }
-
-      .variation-card {
-        align-content: start;
-        padding: 20px;
-      }
-
-      .variation-card p {
-        margin: -6px 0 0;
-        color: #64748b;
-        font-size: 0.875rem;
       }
 
       .avatar {
@@ -208,16 +167,6 @@
           <div id="shapes" class="avatar"></div>
           <strong>Shapes</strong>
         </article>
-        <article class="card">
-          <div id="abstract" class="avatar"></div>
-          <strong>Abstract</strong>
-        </article>
-      </section>
-
-      <section class="gallery-section" aria-labelledby="gallery-title">
-        <h2 id="gallery-title">Style variations</h2>
-        <p>Compare multiple deterministic outputs for every avatar type. These examples use fixed seeds and trait overrides so you can see the range without changing the live controls.</p>
-        <div id="variationGallery"></div>
       </section>
     </main>
 
@@ -226,62 +175,6 @@
 
       const controls = ['seed', 'style', 'skinTone', 'hair', 'accessories'].map((id) => document.getElementById(id));
       const hash = document.getElementById('hash');
-      const variationGallery = document.getElementById('variationGallery');
-
-      const variations = {
-        face: [
-          { label: 'Curly + glasses', seed: 'maya@example.com', traits: { gender: 'feminine', skinTone: 'medium', hairStyle: 'curly', hairColor: 'black', eyes: 'round', mouth: 'smile', accessories: 'glasses' } },
-          { label: 'Short + beard', seed: 'noah@example.com', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'brown', facialHair: 'beard', eyes: 'sleepy', mouth: 'neutral' } },
-          { label: 'Hijab + smile', seed: 'amina@example.com', traits: { gender: 'feminine', skinTone: 'dark', hairStyle: 'hijab', headwear: 'hijab', eyes: 'smile', mouth: 'smile' } },
-          { label: 'Bun + sunglasses', seed: 'lee@example.com', traits: { gender: 'neutral', skinTone: 'light', hairStyle: 'bun', hairColor: 'red', eyes: 'wink', accessories: 'sunglasses' } }
-        ],
-        initials: [
-          { label: 'Ada Lovelace', seed: 'Ada Lovelace', initials: 'AL', background: '#dbeafe' },
-          { label: 'Grace Hopper', seed: 'Grace Hopper', initials: 'GH', background: '#dcfce7' },
-          { label: 'Katherine Johnson', seed: 'Katherine Johnson', initials: 'KJ', background: '#fef3c7' },
-          { label: 'Radia Perlman', seed: 'Radia Perlman', initials: 'RP', background: '#fce7f3' }
-        ],
-        shapes: [
-          { label: 'Blue geometry', seed: 'shape-blue', background: '#dbeafe' },
-          { label: 'Warm geometry', seed: 'shape-warm', background: '#fee2e2' },
-          { label: 'Green geometry', seed: 'shape-green', background: '#dcfce7' },
-          { label: 'Purple geometry', seed: 'shape-purple', background: '#ede9fe' }
-        ],
-        abstract: [
-          { label: 'Orbit', seed: 'abstract-orbit', background: '#e0f2fe' },
-          { label: 'Bloom', seed: 'abstract-bloom', background: '#f3e8ff' },
-          { label: 'Signal', seed: 'abstract-signal', background: '#fef3c7' },
-          { label: 'Ripple', seed: 'abstract-ripple', background: '#dcfce7' }
-        ]
-      };
-
-      function renderVariationGallery() {
-        variationGallery.innerHTML = Object.entries(variations).map(([style, examples]) => `
-          <section class="style-group" aria-labelledby="${style}-examples">
-            <h3 id="${style}-examples">${style}</h3>
-            <div class="gallery-grid">
-              ${examples.map((example, index) => `
-                <article class="card variation-card">
-                  <div id="variation-${style}-${index}" class="avatar"></div>
-                  <strong>${example.label}</strong>
-                  <p>${example.seed}</p>
-                </article>
-              `).join('')}
-            </div>
-          </section>
-        `).join('');
-
-        Object.entries(variations).forEach(([style, examples]) => {
-          examples.forEach((example, index) => {
-            mountAvatar(`#variation-${style}-${index}`, {
-              ...example,
-              style,
-              size: 128,
-              title: `${example.label} ${style} avatar`
-            });
-          });
-        });
-      }
 
       function options() {
         const [seed, style, skinTone, hairStyle, accessories] = controls.map((control) => control.value);
@@ -301,13 +194,12 @@
         mountAvatar('#preview', current);
         hash.textContent = `hash: ${avatarHash(current)}`;
 
-        for (const style of ['face', 'initials', 'shapes', 'abstract']) {
+        for (const style of ['face', 'initials', 'shapes']) {
           mountAvatar(`#${style}`, { seed: current.seed, style, size: 128 });
         }
       }
 
       controls.forEach((control) => control.addEventListener('input', render));
-      renderVariationGallery();
       render();
     </script>
   </body>
