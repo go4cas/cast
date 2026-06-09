@@ -131,7 +131,7 @@ The legacy top-level `hair` option is still accepted as an alias for `traits.hai
 
 ## Demo
 
-Open `index.html` in a browser. The demo imports `src/avatar.js` directly and does not need a build step.
+Open `index.html` in a browser. The demo imports `src/avatar.js` directly and does not need a build step. It includes live controls plus a fixed-seed variation gallery for the `face`, `initials`, `shapes`, and `abstract` styles so you can compare multiple outputs at once.
 
 ## Development
 
