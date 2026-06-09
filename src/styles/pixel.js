@@ -17,8 +17,11 @@ export function renderPixelAvatar(config) {
   const skin = SKIN_TONES[pick(Object.keys(SKIN_TONES), random)];
   const hair = HAIR_COLORS[pick(Object.keys(HAIR_COLORS), random)];
   const clothing = shapeColor(random, 2);
+  const hatColor = shapeColor(random, 5);
   const hairStyle = pick(['flat', 'tall', 'side', 'long', 'none'], random);
+  const hat = pick(['none', 'none', 'none', 'beanie', 'cap'], random);
   const hasBeard = random() > 0.65;
+  const hasGlasses = random() > 0.5;
 
   const parts = [];
 
@@ -43,6 +46,15 @@ export function renderPixelAvatar(config) {
     }
   }
 
+  // hat (drawn over the hair crown)
+  if (hat === 'beanie') {
+    parts.push(px(2, 1, 8, 2, hatColor));
+    parts.push(px(2, 3, 8, 1, hatColor));
+  } else if (hat === 'cap') {
+    parts.push(px(3, 1, 6, 2, hatColor));
+    parts.push(px(1, 3, 8, 1, hatColor));
+  }
+
   // beard (drawn under the mouth so the mouth stays visible)
   if (hasBeard) {
     parts.push(px(2, 8, 8, 2, hair));
@@ -50,9 +62,15 @@ export function renderPixelAvatar(config) {
     parts.push(px(8, 7, 1, 1, hair));
   }
 
-  // eyes + mouth
-  parts.push(px(4, 6, 1, 1, '#1f2937'));
-  parts.push(px(7, 6, 1, 1, '#1f2937'));
+  // eyes (or glasses) + mouth
+  if (hasGlasses) {
+    parts.push(px(3, 6, 6, 1, '#1f2937'));
+    parts.push(px(4, 6, 1, 1, '#e5e7eb'));
+    parts.push(px(7, 6, 1, 1, '#e5e7eb'));
+  } else {
+    parts.push(px(4, 6, 1, 1, '#1f2937'));
+    parts.push(px(7, 6, 1, 1, '#1f2937'));
+  }
   parts.push(px(5, 8, 2, 1, '#7f1d1d'));
 
   // clothing + neck

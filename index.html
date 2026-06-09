@@ -336,6 +336,73 @@
             <option value="sunglasses">Sunglasses</option>
           </select>
         </label>
+        <label>
+          Eyebrows
+          <select id="eyebrows">
+            <option value="auto">Auto</option>
+            <option value="flat">Flat</option>
+            <option value="raised">Raised</option>
+            <option value="angled">Angled</option>
+          </select>
+        </label>
+        <label>
+          Nose
+          <select id="nose">
+            <option value="auto">Auto</option>
+            <option value="soft">Soft</option>
+            <option value="button">Button</option>
+            <option value="wide">Wide</option>
+          </select>
+        </label>
+        <label>
+          Freckles
+          <select id="freckles">
+            <option value="auto">Auto</option>
+            <option value="none">None</option>
+            <option value="light">Light</option>
+            <option value="heavy">Heavy</option>
+          </select>
+        </label>
+        <label>
+          Blush
+          <select id="blush">
+            <option value="auto">Auto</option>
+            <option value="none">None</option>
+            <option value="soft">Soft</option>
+          </select>
+        </label>
+        <label>
+          Earrings
+          <select id="earrings">
+            <option value="auto">Auto</option>
+            <option value="none">None</option>
+            <option value="studs">Studs</option>
+            <option value="hoops">Hoops</option>
+          </select>
+        </label>
+        <label>
+          Background
+          <select id="background">
+            <option value="auto">Auto</option>
+            <option value="transparent">Transparent</option>
+            <option value="gradient">Gradient</option>
+            <option value="#dbeafe">Blue</option>
+            <option value="#dcfce7">Green</option>
+            <option value="#fce7f3">Pink</option>
+            <option value="#ede9fe">Purple</option>
+          </select>
+        </label>
+        <label>
+          Clothing
+          <select id="clothing">
+            <option value="auto">Auto</option>
+            <option value="#2563eb">Blue</option>
+            <option value="#dc2626">Red</option>
+            <option value="#16a34a">Green</option>
+            <option value="#7c3aed">Purple</option>
+            <option value="#475569">Slate</option>
+          </select>
+        </label>
       </section>
 
       <section class="hero">
@@ -355,11 +422,20 @@
     <script type="module">
       import { avatarHash, mountAvatar } from './src/avatar.js';
 
-      const traitIds = ['gender', 'skinTone', 'faceShape', 'hair', 'hairColor', 'eyes', 'mouth', 'facialHair', 'headwear', 'accessories'];
-      const traitControls = traitIds.map((id) => document.getElementById(id));
+      // Demo control ids -> the trait key they feed (the `hair` control maps to traits.hairStyle).
+      const traitFields = {
+        gender: 'gender', skinTone: 'skinTone', faceShape: 'faceShape',
+        eyebrows: 'eyebrows', eyes: 'eyes', nose: 'nose', mouth: 'mouth',
+        hair: 'hairStyle', hairColor: 'hairColor', facialHair: 'facialHair',
+        freckles: 'freckles', blush: 'blush', headwear: 'headwear',
+        earrings: 'earrings', accessories: 'accessories'
+      };
+      const traitControls = Object.keys(traitFields).map((id) => document.getElementById(id));
       const seedInput = document.getElementById('seed');
       const sizeInput = document.getElementById('size');
       const sizeValue = document.getElementById('sizeValue');
+      const backgroundInput = document.getElementById('background');
+      const clothingInput = document.getElementById('clothing');
       const hash = document.getElementById('hash');
       const variationGallery = document.getElementById('variationGallery');
 
@@ -425,23 +501,17 @@
       }
 
       function options() {
-        const [gender, skinTone, faceShape, hairStyle, hairColor, eyes, mouth, facialHair, headwear, accessories] = traitControls.map((control) => control.value);
+        const traits = {};
+        Object.values(traitFields).forEach((field, index) => {
+          traits[field] = traitControls[index].value;
+        });
         return {
           seed: seedInput.value,
           style: 'face',
           size: Number(sizeInput.value),
-          traits: {
-            gender,
-            skinTone,
-            faceShape,
-            hairStyle,
-            hairColor,
-            eyes,
-            mouth,
-            facialHair,
-            headwear,
-            accessories
-          }
+          background: backgroundInput.value,
+          clothing: clothingInput.value,
+          traits
         };
       }
 
@@ -452,7 +522,7 @@
         hash.textContent = `hash: ${avatarHash(current)}`;
       }
 
-      [seedInput, sizeInput, ...traitControls].forEach((control) => control.addEventListener('input', render));
+      [seedInput, sizeInput, backgroundInput, clothingInput, ...traitControls].forEach((control) => control.addEventListener('input', render));
       renderVariationGallery();
       render();
     </script>

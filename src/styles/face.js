@@ -178,24 +178,104 @@ function faceShapePath(faceShape, skin) {
   return `<circle cx="64" cy="64" r="36" fill="${skin}"/>`;
 }
 
+function renderEyebrows(eyebrows, color) {
+  const attrs = `fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round"`;
+
+  if (eyebrows === 'raised') {
+    return `<path d="M41 50q7-5 14 0" ${attrs}/><path d="M73 50q7-5 14 0" ${attrs}/>`;
+  }
+
+  if (eyebrows === 'angled') {
+    return `<path d="M41 49l14-3" ${attrs}/><path d="M87 49l-14-3" ${attrs}/>`;
+  }
+
+  return `<path d="M41 49h14" ${attrs}/><path d="M73 49h14" ${attrs}/>`;
+}
+
+function renderNose(nose) {
+  const attrs = 'fill="none" stroke="#9a5b38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"';
+
+  if (nose === 'button') {
+    return `<path d="M60 71q4 5 8 0" ${attrs}/>`;
+  }
+
+  if (nose === 'wide') {
+    return `<path d="M64 62l-7 14h14" ${attrs}/>`;
+  }
+
+  return `<path d="M64 63l-5 13h9" ${attrs}/>`;
+}
+
+function renderFreckles(freckles) {
+  if (freckles !== 'light' && freckles !== 'heavy') {
+    return '';
+  }
+
+  return stipple('#8a5a3b', 0.5, {
+    x0: 42, x1: 86, y0: 64, y1: 76, step: freckles === 'heavy' ? 5 : 7, r: 1.1,
+    test: (x, y) => (x - 64) ** 2 + (y - 64) ** 2 <= 33 ** 2 && Math.abs(x - 64) > 8
+  });
+}
+
+function renderBlush(blush) {
+  if (blush !== 'soft') {
+    return '';
+  }
+
+  return '<ellipse cx="46" cy="68" rx="6" ry="4" fill="#fb7185" opacity="0.35"/><ellipse cx="82" cy="68" rx="6" ry="4" fill="#fb7185" opacity="0.35"/>';
+}
+
+function renderEarrings(earrings) {
+  if (earrings === 'studs') {
+    return '<circle cx="30" cy="74" r="3" fill="#fde047"/><circle cx="98" cy="74" r="3" fill="#fde047"/>';
+  }
+
+  if (earrings === 'hoops') {
+    return '<circle cx="30" cy="77" r="5" fill="none" stroke="#fde047" stroke-width="2.5"/><circle cx="98" cy="77" r="5" fill="none" stroke="#fde047" stroke-width="2.5"/>';
+  }
+
+  return '';
+}
+
+function renderCollar(gender) {
+  const attrs = 'fill="none" stroke="#00000030" stroke-width="3" stroke-linecap="round"';
+
+  if (gender === 'masculine') {
+    return `<path d="M56 92l8 11 8-11" ${attrs}/>`;
+  }
+
+  if (gender === 'feminine') {
+    return `<path d="M54 94q10 12 20 0" ${attrs}/>`;
+  }
+
+  return `<path d="M55 96h18" ${attrs}/>`;
+}
+
 export function renderFaceAvatar(config) {
-  const skin = SKIN_TONES[config.traits.skinTone] || SKIN_TONES.medium;
-  const shoulders = config.traits.gender === 'feminine' ? '#a855f7' : config.traits.gender === 'masculine' ? '#2563eb' : '#14b8a6';
-  const headwear = config.traits.headwear;
-  const hair = headwear === 'none' ? renderHair(config.traits.hairStyle, config.traits.hairColor) : '';
+  const traits = config.traits;
+  const skin = SKIN_TONES[traits.skinTone] || SKIN_TONES.medium;
+  const browColor = HAIR_COLORS[traits.hairColor] || '#3f2d20';
+  const clothing = config.clothing || '#64748b';
+  const headwear = traits.headwear;
+  const hair = headwear === 'none' ? renderHair(traits.hairStyle, traits.hairColor) : '';
   const backLayer = headwear === 'hijab' ? renderHeadwear(headwear) : '';
   const frontLayer = headwear === 'hijab' ? '' : renderHeadwear(headwear);
 
   return svgFrame(config, [
-    `<path d="M24 128c5-24 21-38 40-38s35 14 40 38H24Z" fill="${shoulders}"/>`,
+    `<path d="M24 128c5-24 21-38 40-38s35 14 40 38H24Z" fill="${clothing}"/>`,
+    renderCollar(traits.gender),
     backLayer,
-    faceShapePath(config.traits.faceShape, skin),
+    faceShapePath(traits.faceShape, skin),
+    renderEarrings(traits.earrings),
     hair,
     frontLayer,
-    renderEyes(config.traits.eyes),
-    '<path d="M64 63l-5 13h9" fill="none" stroke="#9a5b38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>',
-    renderMouth(config.traits.mouth),
-    renderFacialHair(config.traits.facialHair),
-    renderAccessories(config.traits.accessories)
+    renderEyebrows(traits.eyebrows, browColor),
+    renderEyes(traits.eyes),
+    renderNose(traits.nose),
+    renderFreckles(traits.freckles),
+    renderBlush(traits.blush),
+    renderMouth(traits.mouth),
+    renderFacialHair(traits.facialHair),
+    renderAccessories(traits.accessories)
   ].join(''));
 }

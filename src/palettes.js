@@ -37,6 +37,17 @@ export const SHAPE_COLORS = [
   '#be123c'
 ];
 
+export const CLOTHING_COLORS = [
+  '#2563eb',
+  '#dc2626',
+  '#16a34a',
+  '#7c3aed',
+  '#0891b2',
+  '#db2777',
+  '#475569',
+  '#d97706'
+];
+
 export const AVATAR_OPTIONS = {
   style: ['face', 'initials', 'shapes', 'pixel', 'bot'],
   gender: ['neutral', 'feminine', 'masculine'],
@@ -44,10 +55,15 @@ export const AVATAR_OPTIONS = {
   faceShape: ['round', 'oval', 'soft'],
   hairStyle: ['none', 'stubble', 'short', 'long', 'curly', 'coily', 'bun', 'afro', 'mohawk', 'spiky', 'hijab'],
   hairColor: Object.keys(HAIR_COLORS),
+  eyebrows: ['flat', 'raised', 'angled'],
   eyes: ['round', 'smile', 'sleepy', 'wink'],
+  nose: ['soft', 'button', 'wide'],
   mouth: ['smile', 'neutral', 'open'],
   facialHair: ['none', 'stubble', 'mustache', 'goatee', 'beard', 'fullBeard', 'sideburns'],
+  freckles: ['none', 'light', 'heavy'],
+  blush: ['none', 'soft'],
   headwear: ['none', 'beanie', 'cap', 'turban', 'bucket', 'hijab'],
+  earrings: ['none', 'studs', 'hoops'],
   accessories: ['none', 'glasses', 'sunglasses']
 };
 

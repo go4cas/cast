@@ -31,6 +31,11 @@ export type FacialHair =
   | 'sideburns';
 export type Headwear = 'none' | 'beanie' | 'cap' | 'turban' | 'bucket' | 'hijab';
 export type Accessories = 'none' | 'glasses' | 'sunglasses';
+export type Eyebrows = 'flat' | 'raised' | 'angled';
+export type Nose = 'soft' | 'button' | 'wide';
+export type Freckles = 'none' | 'light' | 'heavy';
+export type Blush = 'none' | 'soft';
+export type Earrings = 'none' | 'studs' | 'hoops';
 
 /** Any trait may be set to `'auto'` to let the seed decide. */
 export type Auto<T> = T | 'auto';
@@ -42,10 +47,15 @@ export interface AvatarTraits {
   faceShape?: Auto<FaceShape>;
   hairStyle?: Auto<HairStyle>;
   hairColor?: Auto<HairColor>;
+  eyebrows?: Auto<Eyebrows>;
   eyes?: Auto<Eyes>;
+  nose?: Auto<Nose>;
   mouth?: Auto<Mouth>;
   facialHair?: Auto<FacialHair>;
+  freckles?: Auto<Freckles>;
+  blush?: Auto<Blush>;
   headwear?: Auto<Headwear>;
+  earrings?: Auto<Earrings>;
   accessories?: Auto<Accessories>;
 }
 
@@ -56,10 +66,15 @@ export interface ResolvedAvatarTraits {
   faceShape: FaceShape;
   hairStyle: HairStyle;
   hairColor: HairColor;
+  eyebrows: Eyebrows;
   eyes: Eyes;
+  nose: Nose;
   mouth: Mouth;
   facialHair: FacialHair;
+  freckles: Freckles;
+  blush: Blush;
   headwear: Headwear;
+  earrings: Earrings;
   accessories: Accessories;
 }
 
@@ -72,8 +87,13 @@ export interface AvatarOptions {
   /** Rendered pixel size, clamped to 24–1024. Defaults to 128. */
   size?: number;
   traits?: AvatarTraits;
-  /** CSS color for the background. `'auto'` or omitted picks from the palette. */
-  background?: string;
+  /**
+   * Background fill. A CSS color, `'transparent'`, a seeded `'gradient'`, or
+   * `'auto'` / omitted to pick a color from the palette.
+   */
+  background?: 'auto' | 'transparent' | 'gradient' | (string & {});
+  /** CSS color for clothing/shoulders. `'auto'` or omitted picks from the palette. */
+  clothing?: 'auto' | (string & {});
   /** Corner radius for the frame; number (px) or CSS length. Defaults to `'50%'`. */
   radius?: number | string;
   /** Accessible title / aria-label. Defaults to `` `${seed} avatar` ``. */
@@ -92,6 +112,7 @@ export interface ResolvedAvatarConfig {
   size: number;
   traits: ResolvedAvatarTraits;
   background: string;
+  clothing: string;
   radius: number | string;
   title: string;
   initials?: string;
@@ -105,10 +126,15 @@ export interface AvatarOptionSets {
   faceShape: FaceShape[];
   hairStyle: HairStyle[];
   hairColor: HairColor[];
+  eyebrows: Eyebrows[];
   eyes: Eyes[];
+  nose: Nose[];
   mouth: Mouth[];
   facialHair: FacialHair[];
+  freckles: Freckles[];
+  blush: Blush[];
   headwear: Headwear[];
+  earrings: Earrings[];
   accessories: Accessories[];
 }
 

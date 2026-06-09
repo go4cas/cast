@@ -1,4 +1,4 @@
-import { BACKGROUNDS, AVATAR_OPTIONS, OPTION_ALIASES } from './palettes.js';
+import { BACKGROUNDS, CLOTHING_COLORS, AVATAR_OPTIONS, OPTION_ALIASES } from './palettes.js';
 import { createRandom, decodeObject, encodeObject, hashConfig, pick } from './hash.js';
 import { renderFaceAvatar } from './styles/face.js';
 import { renderInitialsAvatar } from './styles/initials.js';
@@ -25,12 +25,12 @@ function optionOrAuto(option, values, random) {
   return values.includes(option) ? option : pick(values, random);
 }
 
-function chooseBackground(background, random) {
-  if (background && background !== 'auto') {
-    return background;
+function chooseColor(value, palette, random) {
+  if (value && value !== 'auto') {
+    return value;
   }
 
-  return pick(BACKGROUNDS, random);
+  return pick(palette, random);
 }
 
 function normalizeInput(seedOrOptions = {}, maybeOptions = {}) {
@@ -67,10 +67,15 @@ function normalizeTraits(options, draw) {
     faceShape: optionOrAuto(traits.faceShape, AVATAR_OPTIONS.faceShape, draw('faceShape')),
     hairStyle,
     hairColor: optionOrAuto(traits.hairColor, AVATAR_OPTIONS.hairColor, draw('hairColor')),
+    eyebrows: optionOrAuto(traits.eyebrows, AVATAR_OPTIONS.eyebrows, draw('eyebrows')),
     eyes: optionOrAuto(traits.eyes, AVATAR_OPTIONS.eyes, draw('eyes')),
+    nose: optionOrAuto(traits.nose, AVATAR_OPTIONS.nose, draw('nose')),
     mouth: optionOrAuto(traits.mouth, AVATAR_OPTIONS.mouth, draw('mouth')),
     facialHair: optionOrAuto(traits.facialHair, AVATAR_OPTIONS.facialHair, draw('facialHair')),
+    freckles: optionOrAuto(traits.freckles, AVATAR_OPTIONS.freckles, draw('freckles')),
+    blush: optionOrAuto(traits.blush, AVATAR_OPTIONS.blush, draw('blush')),
     headwear: resolveHeadwear(traits.headwear, hairStyle, draw('headwear')),
+    earrings: optionOrAuto(traits.earrings, AVATAR_OPTIONS.earrings, draw('earrings')),
     accessories: optionOrAuto(traits.accessories, AVATAR_OPTIONS.accessories, draw('accessories'))
   };
 }
@@ -91,7 +96,8 @@ export function resolveAvatarOptions(seedOrOptions = {}, maybeOptions = {}) {
     style,
     size: clampSize(options.size),
     traits: normalizeTraits(options, draw),
-    background: chooseBackground(options.background, draw('background')),
+    background: chooseColor(options.background, BACKGROUNDS, draw('background')),
+    clothing: chooseColor(options.clothing, CLOTHING_COLORS, draw('clothing')),
     radius: options.radius ?? '50%',
     title: options.title ?? `${seed} avatar`,
     initials: options.initials

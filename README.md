@@ -8,7 +8,7 @@ Cast Avatar is a tiny, dependency-free JavaScript library for creating determini
 - **Deterministic:** the same seed and options always generate the same SVG.
 - **Persistable:** `avatarHash()` creates a compact lookup key, while `encodeAvatar()` stores the exact resolved avatar configuration.
 - **Framework-free:** use it with plain HTML, CSS, and JavaScript.
-- **Inclusive traits:** apps can choose or auto-generate skin tone, face shape, hair, eye shape, gender presentation, facial hair, headwear, and accessories.
+- **Inclusive traits:** apps can choose or auto-generate skin tone, face shape, hair, eyebrows, eye shape, nose, mouth, gender presentation, facial hair, freckles, blush, headwear, earrings, accessories, and clothing color.
 
 ## Install
 
