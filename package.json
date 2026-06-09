@@ -1,0 +1,21 @@
+{
+  "name": "cast-avatar",
+  "version": "0.1.0",
+  "description": "Dependency-free deterministic SVG avatar generator for browsers.",
+  "type": "module",
+  "main": "dist/avatar.js",
+  "exports": {
+    ".": "./dist/avatar.js"
+  },
+  "scripts": {
+    "test": "node test/avatar.test.mjs"
+  },
+  "keywords": [
+    "avatar",
+    "svg",
+    "deterministic",
+    "identicon",
+    "browser"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cast Avatar Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+
+      body {
+        margin: 0;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 48px 20px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(2rem, 6vw, 4rem);
+        letter-spacing: -0.06em;
+      }
+
+      .intro {
+        margin: 0 0 32px;
+        max-width: 720px;
+        color: #475569;
+        font-size: 1.125rem;
+      }
+
+      .controls,
+      .card,
+      .gallery-section {
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: 0 20px 60px rgb(15 23 42 / 8%);
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: #334155;
+        font-weight: 700;
+      }
+
+      input,
+      select {
+        min-height: 42px;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 0 12px;
+        font: inherit;
+      }
+
+      .grid,
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 18px;
+      }
+
+      .gallery-section {
+        margin-top: 24px;
+        padding: 24px;
+      }
+
+      .gallery-section h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        letter-spacing: -0.03em;
+      }
+
+      .gallery-section p {
+        margin: 4px 0 20px;
+        color: #64748b;
+      }
+
+      .style-group + .style-group {
+        margin-top: 28px;
+      }
+
+      .style-group h3 {
+        margin: 0 0 12px;
+        color: #1e293b;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .card {
+        display: grid;
+        justify-items: center;
+        gap: 12px;
+        padding: 24px;
+        text-align: center;
+      }
+
+      .variation-card {
+        align-content: start;
+        padding: 20px;
+      }
+
+      .variation-card p {
+        margin: -6px 0 0;
+        color: #64748b;
+        font-size: 0.875rem;
+      }
+
+      .avatar {
+        width: 128px;
+        height: 128px;
+      }
+
+      code {
+        border-radius: 999px;
+        background: #e2e8f0;
+        padding: 4px 10px;
+        color: #334155;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Cast Avatar</h1>
+      <p class="intro">A tiny offline avatar generator inspired by deterministic face, initials, and shape systems. It uses only browser-native SVG, JavaScript, HTML, and CSS.</p>
+
+      <section class="controls" aria-label="Avatar controls">
+        <label>
+          Seed
+          <input id="seed" value="ada@example.com">
+        </label>
+        <label>
+          Style
+          <select id="style">
+            <option value="face">Face</option>
+            <option value="initials">Initials</option>
+            <option value="shapes">Shapes</option>
+            <option value="abstract">Abstract</option>
+          </select>
+        </label>
+        <label>
+          Skin tone
+          <select id="skinTone">
+            <option value="auto">Auto</option>
+            <option value="light">Light</option>
+            <option value="mediumLight">Medium light</option>
+            <option value="medium">Medium</option>
+            <option value="mediumDark">Medium dark</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+        <label>
+          Hair
+          <select id="hair">
+            <option value="auto">Auto</option>
+            <option value="none">None</option>
+            <option value="short">Short</option>
+            <option value="long">Long</option>
+            <option value="curly">Curly</option>
+            <option value="coily">Coily</option>
+            <option value="bun">Bun</option>
+            <option value="hijab">Hijab</option>
+          </select>
+        </label>
+        <label>
+          Accessories
+          <select id="accessories">
+            <option value="auto">Auto</option>
+            <option value="none">None</option>
+            <option value="glasses">Glasses</option>
+            <option value="sunglasses">Sunglasses</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <div id="preview" class="avatar" aria-live="polite"></div>
+          <strong>Live preview</strong>
+          <code id="hash"></code>
+        </article>
+        <article class="card">
+          <div id="face" class="avatar"></div>
+          <strong>Face</strong>
+        </article>
+        <article class="card">
+          <div id="initials" class="avatar"></div>
+          <strong>Initials</strong>
+        </article>
+        <article class="card">
+          <div id="shapes" class="avatar"></div>
+          <strong>Shapes</strong>
+        </article>
+        <article class="card">
+          <div id="abstract" class="avatar"></div>
+          <strong>Abstract</strong>
+        </article>
+      </section>
+
+      <section class="gallery-section" aria-labelledby="gallery-title">
+        <h2 id="gallery-title">Style variations</h2>
+        <p>Compare 16 deterministic outputs across every avatar type. These examples use fixed seeds and trait overrides so you can see the range without changing the live controls.</p>
+        <div id="variationGallery"></div>
+      </section>
+    </main>
+
+    <script type="module">
+      import { avatarHash, mountAvatar } from './src/avatar.js';
+
+      const controls = ['seed', 'style', 'skinTone', 'hair', 'accessories'].map((id) => document.getElementById(id));
+      const hash = document.getElementById('hash');
+      const variationGallery = document.getElementById('variationGallery');
+
+      const variations = {
+        face: [
+          { label: 'Curly + glasses', seed: 'maya@example.com', traits: { gender: 'feminine', skinTone: 'medium', hairStyle: 'curly', hairColor: 'black', eyes: 'round', mouth: 'smile', accessories: 'glasses' } },
+          { label: 'Short + beard', seed: 'noah@example.com', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'brown', facialHair: 'beard', eyes: 'sleepy', mouth: 'neutral' } },
+          { label: 'Hijab + smile', seed: 'amina@example.com', traits: { gender: 'feminine', skinTone: 'dark', hairStyle: 'hijab', headwear: 'hijab', eyes: 'smile', mouth: 'smile' } },
+          { label: 'Bun + sunglasses', seed: 'lee@example.com', traits: { gender: 'neutral', skinTone: 'light', hairStyle: 'bun', hairColor: 'red', eyes: 'wink', accessories: 'sunglasses' } }
+        ],
+        initials: [
+          { label: 'Ada Lovelace', seed: 'Ada Lovelace', initials: 'AL', background: '#dbeafe' },
+          { label: 'Grace Hopper', seed: 'Grace Hopper', initials: 'GH', background: '#dcfce7' },
+          { label: 'Katherine Johnson', seed: 'Katherine Johnson', initials: 'KJ', background: '#fef3c7' },
+          { label: 'Radia Perlman', seed: 'Radia Perlman', initials: 'RP', background: '#fce7f3' }
+        ],
+        shapes: [
+          { label: 'Blue geometry', seed: 'shape-blue', background: '#dbeafe' },
+          { label: 'Warm geometry', seed: 'shape-warm', background: '#fee2e2' },
+          { label: 'Green geometry', seed: 'shape-green', background: '#dcfce7' },
+          { label: 'Purple geometry', seed: 'shape-purple', background: '#ede9fe' }
+        ],
+        abstract: [
+          { label: 'Orbit', seed: 'abstract-orbit', background: '#e0f2fe' },
+          { label: 'Bloom', seed: 'abstract-bloom', background: '#f3e8ff' },
+          { label: 'Signal', seed: 'abstract-signal', background: '#fef3c7' },
+          { label: 'Ripple', seed: 'abstract-ripple', background: '#dcfce7' }
+        ]
+      };
+
+      function renderVariationGallery() {
+        variationGallery.innerHTML = Object.entries(variations).map(([style, examples]) => `
+          <section class="style-group" aria-labelledby="${style}-examples">
+            <h3 id="${style}-examples">${style}</h3>
+            <div class="gallery-grid">
+              ${examples.map((example, index) => `
+                <article class="card variation-card">
+                  <div id="variation-${style}-${index}" class="avatar"></div>
+                  <strong>${example.label}</strong>
+                  <p>${example.seed}</p>
+                </article>
+              `).join('')}
+            </div>
+          </section>
+        `).join('');
+
+        Object.entries(variations).forEach(([style, examples]) => {
+          examples.forEach((example, index) => {
+            mountAvatar(`#variation-${style}-${index}`, {
+              ...example,
+              style,
+              size: 128,
+              title: `${example.label} ${style} avatar`
+            });
+          });
+        });
+      }
+
+      function options() {
+        const [seed, style, skinTone, hairStyle, accessories] = controls.map((control) => control.value);
+        return {
+          seed,
+          style,
+          traits: {
+            skinTone,
+            hairStyle,
+            accessories
+          }
+        };
+      }
+
+      function render() {
+        const current = { ...options(), size: 128 };
+        mountAvatar('#preview', current);
+        hash.textContent = `hash: ${avatarHash(current)}`;
+
+        for (const style of ['face', 'initials', 'shapes', 'abstract']) {
+          mountAvatar(`#${style}`, { seed: current.seed, style, size: 128 });
+        }
+      }
+
+      controls.forEach((control) => control.addEventListener('input', render));
+      renderVariationGallery();
+      render();
+    </script>
+  </body>
+</html>
