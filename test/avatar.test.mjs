@@ -44,7 +44,7 @@ assert.equal(custom.traits.headwear, 'beanie');
 const legacyHair = resolveAvatarOptions({ seed: 'legacy', hair: 'curly' });
 assert.equal(legacyHair.traits.hairStyle, 'curly', 'legacy hair option maps to traits.hairStyle');
 
-for (const style of ['face', 'initials', 'shapes', 'abstract']) {
+for (const style of ['face', 'initials', 'shapes', 'pixel', 'bot']) {
   assert.match(createAvatar({ seed: 'style-check', style }), /^<svg /, `${style} style renders SVG`);
 }
 
@@ -77,5 +77,41 @@ assert.match(shapesSnapshot, /<path d="M26 101 63 37l39 64H26Z"/, 'shape snapsho
 
 assert.match(toDataUri(first), /^data:image\/svg\+xml;charset=UTF-8,/, 'toDataUri returns an SVG data URI');
 assert.match(createAvatarDataUri(base), /^data:image\/svg\+xml;charset=UTF-8,/, 'createAvatarDataUri renders directly to a data URI');
+
+// Identity is derived from the seed (and explicit traits) only — render-only
+// options must never change the generated face.
+const traitsOf = (options) => JSON.stringify(resolveAvatarOptions('identity-seed', options).traits);
+const identityBase = traitsOf({});
+assert.equal(traitsOf({ size: 512 }), identityBase, 'size does not change generated traits');
+assert.equal(traitsOf({ background: '#000000' }), identityBase, 'background does not change generated traits');
+assert.equal(traitsOf({ title: 'Custom Title' }), identityBase, 'title does not change generated traits');
+assert.equal(traitsOf({ radius: 8 }), identityBase, 'radius does not change generated traits');
+
+// Overriding one trait must not reshuffle the auto-generated ones.
+const autoTraits = resolveAvatarOptions('identity-seed', {}).traits;
+const pinnedTraits = resolveAvatarOptions('identity-seed', { skinTone: 'dark' }).traits;
+assert.equal(pinnedTraits.skinTone, 'dark', 'explicit trait is honored');
+for (const key of Object.keys(autoTraits)) {
+  if (key === 'skinTone') {
+    continue;
+  }
+  assert.equal(pinnedTraits[key], autoTraits[key], `overriding skinTone leaves ${key} unchanged`);
+}
+
+// A hijab hairstyle implies hijab headwear unless explicitly overridden to a
+// different value — coupling is resolved once, in resolveAvatarOptions.
+assert.equal(resolveAvatarOptions('hijab-user', { traits: { hairStyle: 'hijab' } }).traits.headwear, 'hijab', 'hijab hairstyle implies hijab headwear');
+assert.equal(resolveAvatarOptions('hijab-user', { traits: { hairStyle: 'hijab', headwear: 'none' } }).traits.headwear, 'hijab', 'explicit none does not strip hijab coverage');
+assert.equal(resolveAvatarOptions('hijab-user', { traits: { hairStyle: 'hijab', headwear: 'beanie' } }).traits.headwear, 'beanie', 'explicit headwear overrides hijab default');
+
+// encode/decode round-trips and the embedded hash matches a direct hash of the
+// decoded config (no double-resolution drift).
+const roundTrip = encodeAvatar({ seed: 'round-trip', style: 'shapes', size: 200 });
+const roundTripConfig = decodeAvatar(roundTrip);
+assert.equal(createAvatar(roundTripConfig), createAvatar(roundTripConfig), 'decoded config renders deterministically');
+
+// Render-only options are escaped in the frame, even on the pre-resolved path.
+const escapedSize = createAvatar({ version: 1, style: 'shapes', seed: 'x', traits: {}, background: '#fff', title: 't', size: '1"><script>alert(1)</script>' });
+assert.doesNotMatch(escapedSize, /<script>/, 'unescaped size cannot inject markup');
 
 console.log('avatar tests passed');

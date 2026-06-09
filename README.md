@@ -1,6 +1,6 @@
 # Cast Avatar
 
-Cast Avatar is a tiny, dependency-free JavaScript library for creating deterministic SVG avatars without network access. It is inspired by avatar systems that turn a stable seed into repeatable faces, initials, abstract marks, or geometric shapes.
+Cast Avatar is a tiny, dependency-free JavaScript library for creating deterministic SVG avatars without network access. It is inspired by avatar systems that turn a stable seed into repeatable faces, initials, or geometric shapes.
 
 ## Goals
 
@@ -10,7 +10,26 @@ Cast Avatar is a tiny, dependency-free JavaScript library for creating determini
 - **Framework-free:** use it with plain HTML, CSS, and JavaScript.
 - **Inclusive traits:** apps can choose or auto-generate skin tone, face shape, hair, eye shape, gender presentation, facial hair, headwear, and accessories.
 
+## Install
+
+```sh
+npm install cast-avatar
+```
+
+```js
+import { createAvatar } from 'cast-avatar';
+
+const svg = createAvatar('ada@example.com', { style: 'face' });
+```
+
+The package ships as ES module source with no build step, and includes
+TypeScript declarations (`avatar.d.ts`) so every option and trait is typed.
+
 ## Quick start
+
+The snippets below import from `./src/avatar.js` so they run directly from a
+clone (open `index.html` with no build); when installed from npm, import from
+`cast-avatar` instead.
 
 ```html
 <div id="avatar"></div>
@@ -103,7 +122,7 @@ Returns the deterministic, fully-resolved option set used by the renderer. This 
 | Option | Values |
 | --- | --- |
 | `seed` | Any stable string, such as a user ID, email, or username. |
-| `style` | `face`, `initials`, `shapes`, `abstract`. |
+| `style` | `face`, `initials`, `shapes`, `pixel`, `bot`. |
 | `size` | Pixel size from `24` to `1024`; defaults to `128`. |
 | `background` | Any CSS color or `auto`. |
 | `radius` | SVG rectangle radius; defaults to `50%`. |
@@ -131,7 +150,7 @@ The legacy top-level `hair` option is still accepted as an alias for `traits.hai
 
 ## Demo
 
-Open `index.html` in a browser. The demo imports `src/avatar.js` directly and does not need a build step. It includes live controls plus a fixed-seed variation gallery for the `face`, `initials`, `shapes`, and `abstract` styles so you can compare multiple outputs at once.
+Open `index.html` in a browser. The demo imports `src/avatar.js` directly and does not need a build step. It includes live controls plus a fixed-seed variation gallery for the `face`, `initials`, `shapes`, `pixel`, and `bot` styles so you can compare multiple outputs at once.
 
 ## Development
 

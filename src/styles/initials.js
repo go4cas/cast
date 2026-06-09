@@ -6,9 +6,8 @@ export function renderInitialsAvatar(config) {
   const foreground = shapeColor(random);
   const initials = escapeText(config.initials || initialsFrom(config.seed));
 
-  return svgFrame(config, [
-    `<circle cx="28" cy="24" r="30" fill="${foreground}" opacity="0.18"/>`,
-    `<circle cx="102" cy="108" r="42" fill="${foreground}" opacity="0.22"/>`,
+  return svgFrame(
+    config,
     `<text x="64" y="75" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="42" font-weight="800" fill="${foreground}">${initials}</text>`
-  ].join(''));
+  );
 }

@@ -38,16 +38,16 @@ export const SHAPE_COLORS = [
 ];
 
 export const AVATAR_OPTIONS = {
-  style: ['face', 'initials', 'shapes', 'abstract'],
+  style: ['face', 'initials', 'shapes', 'pixel', 'bot'],
   gender: ['neutral', 'feminine', 'masculine'],
   skinTone: Object.keys(SKIN_TONES),
   faceShape: ['round', 'oval', 'soft'],
-  hairStyle: ['none', 'short', 'long', 'curly', 'coily', 'bun', 'hijab'],
+  hairStyle: ['none', 'stubble', 'short', 'long', 'curly', 'coily', 'bun', 'afro', 'mohawk', 'spiky', 'hijab'],
   hairColor: Object.keys(HAIR_COLORS),
   eyes: ['round', 'smile', 'sleepy', 'wink'],
   mouth: ['smile', 'neutral', 'open'],
-  facialHair: ['none', 'mustache', 'beard'],
-  headwear: ['none', 'beanie', 'hijab'],
+  facialHair: ['none', 'stubble', 'mustache', 'goatee', 'beard', 'fullBeard', 'sideburns'],
+  headwear: ['none', 'beanie', 'cap', 'turban', 'bucket', 'hijab'],
   accessories: ['none', 'glasses', 'sunglasses']
 };
 

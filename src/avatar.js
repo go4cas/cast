@@ -1,9 +1,10 @@
 import { BACKGROUNDS, AVATAR_OPTIONS, OPTION_ALIASES } from './palettes.js';
 import { createRandom, decodeObject, encodeObject, hashConfig, pick } from './hash.js';
-import { renderAbstractAvatar } from './styles/abstract.js';
 import { renderFaceAvatar } from './styles/face.js';
 import { renderInitialsAvatar } from './styles/initials.js';
 import { renderShapesAvatar } from './styles/shapes.js';
+import { renderPixelAvatar } from './styles/pixel.js';
+import { renderBotAvatar } from './styles/bot.js';
 
 const CONFIG_PREFIX = 'ca1';
 
@@ -40,45 +41,57 @@ function normalizeInput(seedOrOptions = {}, maybeOptions = {}) {
   return { ...seedOrOptions };
 }
 
-function normalizeTraits(options, random) {
+// A hijab hairstyle implies hijab headwear unless the caller explicitly
+// requests different headwear. Centralized here so every renderer can trust
+// config.traits.headwear without re-deriving the coupling.
+function resolveHeadwear(headwear, hairStyle, random) {
+  if ((headwear === undefined || headwear === 'none') && hairStyle === 'hijab') {
+    return 'hijab';
+  }
+
+  return optionOrAuto(headwear, AVATAR_OPTIONS.headwear, random);
+}
+
+function normalizeTraits(options, draw) {
   const rawTraits = options.traits || {};
   const aliased = Object.fromEntries(
     Object.entries(OPTION_ALIASES).map(([from, to]) => [to, options[from]])
   );
   const traits = { ...aliased, ...options, ...rawTraits };
 
-  const hairStyle = optionOrAuto(traits.hairStyle, AVATAR_OPTIONS.hairStyle, random);
-  const headwear = traits.headwear === undefined && hairStyle === 'hijab'
-    ? 'hijab'
-    : optionOrAuto(traits.headwear, AVATAR_OPTIONS.headwear, random);
+  const hairStyle = optionOrAuto(traits.hairStyle, AVATAR_OPTIONS.hairStyle, draw('hairStyle'));
 
   return {
-    gender: optionOrAuto(traits.gender, AVATAR_OPTIONS.gender, random),
-    skinTone: optionOrAuto(traits.skinTone, AVATAR_OPTIONS.skinTone, random),
-    faceShape: optionOrAuto(traits.faceShape, AVATAR_OPTIONS.faceShape, random),
+    gender: optionOrAuto(traits.gender, AVATAR_OPTIONS.gender, draw('gender')),
+    skinTone: optionOrAuto(traits.skinTone, AVATAR_OPTIONS.skinTone, draw('skinTone')),
+    faceShape: optionOrAuto(traits.faceShape, AVATAR_OPTIONS.faceShape, draw('faceShape')),
     hairStyle,
-    hairColor: optionOrAuto(traits.hairColor, AVATAR_OPTIONS.hairColor, random),
-    eyes: optionOrAuto(traits.eyes, AVATAR_OPTIONS.eyes, random),
-    mouth: optionOrAuto(traits.mouth, AVATAR_OPTIONS.mouth, random),
-    facialHair: optionOrAuto(traits.facialHair, AVATAR_OPTIONS.facialHair, random),
-    headwear,
-    accessories: optionOrAuto(traits.accessories, AVATAR_OPTIONS.accessories, random)
+    hairColor: optionOrAuto(traits.hairColor, AVATAR_OPTIONS.hairColor, draw('hairColor')),
+    eyes: optionOrAuto(traits.eyes, AVATAR_OPTIONS.eyes, draw('eyes')),
+    mouth: optionOrAuto(traits.mouth, AVATAR_OPTIONS.mouth, draw('mouth')),
+    facialHair: optionOrAuto(traits.facialHair, AVATAR_OPTIONS.facialHair, draw('facialHair')),
+    headwear: resolveHeadwear(traits.headwear, hairStyle, draw('headwear')),
+    accessories: optionOrAuto(traits.accessories, AVATAR_OPTIONS.accessories, draw('accessories'))
   };
 }
 
 export function resolveAvatarOptions(seedOrOptions = {}, maybeOptions = {}) {
   const options = normalizeInput(seedOrOptions, maybeOptions);
   const seed = String(options.seed ?? options.name ?? options.id ?? 'avatar');
-  const random = createRandom(`${seed}:${hashConfig(options)}`);
-  const style = optionOrAuto(options.style, AVATAR_OPTIONS.style, random);
+  // Each generated field draws from its own stream keyed by the identity seed
+  // alone, so render-only options (size, radius, title, background) never
+  // change the avatar's identity, and specifying one trait never reshuffles
+  // the others.
+  const draw = (field) => createRandom(`${seed}:${field}`);
+  const style = optionOrAuto(options.style, AVATAR_OPTIONS.style, draw('style'));
 
   return {
     version: 1,
     seed,
     style,
     size: clampSize(options.size),
-    traits: normalizeTraits(options, random),
-    background: chooseBackground(options.background, random),
+    traits: normalizeTraits(options, draw),
+    background: chooseBackground(options.background, draw('background')),
     radius: options.radius ?? '50%',
     title: options.title ?? `${seed} avatar`,
     initials: options.initials
@@ -91,7 +104,7 @@ export function avatarHash(seedOrOptions = {}, maybeOptions = {}) {
 
 export function encodeAvatar(seedOrOptions = {}, maybeOptions = {}) {
   const config = resolveAvatarOptions(seedOrOptions, maybeOptions);
-  return `${CONFIG_PREFIX}.${avatarHash(config)}.${encodeObject(config)}`;
+  return `${CONFIG_PREFIX}.${hashConfig(config)}.${encodeObject(config)}`;
 }
 
 export function decodeAvatar(encoded) {
@@ -131,8 +144,12 @@ export function createAvatar(seedOrOptions = {}, maybeOptions = {}) {
     return renderShapesAvatar(config);
   }
 
-  if (config.style === 'abstract') {
-    return renderAbstractAvatar(config);
+  if (config.style === 'pixel') {
+    return renderPixelAvatar(config);
+  }
+
+  if (config.style === 'bot') {
+    return renderBotAvatar(config);
   }
 
   return renderFaceAvatar(config);
@@ -147,12 +164,20 @@ export function createAvatarDataUri(seedOrOptions = {}, maybeOptions = {}) {
 }
 
 export function createAvatarElement(seedOrOptions = {}, maybeOptions = {}) {
+  if (typeof document === 'undefined') {
+    throw new Error('createAvatarElement requires a DOM environment. Use createAvatar for an SVG string.');
+  }
+
   const template = document.createElement('template');
   template.innerHTML = createAvatar(seedOrOptions, maybeOptions).trim();
   return template.content.firstElementChild;
 }
 
 export function mountAvatar(target, seedOrOptions = {}, maybeOptions = {}) {
+  if (typeof document === 'undefined') {
+    throw new Error('mountAvatar requires a DOM environment. Use createAvatar for an SVG string.');
+  }
+
   const element = typeof target === 'string' ? document.querySelector(target) : target;
 
   if (!element) {

@@ -3,10 +3,20 @@
   "version": "0.1.0",
   "description": "Dependency-free deterministic SVG avatar generator for browsers.",
   "type": "module",
-  "main": "dist/avatar.js",
+  "main": "./src/avatar.js",
+  "module": "./src/avatar.js",
+  "types": "./avatar.d.ts",
   "exports": {
-    ".": "./dist/avatar.js"
+    ".": {
+      "types": "./avatar.d.ts",
+      "import": "./src/avatar.js"
+    }
   },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "avatar.d.ts"
+  ],
   "scripts": {
     "test": "node test/avatar.test.mjs"
   },
@@ -17,5 +27,13 @@
     "identicon",
     "browser"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/go4cas/cast.git"
+  },
+  "homepage": "https://github.com/go4cas/cast#readme",
+  "bugs": {
+    "url": "https://github.com/go4cas/cast/issues"
+  },
   "license": "MIT"
 }

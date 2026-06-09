@@ -45,11 +45,7 @@ export function createRandom(seed = '') {
   };
 }
 
-export function pick(items, random, preferred) {
-  if (preferred !== undefined && preferred !== null && items.includes(preferred)) {
-    return preferred;
-  }
-
+export function pick(items, random) {
   return items[Math.floor(random() * items.length)];
 }
 

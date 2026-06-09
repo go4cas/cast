@@ -11,6 +11,12 @@
         line-height: 1.5;
       }
 
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         background: #f8fafc;
@@ -56,20 +62,60 @@
       label {
         display: grid;
         gap: 6px;
+        min-width: 0;
+        align-content: start;
         color: #334155;
         font-weight: 700;
+        font-size: 0.875rem;
       }
 
       input,
       select {
+        width: 100%;
+        min-width: 0;
         min-height: 42px;
         border: 1px solid #cbd5e1;
         border-radius: 12px;
         padding: 0 12px;
         font: inherit;
+        background: #fff;
+        color: inherit;
       }
 
-      .grid,
+      input:focus,
+      select:focus {
+        outline: 2px solid #6366f1;
+        outline-offset: 1px;
+        border-color: #6366f1;
+      }
+
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+        padding-right: 34px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+      }
+
+      input[type="range"] {
+        appearance: auto;
+        -webkit-appearance: auto;
+        height: 42px;
+        min-height: 0;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        accent-color: #6366f1;
+        cursor: pointer;
+      }
+
+      input[type="range"]:focus {
+        outline: none;
+      }
+
       .gallery-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -128,6 +174,34 @@
         height: 128px;
       }
 
+      .hero {
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: 0 20px 60px rgb(15 23 42 / 8%);
+        padding: 32px;
+        margin-bottom: 24px;
+        display: grid;
+        justify-items: center;
+        gap: 16px;
+      }
+
+      .preview-stage {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        min-height: 300px;
+      }
+
+      .preview-avatar svg {
+        display: block;
+      }
+
+      .size-value {
+        font-weight: 600;
+        color: #64748b;
+      }
+
       code {
         border-radius: 999px;
         background: #e2e8f0;
@@ -147,12 +221,17 @@
           <input id="seed" value="ada@example.com">
         </label>
         <label>
-          Style
-          <select id="style">
-            <option value="face">Face</option>
-            <option value="initials">Initials</option>
-            <option value="shapes">Shapes</option>
-            <option value="abstract">Abstract</option>
+          Size
+          <input id="size" type="range" min="64" max="384" step="8" value="256">
+          <span id="sizeValue" class="size-value">256px</span>
+        </label>
+        <label>
+          Gender
+          <select id="gender">
+            <option value="auto">Auto</option>
+            <option value="neutral">Neutral</option>
+            <option value="feminine">Feminine</option>
+            <option value="masculine">Masculine</option>
           </select>
         </label>
         <label>
@@ -167,15 +246,84 @@
           </select>
         </label>
         <label>
+          Face shape
+          <select id="faceShape">
+            <option value="auto">Auto</option>
+            <option value="round">Round</option>
+            <option value="oval">Oval</option>
+            <option value="soft">Soft</option>
+          </select>
+        </label>
+        <label>
           Hair
           <select id="hair">
             <option value="auto">Auto</option>
             <option value="none">None</option>
+            <option value="stubble">Stubble</option>
             <option value="short">Short</option>
             <option value="long">Long</option>
             <option value="curly">Curly</option>
             <option value="coily">Coily</option>
             <option value="bun">Bun</option>
+            <option value="afro">Afro</option>
+            <option value="mohawk">Mohawk</option>
+            <option value="spiky">Spiky</option>
+            <option value="hijab">Hijab</option>
+          </select>
+        </label>
+        <label>
+          Hair color
+          <select id="hairColor">
+            <option value="auto">Auto</option>
+            <option value="black">Black</option>
+            <option value="brown">Brown</option>
+            <option value="blonde">Blonde</option>
+            <option value="red">Red</option>
+            <option value="gray">Gray</option>
+            <option value="white">White</option>
+          </select>
+        </label>
+        <label>
+          Eyes
+          <select id="eyes">
+            <option value="auto">Auto</option>
+            <option value="round">Round</option>
+            <option value="smile">Smile</option>
+            <option value="sleepy">Sleepy</option>
+            <option value="wink">Wink</option>
+          </select>
+        </label>
+        <label>
+          Mouth
+          <select id="mouth">
+            <option value="auto">Auto</option>
+            <option value="smile">Smile</option>
+            <option value="neutral">Neutral</option>
+            <option value="open">Open</option>
+          </select>
+        </label>
+        <label>
+          Facial hair
+          <select id="facialHair">
+            <option value="auto">Auto</option>
+            <option value="none">None</option>
+            <option value="stubble">Stubble</option>
+            <option value="mustache">Mustache</option>
+            <option value="goatee">Goatee</option>
+            <option value="beard">Beard</option>
+            <option value="fullBeard">Full beard</option>
+            <option value="sideburns">Sideburns</option>
+          </select>
+        </label>
+        <label>
+          Headwear
+          <select id="headwear">
+            <option value="auto">Auto</option>
+            <option value="none" selected>None</option>
+            <option value="beanie">Beanie</option>
+            <option value="cap">Cap</option>
+            <option value="turban">Turban</option>
+            <option value="bucket">Bucket</option>
             <option value="hijab">Hijab</option>
           </select>
         </label>
@@ -190,33 +338,16 @@
         </label>
       </section>
 
-      <section class="grid">
-        <article class="card">
-          <div id="preview" class="avatar" aria-live="polite"></div>
-          <strong>Live preview</strong>
-          <code id="hash"></code>
-        </article>
-        <article class="card">
-          <div id="face" class="avatar"></div>
-          <strong>Face</strong>
-        </article>
-        <article class="card">
-          <div id="initials" class="avatar"></div>
-          <strong>Initials</strong>
-        </article>
-        <article class="card">
-          <div id="shapes" class="avatar"></div>
-          <strong>Shapes</strong>
-        </article>
-        <article class="card">
-          <div id="abstract" class="avatar"></div>
-          <strong>Abstract</strong>
-        </article>
+      <section class="hero">
+        <div class="preview-stage">
+          <div id="preview" class="preview-avatar" aria-live="polite"></div>
+        </div>
+        <code id="hash"></code>
       </section>
 
       <section class="gallery-section" aria-labelledby="gallery-title">
         <h2 id="gallery-title">Style variations</h2>
-        <p>Compare 16 deterministic outputs across every avatar type. These examples use fixed seeds and trait overrides so you can see the range without changing the live controls.</p>
+        <p>Compare 20 deterministic outputs across every avatar type. These examples use fixed seeds and trait overrides so you can see the range without changing the live controls.</p>
         <div id="variationGallery"></div>
       </section>
     </main>
@@ -224,7 +355,11 @@
     <script type="module">
       import { avatarHash, mountAvatar } from './src/avatar.js';
 
-      const controls = ['seed', 'style', 'skinTone', 'hair', 'accessories'].map((id) => document.getElementById(id));
+      const traitIds = ['gender', 'skinTone', 'faceShape', 'hair', 'hairColor', 'eyes', 'mouth', 'facialHair', 'headwear', 'accessories'];
+      const traitControls = traitIds.map((id) => document.getElementById(id));
+      const seedInput = document.getElementById('seed');
+      const sizeInput = document.getElementById('size');
+      const sizeValue = document.getElementById('sizeValue');
       const hash = document.getElementById('hash');
       const variationGallery = document.getElementById('variationGallery');
 
@@ -247,11 +382,17 @@
           { label: 'Green geometry', seed: 'shape-green', background: '#dcfce7' },
           { label: 'Purple geometry', seed: 'shape-purple', background: '#ede9fe' }
         ],
-        abstract: [
-          { label: 'Orbit', seed: 'abstract-orbit', background: '#e0f2fe' },
-          { label: 'Bloom', seed: 'abstract-bloom', background: '#f3e8ff' },
-          { label: 'Signal', seed: 'abstract-signal', background: '#fef3c7' },
-          { label: 'Ripple', seed: 'abstract-ripple', background: '#dcfce7' }
+        pixel: [
+          { label: 'Pixel one', seed: 'pixel-aurora', background: '#e0f2fe' },
+          { label: 'Pixel two', seed: 'pixel-ember', background: '#fee2e2' },
+          { label: 'Pixel three', seed: 'pixel-moss', background: '#dcfce7' },
+          { label: 'Pixel four', seed: 'pixel-violet', background: '#ede9fe' }
+        ],
+        bot: [
+          { label: 'Bot one', seed: 'bot-zap', background: '#dbeafe' },
+          { label: 'Bot two', seed: 'bot-circuit', background: '#fef3c7' },
+          { label: 'Bot three', seed: 'bot-pixel', background: '#dcfce7' },
+          { label: 'Bot four', seed: 'bot-rust', background: '#fee2e2' }
         ]
       };
 
@@ -284,29 +425,34 @@
       }
 
       function options() {
-        const [seed, style, skinTone, hairStyle, accessories] = controls.map((control) => control.value);
+        const [gender, skinTone, faceShape, hairStyle, hairColor, eyes, mouth, facialHair, headwear, accessories] = traitControls.map((control) => control.value);
         return {
-          seed,
-          style,
+          seed: seedInput.value,
+          style: 'face',
+          size: Number(sizeInput.value),
           traits: {
+            gender,
             skinTone,
+            faceShape,
             hairStyle,
+            hairColor,
+            eyes,
+            mouth,
+            facialHair,
+            headwear,
             accessories
           }
         };
       }
 
       function render() {
-        const current = { ...options(), size: 128 };
+        const current = options();
         mountAvatar('#preview', current);
+        sizeValue.textContent = `${current.size}px`;
         hash.textContent = `hash: ${avatarHash(current)}`;
-
-        for (const style of ['face', 'initials', 'shapes', 'abstract']) {
-          mountAvatar(`#${style}`, { seed: current.seed, style, size: 128 });
-        }
       }
 
-      controls.forEach((control) => control.addEventListener('input', render));
+      [seedInput, sizeInput, ...traitControls].forEach((control) => control.addEventListener('input', render));
       renderVariationGallery();
       render();
     </script>
