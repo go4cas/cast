@@ -197,6 +197,30 @@ The legacy top-level `hair` option is still accepted as an alias for `traits.hai
 The complete, machine-readable list of every allowed value lives in the
 exported `avatarOptions` table — see below.
 
+## Stability and versioning
+
+Avatars are deterministic: the **same seed and options always produce the same
+SVG for a given version of `cast-avatar`**. Because each trait is drawn from its
+own seed-derived stream, rendering at any `size` yields the same character —
+just scaled.
+
+Across versions, the *visual output for a given seed can change* — adding a
+hairstyle, adjusting a palette, or refining how a feature is drawn all shift
+what `auto` resolves to or how it is rendered. This project treats a visual
+change to an existing seed as a breaking change (a major version bump). If you
+need an avatar to stay identical over time, pick a guarantee level:
+
+| Need | Persist | Render with |
+| --- | --- | --- |
+| Stable while you control the version | the seed (e.g. an agent/user id) | `createAvatar(seed)` — pin the exact version |
+| Survive library upgrades | `encodeAvatar(seed, options)` | `createAvatar(decodeAvatar(stored))` |
+| Pixel-locked forever | the rendered SVG string | use it directly |
+
+`avatarHash()` is a one-way lookup/cache key. It cannot regenerate an avatar and
+it changes whenever any option (including `size` or `background`) changes, so
+don't use it as your identity anchor — persist the seed (or one of the artifacts
+above) instead.
+
 ## Demo
 
 Open `index.html` in a browser (serve it over HTTP so the ES module imports

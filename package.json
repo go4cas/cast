@@ -25,7 +25,8 @@
     "element.d.ts"
   ],
   "scripts": {
-    "test": "node test/avatar.test.mjs"
+    "test": "node test/avatar.test.mjs",
+    "prepublishOnly": "npm test"
   },
   "keywords": [
     "avatar",
