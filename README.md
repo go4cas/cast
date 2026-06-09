@@ -25,6 +25,40 @@ const svg = createAvatar('ada@example.com', { style: 'face' });
 The package ships as ES module source with no build step, and includes
 TypeScript declarations (`avatar.d.ts`) so every option and trait is typed.
 
+## Use from a CDN
+
+No build or install needed — `cast-avatar` is served from npm CDNs. Use
+jsDelivr's auto-bundled, minified single file:
+
+```html
+<script type="module">
+  import { createAvatar } from 'https://cdn.jsdelivr.net/npm/cast-avatar@0.1.0/+esm';
+  document.body.innerHTML = createAvatar('ada@example.com', { style: 'face' });
+</script>
+```
+
+Or import the raw ES module source (also works on
+[unpkg](https://unpkg.com/cast-avatar/)):
+
+```html
+<script type="module">
+  import { createAvatar } from 'https://cdn.jsdelivr.net/npm/cast-avatar@0.1.0/src/avatar.js';
+</script>
+```
+
+The `<cast-avatar>` element works the same way — importing it registers the tag:
+
+```html
+<script type="module">
+  import 'https://cdn.jsdelivr.net/npm/cast-avatar@0.1.0/element/+esm';
+</script>
+<cast-avatar seed="ada@example.com" variant="face" size="96"></cast-avatar>
+```
+
+Pin the version (`@0.1.0`) in production: an unpinned URL serves the latest
+release, which can change an existing seed's avatar — see
+[Stability and versioning](#stability-and-versioning).
+
 ## Quick start
 
 The snippets below import from `./src/avatar.js` so they run directly from a

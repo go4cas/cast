@@ -33,8 +33,15 @@
     "svg",
     "deterministic",
     "identicon",
-    "browser"
+    "browser",
+    "web-component",
+    "typescript",
+    "pfp",
+    "profile-picture"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/go4cas/cast.git"
