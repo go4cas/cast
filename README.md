@@ -117,40 +117,97 @@ document.body.append(element);
 
 Returns the deterministic, fully-resolved option set used by the renderer. This is useful for debugging or storing the final values that `auto` produced.
 
+### `avatarOptions`
+
+The exported table of every allowed value for each style and trait — the canonical source for building pickers or validating input.
+
+```js
+import { avatarOptions } from 'cast-avatar';
+
+avatarOptions.style;     // ['face', 'initials', 'shapes', 'pixel', 'bot']
+avatarOptions.hairStyle; // ['none', 'stubble', 'short', 'long', ...]
+```
+
+## Web component
+
+A zero-dependency `<cast-avatar>` custom element is available from the
+`cast-avatar/element` entry point. Importing the module registers the element.
+
+```html
+<script type="module">
+  import 'cast-avatar/element';
+</script>
+
+<cast-avatar seed="ada@example.com" variant="face" size="96"></cast-avatar>
+```
+
+Attributes: `seed`, `variant` (the style name — `style` is reserved by HTML),
+`size`, and `background`. The element re-renders when any of these change. For
+full trait control, render with the JavaScript API instead.
+
 ## Options
 
 | Option | Values |
 | --- | --- |
-| `seed` | Any stable string, such as a user ID, email, or username. |
-| `style` | `face`, `initials`, `shapes`, `pixel`, `bot`. |
+| `seed` | Any stable string, such as a user ID, email, or username. `name` and `id` are accepted as aliases. |
+| `style` | `face`, `initials`, `shapes`, `pixel`, `bot`; or `auto`. |
 | `size` | Pixel size from `24` to `1024`; defaults to `128`. |
-| `background` | Any CSS color or `auto`. |
-| `radius` | SVG rectangle radius; defaults to `50%`. |
-| `title` | Accessible label for the SVG. |
+| `background` | Any CSS color, `transparent`, `gradient` (a seeded two-color gradient), or `auto`. |
+| `clothing` | Any CSS color or `auto`; colors the shoulders/collar in the `face` style. |
+| `radius` | SVG corner radius — a number (px) or CSS length; defaults to `50%` (circle). |
+| `title` | Accessible label for the SVG; defaults to `"<seed> avatar"`. |
 | `initials` | Optional text override for the `initials` style. |
+| `traits` | Object of per-feature traits; see below. |
+
+The styles are deterministic from the seed: `face` and `pixel` use the trait
+set below, `initials` renders a monogram, and `shapes`/`bot` derive their
+colors and composition from the seed alone.
 
 ## Trait options
 
-Traits live under the `traits` key. Most traits also accept `auto`, which deterministically chooses a value from the seed.
+Traits live under the `traits` key. Every trait also accepts `auto` (the
+default), which deterministically chooses a value from the seed. Each trait is
+drawn from its own seed-derived stream, so setting one trait never changes the
+auto-generated value of another.
 
 | Trait | Values |
 | --- | --- |
 | `gender` | `neutral`, `feminine`, `masculine`. |
 | `skinTone` | `light`, `mediumLight`, `medium`, `mediumDark`, `dark`. |
 | `faceShape` | `round`, `oval`, `soft`. |
-| `hairStyle` | `none`, `short`, `long`, `curly`, `coily`, `bun`, `hijab`. |
+| `hairStyle` | `none`, `stubble`, `short`, `long`, `curly`, `coily`, `bun`, `afro`, `mohawk`, `spiky`, `hijab`. |
 | `hairColor` | `black`, `brown`, `blonde`, `red`, `gray`, `white`. |
+| `eyebrows` | `flat`, `raised`, `angled`. |
 | `eyes` | `round`, `smile`, `sleepy`, `wink`. |
+| `nose` | `soft`, `button`, `wide`. |
 | `mouth` | `smile`, `neutral`, `open`. |
-| `facialHair` | `none`, `mustache`, `beard`. |
-| `headwear` | `none`, `beanie`, `hijab`. |
+| `facialHair` | `none`, `stubble`, `mustache`, `goatee`, `beard`, `fullBeard`, `sideburns`. |
+| `freckles` | `none`, `light`, `heavy`. |
+| `blush` | `none`, `soft`. |
+| `headwear` | `none`, `beanie`, `cap`, `turban`, `bucket`, `hijab`. |
+| `earrings` | `none`, `studs`, `hoops`. |
 | `accessories` | `none`, `glasses`, `sunglasses`. |
+
+The `face` style uses every trait. The `pixel` style derives a comparable
+character (skin, hair, hat, glasses, beard) from the seed. A `hijab` hairstyle
+implies `hijab` headwear unless you set a different `headwear` explicitly.
 
 The legacy top-level `hair` option is still accepted as an alias for `traits.hairStyle`.
 
+The complete, machine-readable list of every allowed value lives in the
+exported `avatarOptions` table — see below.
+
 ## Demo
 
-Open `index.html` in a browser. The demo imports `src/avatar.js` directly and does not need a build step. It includes live controls plus a fixed-seed variation gallery for the `face`, `initials`, `shapes`, `pixel`, and `bot` styles so you can compare multiple outputs at once.
+Open `index.html` in a browser (serve it over HTTP so the ES module imports
+resolve — e.g. `npx serve` or `python3 -m http.server`). It needs no build step.
+
+The demo includes:
+
+- A large live preview with controls for every `face` trait plus size, background, and clothing.
+- A **Randomize** button, **Copy SVG** / **Copy data-URI** / **Download PNG** buttons, and a **Copy link** button.
+- A shareable URL: the current avatar is encoded into the page's URL hash, so any link reproduces the exact avatar.
+- A fixed-seed variation gallery for the `face`, `initials`, `shapes`, `pixel`, and `bot` styles.
 
 ## Development
 

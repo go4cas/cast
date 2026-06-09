@@ -10,12 +10,19 @@
     ".": {
       "types": "./avatar.d.ts",
       "import": "./src/avatar.js"
+    },
+    "./element": {
+      "types": "./element.d.ts",
+      "import": "./src/element.js"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/element.js"
+  ],
   "files": [
     "src",
-    "avatar.d.ts"
+    "avatar.d.ts",
+    "element.d.ts"
   ],
   "scripts": {
     "test": "node test/avatar.test.mjs"

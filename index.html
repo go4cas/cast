@@ -202,6 +202,44 @@
         color: #64748b;
       }
 
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .toolbar button {
+        min-height: 40px;
+        padding: 0 16px;
+        border: 1px solid #cbd5e1;
+        border-radius: 999px;
+        background: #fff;
+        color: #0f172a;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .toolbar button:hover {
+        background: #f1f5f9;
+      }
+
+      .toolbar button:disabled {
+        opacity: 0.7;
+        cursor: default;
+      }
+
+      .toolbar button.primary {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: #fff;
+      }
+
+      .toolbar button.primary:hover {
+        background: #4f46e5;
+      }
+
       code {
         border-radius: 999px;
         background: #e2e8f0;
@@ -409,6 +447,13 @@
         <div class="preview-stage">
           <div id="preview" class="preview-avatar" aria-live="polite"></div>
         </div>
+        <div class="toolbar">
+          <button type="button" id="randomize" class="primary">Randomize</button>
+          <button type="button" id="copySvg">Copy SVG</button>
+          <button type="button" id="copyUri">Copy data-URI</button>
+          <button type="button" id="downloadPng">Download PNG</button>
+          <button type="button" id="copyLink">Copy link</button>
+        </div>
         <code id="hash"></code>
       </section>
 
@@ -420,7 +465,7 @@
     </main>
 
     <script type="module">
-      import { avatarHash, mountAvatar } from './src/avatar.js';
+      import { avatarHash, createAvatar, createAvatarDataUri, decodeAvatar, encodeAvatar, mountAvatar } from './src/avatar.js';
 
       // Demo control ids -> the trait key they feed (the `hair` control maps to traits.hairStyle).
       const traitFields = {
@@ -438,6 +483,12 @@
       const clothingInput = document.getElementById('clothing');
       const hash = document.getElementById('hash');
       const variationGallery = document.getElementById('variationGallery');
+      const randomizeButton = document.getElementById('randomize');
+      const copySvgButton = document.getElementById('copySvg');
+      const copyUriButton = document.getElementById('copyUri');
+      const downloadButton = document.getElementById('downloadPng');
+      const copyLinkButton = document.getElementById('copyLink');
+      let suppressHashChange = false;
 
       const variations = {
         face: [
@@ -515,16 +566,121 @@
         };
       }
 
-      function render() {
+      function render(updateHash) {
         const current = options();
         mountAvatar('#preview', current);
         sizeValue.textContent = `${current.size}px`;
         hash.textContent = `hash: ${avatarHash(current)}`;
+        if (updateHash) {
+          suppressHashChange = true;
+          location.hash = encodeAvatar(current);
+        }
       }
 
-      [seedInput, sizeInput, backgroundInput, clothingInput, ...traitControls].forEach((control) => control.addEventListener('input', render));
+      // Restore a select to a value, adding the option first if it isn't listed
+      // (e.g. a resolved background/clothing color from a shared link).
+      function setSelect(select, value) {
+        const str = String(value);
+        if (![...select.options].some((option) => option.value === str)) {
+          const option = document.createElement('option');
+          option.value = str;
+          option.textContent = str;
+          select.appendChild(option);
+        }
+        select.value = str;
+      }
+
+      function applyConfig(config) {
+        seedInput.value = config.seed;
+        sizeInput.value = config.size;
+        setSelect(backgroundInput, config.background);
+        setSelect(clothingInput, config.clothing);
+        Object.entries(traitFields).forEach(([id, field]) => {
+          setSelect(document.getElementById(id), config.traits[field]);
+        });
+      }
+
+      function loadFromHash() {
+        const encoded = location.hash.slice(1);
+        if (!encoded) {
+          return false;
+        }
+        try {
+          applyConfig(decodeAvatar(encoded));
+          render(false);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function flash(button, message) {
+        const original = button.textContent;
+        button.textContent = message;
+        button.disabled = true;
+        setTimeout(() => {
+          button.textContent = original;
+          button.disabled = false;
+        }, 1200);
+      }
+
+      randomizeButton.addEventListener('click', () => {
+        seedInput.value = Math.random().toString(36).slice(2, 10);
+        [...traitControls, backgroundInput, clothingInput].forEach((control) => {
+          control.value = 'auto';
+        });
+        render(true);
+      });
+
+      copySvgButton.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(createAvatar(options()));
+        flash(copySvgButton, 'Copied!');
+      });
+
+      copyUriButton.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(createAvatarDataUri(options()));
+        flash(copyUriButton, 'Copied!');
+      });
+
+      copyLinkButton.addEventListener('click', async () => {
+        render(true);
+        await navigator.clipboard.writeText(location.href);
+        flash(copyLinkButton, 'Link copied!');
+      });
+
+      downloadButton.addEventListener('click', () => {
+        const current = options();
+        const size = current.size || 128;
+        const image = new Image();
+        image.addEventListener('load', () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          canvas.getContext('2d').drawImage(image, 0, 0, size, size);
+          canvas.toBlob((blob) => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${current.seed || 'avatar'}.png`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+          });
+        });
+        image.src = createAvatarDataUri(current);
+      });
+
+      window.addEventListener('hashchange', () => {
+        if (suppressHashChange) {
+          suppressHashChange = false;
+          return;
+        }
+        loadFromHash();
+      });
+
+      [seedInput, sizeInput, backgroundInput, clothingInput, ...traitControls].forEach((control) => control.addEventListener('input', () => render(true)));
       renderVariationGallery();
-      render();
+      if (!loadFromHash()) {
+        render(false);
+      }
     </script>
   </body>
 </html>

@@ -10,6 +10,7 @@ import {
   toDataUri
 } from '../src/avatar.js';
 import { AVATAR_OPTIONS } from '../src/palettes.js';
+import { CastAvatarElement } from '../src/element.js';
 
 const base = { seed: 'ada@example.com', style: 'face', size: 96 };
 const first = createAvatar(base);
@@ -163,5 +164,16 @@ for (const facialHair of AVATAR_OPTIONS.facialHair) {
 for (const headwear of AVATAR_OPTIONS.headwear) {
   assert.match(createAvatar({ seed: 'hat', style: 'face', traits: { headwear } }), /^<svg /, `headwear ${headwear} renders`);
 }
+
+// The <cast-avatar> custom element wraps createAvatar (tested without a DOM by
+// stubbing the attribute accessors on an instance).
+assert.deepEqual([...CastAvatarElement.observedAttributes], ['seed', 'variant', 'size', 'background'], 'element observes the expected attributes');
+const element = new CastAvatarElement();
+const elementAttrs = { seed: 'ada', variant: 'bot', size: '64' };
+element.getAttribute = (key) => (key in elementAttrs ? elementAttrs[key] : null);
+element.hasAttribute = (key) => key in elementAttrs;
+element.render();
+assert.match(element.innerHTML, /^<svg /, 'cast-avatar renders an SVG');
+assert.match(element.innerHTML, /width="64" height="64"/, 'cast-avatar honours the size attribute');
 
 console.log('avatar tests passed');
