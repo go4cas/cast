@@ -264,6 +264,13 @@
           <span id="sizeValue" class="size-value">256px</span>
         </label>
         <label>
+          Style
+          <select id="style">
+            <option value="face">Face</option>
+            <option value="portrait">Portrait</option>
+          </select>
+        </label>
+        <label>
           Gender
           <select id="gender">
             <option value="auto">Auto</option>
@@ -459,7 +466,7 @@
 
       <section class="gallery-section" aria-labelledby="gallery-title">
         <h2 id="gallery-title">Style variations</h2>
-        <p>Compare 20 deterministic outputs across every avatar type. These examples use fixed seeds and trait overrides so you can see the range without changing the live controls.</p>
+        <p>Compare 24 deterministic outputs across every avatar type. These examples use fixed seeds and trait overrides so you can see the range without changing the live controls.</p>
         <div id="variationGallery"></div>
       </section>
     </main>
@@ -478,6 +485,7 @@
       const traitControls = Object.keys(traitFields).map((id) => document.getElementById(id));
       const seedInput = document.getElementById('seed');
       const sizeInput = document.getElementById('size');
+      const styleInput = document.getElementById('style');
       const sizeValue = document.getElementById('sizeValue');
       const backgroundInput = document.getElementById('background');
       const clothingInput = document.getElementById('clothing');
@@ -496,6 +504,12 @@
           { label: 'Short + beard', seed: 'noah@example.com', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'brown', facialHair: 'beard', eyes: 'sleepy', mouth: 'neutral' } },
           { label: 'Hijab + smile', seed: 'amina@example.com', traits: { gender: 'feminine', skinTone: 'dark', hairStyle: 'hijab', headwear: 'hijab', eyes: 'smile', mouth: 'smile' } },
           { label: 'Bun + sunglasses', seed: 'lee@example.com', traits: { gender: 'neutral', skinTone: 'light', hairStyle: 'bun', hairColor: 'red', eyes: 'wink', accessories: 'sunglasses' } }
+        ],
+        portrait: [
+          { label: 'Long + glasses', seed: 'mara@studio.co', traits: { skinTone: 'medium', hairStyle: 'long', hairColor: 'brown', mouth: 'smile', accessories: 'glasses' } },
+          { label: 'Short + beard', seed: 'theo@studio.co', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'black', facialHair: 'beard' } },
+          { label: 'Hijab', seed: 'aisha@studio.co', traits: { skinTone: 'dark', hairStyle: 'hijab' } },
+          { label: 'Bun + neutral', seed: 'yuki@studio.co', traits: { skinTone: 'light', hairStyle: 'bun', hairColor: 'red', mouth: 'neutral' } }
         ],
         initials: [
           { label: 'Ada Lovelace', seed: 'Ada Lovelace', initials: 'AL', background: '#dbeafe' },
@@ -558,7 +572,7 @@
         });
         return {
           seed: seedInput.value,
-          style: 'face',
+          style: styleInput.value,
           size: Number(sizeInput.value),
           background: backgroundInput.value,
           clothing: clothingInput.value,
@@ -593,6 +607,7 @@
       function applyConfig(config) {
         seedInput.value = config.seed;
         sizeInput.value = config.size;
+        setSelect(styleInput, config.style);
         setSelect(backgroundInput, config.background);
         setSelect(clothingInput, config.clothing);
         Object.entries(traitFields).forEach(([id, field]) => {
@@ -676,7 +691,7 @@
         loadFromHash();
       });
 
-      [seedInput, sizeInput, backgroundInput, clothingInput, ...traitControls].forEach((control) => control.addEventListener('input', () => render(true)));
+      [seedInput, sizeInput, styleInput, backgroundInput, clothingInput, ...traitControls].forEach((control) => control.addEventListener('input', () => render(true)));
       renderVariationGallery();
       if (!loadFromHash()) {
         render(false);

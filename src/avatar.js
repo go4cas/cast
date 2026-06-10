@@ -1,6 +1,7 @@
 import { BACKGROUNDS, CLOTHING_COLORS, AVATAR_OPTIONS, OPTION_ALIASES } from './palettes.js';
 import { createRandom, decodeObject, encodeObject, hashConfig, pick } from './hash.js';
 import { renderFaceAvatar } from './styles/face.js';
+import { renderPortraitAvatar } from './styles/portrait.js';
 import { renderInitialsAvatar } from './styles/initials.js';
 import { renderShapesAvatar } from './styles/shapes.js';
 import { renderPixelAvatar } from './styles/pixel.js';
@@ -156,6 +157,10 @@ export function createAvatar(seedOrOptions = {}, maybeOptions = {}) {
 
   if (config.style === 'bot') {
     return renderBotAvatar(config);
+  }
+
+  if (config.style === 'portrait') {
+    return renderPortraitAvatar(config);
   }
 
   return renderFaceAvatar(config);

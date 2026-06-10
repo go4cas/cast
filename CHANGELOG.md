@@ -11,6 +11,7 @@ change — see "Stability and versioning" in the README.
 
 ### Added
 
+- `portrait` style — a refined, less-cartoony illustrative face (oval head, almond lidded eyes, subtle features) sharing the `face` trait set.
 - "Use from a CDN" documentation (jsDelivr `/+esm` and version-pinned raw ESM).
 - `web-component`, `typescript`, `pfp`, and `profile-picture` keywords.
 - `engines` field declaring Node >= 18.

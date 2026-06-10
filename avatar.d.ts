@@ -2,7 +2,7 @@
 // The source is dependency-free ES module JavaScript (src/avatar.js); these
 // declarations describe its public API for TypeScript consumers.
 
-export type AvatarStyle = 'face' | 'initials' | 'shapes' | 'pixel' | 'bot';
+export type AvatarStyle = 'face' | 'portrait' | 'initials' | 'shapes' | 'pixel' | 'bot';
 export type Gender = 'neutral' | 'feminine' | 'masculine';
 export type SkinTone = 'light' | 'mediumLight' | 'medium' | 'mediumDark' | 'dark';
 export type FaceShape = 'round' | 'oval' | 'soft';
