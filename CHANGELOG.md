@@ -9,11 +9,14 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-10
+
 ### Added
 
 - `portrait` style — a refined, less-cartoony illustrative face (oval head, almond lidded eyes, subtle features) sharing the `face` trait set.
 - "Use from a CDN" documentation (jsDelivr `/+esm` and version-pinned raw ESM).
-- `web-component`, `typescript`, `pfp`, and `profile-picture` keywords.
+- npm version, CI, bundle-size, and license badges, plus a DiceBear credit, in the README.
+- `web-component`, `typescript`, `pfp`, and `profile-picture` keywords for npm discoverability.
 - `engines` field declaring Node >= 18.
 
 ## [0.1.0] - 2026-06-09
@@ -35,5 +38,6 @@ change — see "Stability and versioning" in the README.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/go4cas/cast/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/go4cas/cast/releases/tag/v0.1.0
