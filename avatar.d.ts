@@ -2,7 +2,36 @@
 // The source is dependency-free ES module JavaScript (src/avatar.js); these
 // declarations describe its public API for TypeScript consumers.
 
-export type AvatarStyle = 'face' | 'portrait' | 'initials' | 'shapes' | 'pixel' | 'bot';
+export type AvatarStyle =
+  | 'face'
+  | 'portrait'
+  | 'minimal'
+  | 'line'
+  | 'initials'
+  | 'shapes'
+  | 'pixel'
+  | 'bot'
+  | 'mesh';
+
+/** Built-in background keywords (any CSS color is also accepted). */
+export type BackgroundKeyword = 'auto' | 'transparent' | 'gradient' | 'dots' | 'rings' | 'grid';
+
+/** Presence state shown by the status badge. */
+export type Status = 'online' | 'busy' | 'away' | 'offline';
+
+/** Corner placement for a `dot` status badge. */
+export type StatusPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
+/** Full status badge configuration. */
+export interface StatusBadge {
+  state: Status;
+  /** `dot` = corner badge (default); `ring` = colored border around the avatar. */
+  shape?: 'dot' | 'ring';
+  /** Corner for the `dot` shape; ignored for `ring`. Defaults to `bottom-right`. */
+  position?: StatusPosition;
+  /** Animate the badge with a pulse. */
+  pulse?: boolean;
+}
 export type Gender = 'neutral' | 'feminine' | 'masculine';
 export type SkinTone = 'light' | 'mediumLight' | 'medium' | 'mediumDark' | 'dark';
 export type FaceShape = 'round' | 'oval' | 'soft';
@@ -88,12 +117,15 @@ export interface AvatarOptions {
   size?: number;
   traits?: AvatarTraits;
   /**
-   * Background fill. A CSS color, `'transparent'`, a seeded `'gradient'`, or
-   * `'auto'` / omitted to pick a color from the palette.
+   * Background fill. A CSS color, `'transparent'`, a seeded `'gradient'`, a
+   * seeded pattern (`'dots'`, `'rings'`, `'grid'`), or `'auto'` / omitted to
+   * pick a color from the palette.
    */
-  background?: 'auto' | 'transparent' | 'gradient' | (string & {});
+  background?: BackgroundKeyword | (string & {});
   /** CSS color for clothing/shoulders. `'auto'` or omitted picks from the palette. */
   clothing?: 'auto' | (string & {});
+  /** Presence badge. A state string (corner dot) or a full config object. Omitted = no badge. */
+  status?: Status | StatusBadge;
   /** Corner radius for the frame; number (px) or CSS length. Defaults to `'50%'`. */
   radius?: number | string;
   /** Accessible title / aria-label. Defaults to `` `${seed} avatar` ``. */
@@ -116,6 +148,7 @@ export interface ResolvedAvatarConfig {
   radius: number | string;
   title: string;
   initials?: string;
+  status?: Status | StatusBadge;
 }
 
 /** The full set of allowed values for each option, keyed by trait name. */

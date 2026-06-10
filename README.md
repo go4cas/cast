@@ -191,19 +191,22 @@ full trait control, render with the JavaScript API instead.
 | Option | Values |
 | --- | --- |
 | `seed` | Any stable string, such as a user ID, email, or username. `name` and `id` are accepted as aliases. |
-| `style` | `face`, `portrait`, `initials`, `shapes`, `pixel`, `bot`; or `auto`. |
+| `style` | `face`, `portrait`, `minimal`, `line`, `initials`, `shapes`, `pixel`, `bot`, `mesh`; or `auto`. |
 | `size` | Pixel size from `24` to `1024`; defaults to `128`. |
-| `background` | Any CSS color, `transparent`, `gradient` (a seeded two-color gradient), or `auto`. |
-| `clothing` | Any CSS color or `auto`; colors the shoulders/collar in the `face` style. |
+| `background` | Any CSS color, `transparent`, a seeded `gradient`, a seeded pattern (`dots`, `rings`, `grid`), or `auto`. |
+| `clothing` | Any CSS color or `auto`; colors the shoulders/collar in the face styles. |
 | `radius` | SVG corner radius — a number (px) or CSS length; defaults to `50%` (circle). |
 | `title` | Accessible label for the SVG; defaults to `"<seed> avatar"`. |
 | `initials` | Optional text override for the `initials` style. |
+| `status` | Presence badge. A state string (`online`/`busy`/`away`/`offline`) for a corner dot, or an object `{ state, shape: 'dot'\|'ring', position, pulse }` for a ring border or custom placement/animation. Omitted = none. Applies to every style. |
 | `traits` | Object of per-feature traits; see below. |
 
-The styles are deterministic from the seed: `face`, `portrait`, and `pixel`
-use the trait set below (`portrait` is a more refined, less stylized take on
-`face`), `initials` renders a monogram, and `shapes`/`bot` derive their colors
-and composition from the seed alone.
+The styles are deterministic from the seed: `face`, `portrait`, `minimal`,
+`line`, and `pixel` use the trait set below (`portrait` is a refined
+illustrative take on `face`, `minimal` a flat geometric one, and `line` a
+monochrome thin-line one), `initials` renders a monogram, and
+`shapes`/`bot`/`mesh` derive their colors and composition from the seed alone
+(`mesh` is an abstract gradient-blob style).
 
 ## Trait options
 
@@ -275,7 +278,7 @@ The demo includes:
 - A large live preview with controls for every `face` trait plus size, background, and clothing.
 - A **Randomize** button, **Copy SVG** / **Copy data-URI** / **Download PNG** buttons, and a **Copy link** button.
 - A shareable URL: the current avatar is encoded into the page's URL hash, so any link reproduces the exact avatar.
-- A fixed-seed variation gallery for the `face`, `portrait`, `initials`, `shapes`, `pixel`, and `bot` styles.
+- A fixed-seed variation gallery for the `face`, `portrait`, `minimal`, `line`, `initials`, `shapes`, `pixel`, `bot`, and `mesh` styles.
 
 ## Development
 

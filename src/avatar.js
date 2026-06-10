@@ -2,10 +2,13 @@ import { BACKGROUNDS, CLOTHING_COLORS, AVATAR_OPTIONS, OPTION_ALIASES } from './
 import { createRandom, decodeObject, encodeObject, hashConfig, pick } from './hash.js';
 import { renderFaceAvatar } from './styles/face.js';
 import { renderPortraitAvatar } from './styles/portrait.js';
+import { renderMinimalAvatar } from './styles/minimal.js';
+import { renderLineAvatar } from './styles/line.js';
 import { renderInitialsAvatar } from './styles/initials.js';
 import { renderShapesAvatar } from './styles/shapes.js';
 import { renderPixelAvatar } from './styles/pixel.js';
 import { renderBotAvatar } from './styles/bot.js';
+import { renderMeshAvatar } from './styles/mesh.js';
 
 const CONFIG_PREFIX = 'ca1';
 
@@ -101,7 +104,9 @@ export function resolveAvatarOptions(seedOrOptions = {}, maybeOptions = {}) {
     clothing: chooseColor(options.clothing, CLOTHING_COLORS, draw('clothing')),
     radius: options.radius ?? '50%',
     title: options.title ?? `${seed} avatar`,
-    initials: options.initials
+    initials: options.initials,
+    // Presence overlay; left undefined (and dropped from the hash) when unused.
+    status: options.status
   };
 }
 
@@ -161,6 +166,18 @@ export function createAvatar(seedOrOptions = {}, maybeOptions = {}) {
 
   if (config.style === 'portrait') {
     return renderPortraitAvatar(config);
+  }
+
+  if (config.style === 'minimal') {
+    return renderMinimalAvatar(config);
+  }
+
+  if (config.style === 'line') {
+    return renderLineAvatar(config);
+  }
+
+  if (config.style === 'mesh') {
+    return renderMeshAvatar(config);
   }
 
   return renderFaceAvatar(config);

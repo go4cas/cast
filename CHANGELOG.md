@@ -9,6 +9,16 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-10
+
+### Added
+
+- `minimal` style — a flat geometric face (bold rounded shapes, muted fills, reduced features).
+- `line` style — a monochrome thin-line (shadcn-flavored) face in a seeded dark ink.
+- `mesh` style — an abstract seeded gradient-blob avatar.
+- Background patterns: `dots`, `rings`, and `grid` (seeded), alongside the existing color/`transparent`/`gradient` options.
+- `status` option — a presence badge on any style. Accepts a state string (`online`, `busy`, `away`, `offline`) for a corner dot, or an object `{ state, shape: 'dot' | 'ring', position, pulse }` for a ring border, custom corner placement, or a pulsing animation.
+
 ## [0.2.0] - 2026-06-10
 
 ### Added
@@ -38,6 +48,7 @@ change — see "Stability and versioning" in the README.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/go4cas/cast/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/go4cas/cast/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/go4cas/cast/releases/tag/v0.1.0

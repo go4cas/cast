@@ -165,6 +165,17 @@ for (const headwear of AVATAR_OPTIONS.headwear) {
   assert.match(createAvatar({ seed: 'hat', style: 'face', traits: { headwear } }), /^<svg /, `headwear ${headwear} renders`);
 }
 
+// Status badge: string shorthand (corner dot), ring shape, position, and pulse.
+const statusDot = createAvatar('s', { style: 'face', status: 'online' });
+assert.match(statusDot, /<circle cx="102" cy="102" r="10" fill="#22c55e"\/>/, 'string status renders a bottom-right dot');
+const statusRing = createAvatar('s', { style: 'face', status: { state: 'busy', shape: 'ring' } });
+assert.match(statusRing, /<rect x="3" y="3"[^>]*stroke="#ef4444"/, 'ring status renders a border ring');
+const statusPos = createAvatar('s', { style: 'face', status: { state: 'online', position: 'top-left' } });
+assert.match(statusPos, /<circle cx="26" cy="26" r="10"/, 'dot status honours position');
+const statusPulse = createAvatar('s', { style: 'face', status: { state: 'away', pulse: true } });
+assert.match(statusPulse, /<animate /, 'pulsing status emits an animation');
+assert.doesNotMatch(createAvatar('s', { style: 'face' }), /r="10" fill="#22c55e"/, 'no status renders no badge');
+
 // The <cast-avatar> custom element wraps createAvatar (tested without a DOM by
 // stubbing the attribute accessors on an instance).
 assert.deepEqual([...CastAvatarElement.observedAttributes], ['seed', 'variant', 'size', 'background'], 'element observes the expected attributes');

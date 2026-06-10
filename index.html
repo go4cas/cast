@@ -268,6 +268,8 @@
           <select id="style">
             <option value="face">Face</option>
             <option value="portrait">Portrait</option>
+            <option value="minimal">Minimal</option>
+            <option value="line">Line</option>
           </select>
         </label>
         <label>
@@ -431,6 +433,9 @@
             <option value="auto">Auto</option>
             <option value="transparent">Transparent</option>
             <option value="gradient">Gradient</option>
+            <option value="dots">Dots</option>
+            <option value="rings">Rings</option>
+            <option value="grid">Grid</option>
             <option value="#dbeafe">Blue</option>
             <option value="#dcfce7">Green</option>
             <option value="#fce7f3">Pink</option>
@@ -446,6 +451,39 @@
             <option value="#16a34a">Green</option>
             <option value="#7c3aed">Purple</option>
             <option value="#475569">Slate</option>
+          </select>
+        </label>
+        <label>
+          Status
+          <select id="status">
+            <option value="none">None</option>
+            <option value="online">Online</option>
+            <option value="busy">Busy</option>
+            <option value="away">Away</option>
+            <option value="offline">Offline</option>
+          </select>
+        </label>
+        <label>
+          Status shape
+          <select id="statusShape">
+            <option value="dot">Dot</option>
+            <option value="ring">Ring</option>
+          </select>
+        </label>
+        <label>
+          Status position
+          <select id="statusPosition">
+            <option value="bottom-right">Bottom right</option>
+            <option value="bottom-left">Bottom left</option>
+            <option value="top-right">Top right</option>
+            <option value="top-left">Top left</option>
+          </select>
+        </label>
+        <label>
+          Status pulse
+          <select id="statusPulse">
+            <option value="off">Off</option>
+            <option value="on">On</option>
           </select>
         </label>
       </section>
@@ -466,7 +504,7 @@
 
       <section class="gallery-section" aria-labelledby="gallery-title">
         <h2 id="gallery-title">Style variations</h2>
-        <p>Compare 24 deterministic outputs across every avatar type. These examples use fixed seeds and trait overrides so you can see the range without changing the live controls.</p>
+        <p>Compare 36 deterministic outputs across every avatar style. These examples use fixed seeds and trait overrides so you can see the range without changing the live controls.</p>
         <div id="variationGallery"></div>
       </section>
     </main>
@@ -489,6 +527,10 @@
       const sizeValue = document.getElementById('sizeValue');
       const backgroundInput = document.getElementById('background');
       const clothingInput = document.getElementById('clothing');
+      const statusInput = document.getElementById('status');
+      const statusShapeInput = document.getElementById('statusShape');
+      const statusPositionInput = document.getElementById('statusPosition');
+      const statusPulseInput = document.getElementById('statusPulse');
       const hash = document.getElementById('hash');
       const variationGallery = document.getElementById('variationGallery');
       const randomizeButton = document.getElementById('randomize');
@@ -510,6 +552,24 @@
           { label: 'Short + beard', seed: 'theo@studio.co', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'black', facialHair: 'beard' } },
           { label: 'Hijab', seed: 'aisha@studio.co', traits: { skinTone: 'dark', hairStyle: 'hijab' } },
           { label: 'Bun + neutral', seed: 'yuki@studio.co', traits: { skinTone: 'light', hairStyle: 'bun', hairColor: 'red', mouth: 'neutral' } }
+        ],
+        minimal: [
+          { label: 'Flat one', seed: 'min-iris', traits: { skinTone: 'medium', hairStyle: 'short', hairColor: 'black' } },
+          { label: 'Flat two', seed: 'min-arlo', traits: { skinTone: 'mediumLight', hairStyle: 'long', hairColor: 'brown', accessories: 'glasses' } },
+          { label: 'Flat three', seed: 'min-noor', traits: { skinTone: 'dark', hairStyle: 'hijab' } },
+          { label: 'Flat four', seed: 'min-sky', traits: { skinTone: 'light', hairStyle: 'bun', hairColor: 'red', mouth: 'smile' } }
+        ],
+        mesh: [
+          { label: 'Mesh one', seed: 'mesh-aurora' },
+          { label: 'Mesh two', seed: 'mesh-dusk' },
+          { label: 'Mesh three', seed: 'mesh-tide' },
+          { label: 'Mesh four', seed: 'mesh-bloom' }
+        ],
+        line: [
+          { label: 'Line one', seed: 'line-ada', background: 'transparent', traits: { hairStyle: 'short', accessories: 'glasses' } },
+          { label: 'Line two', seed: 'line-bo', background: 'transparent', traits: { hairStyle: 'long', mouth: 'smile' } },
+          { label: 'Line three', seed: 'line-cy', background: 'transparent', traits: { hairStyle: 'hijab' } },
+          { label: 'Line four', seed: 'line-di', background: 'transparent', traits: { hairStyle: 'bun', facialHair: 'beard' } }
         ],
         initials: [
           { label: 'Ada Lovelace', seed: 'Ada Lovelace', initials: 'AL', background: '#dbeafe' },
@@ -576,6 +636,12 @@
           size: Number(sizeInput.value),
           background: backgroundInput.value,
           clothing: clothingInput.value,
+          status: statusInput.value === 'none' ? undefined : {
+            state: statusInput.value,
+            shape: statusShapeInput.value,
+            position: statusPositionInput.value,
+            pulse: statusPulseInput.value === 'on'
+          },
           traits
         };
       }
@@ -610,6 +676,17 @@
         setSelect(styleInput, config.style);
         setSelect(backgroundInput, config.background);
         setSelect(clothingInput, config.clothing);
+        const status = config.status;
+        if (!status) {
+          setSelect(statusInput, 'none');
+        } else if (typeof status === 'string') {
+          setSelect(statusInput, status);
+        } else {
+          setSelect(statusInput, status.state);
+          setSelect(statusShapeInput, status.shape || 'dot');
+          setSelect(statusPositionInput, status.position || 'bottom-right');
+          setSelect(statusPulseInput, status.pulse ? 'on' : 'off');
+        }
         Object.entries(traitFields).forEach(([id, field]) => {
           setSelect(document.getElementById(id), config.traits[field]);
         });
@@ -691,7 +768,7 @@
         loadFromHash();
       });
 
-      [seedInput, sizeInput, styleInput, backgroundInput, clothingInput, ...traitControls].forEach((control) => control.addEventListener('input', () => render(true)));
+      [seedInput, sizeInput, styleInput, backgroundInput, clothingInput, statusInput, statusShapeInput, statusPositionInput, statusPulseInput, ...traitControls].forEach((control) => control.addEventListener('input', () => render(true)));
       renderVariationGallery();
       if (!loadFromHash()) {
         render(false);
