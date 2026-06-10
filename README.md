@@ -1,6 +1,11 @@
 # Cast Avatar
 
-Cast Avatar is a tiny, dependency-free JavaScript library for creating deterministic SVG avatars without network access. It is inspired by avatar systems that turn a stable seed into repeatable faces, initials, or geometric shapes.
+[![npm version](https://img.shields.io/npm/v/cast-avatar)](https://www.npmjs.com/package/cast-avatar)
+[![tests](https://img.shields.io/github/actions/workflow/status/go4cas/cast/test.yml?branch=main&label=tests)](https://github.com/go4cas/cast/actions/workflows/test.yml)
+[![minzipped size](https://img.shields.io/bundlephobia/minzip/cast-avatar)](https://bundlephobia.com/package/cast-avatar)
+[![license](https://img.shields.io/npm/l/cast-avatar)](./LICENSE)
+
+Cast Avatar is a tiny, dependency-free JavaScript library for creating deterministic SVG avatars without network access. It is inspired by [DiceBear](https://www.dicebear.com/) and similar avatar systems that turn a stable seed into repeatable faces, initials, or geometric shapes.
 
 ## Goals
 
@@ -275,3 +280,11 @@ Run the test suite with:
 ```sh
 npm test
 ```
+
+## Credits
+
+Cast Avatar was inspired by [DiceBear](https://www.dicebear.com/) — its
+seed-driven, multi-style approach to avatars shaped this project's design, and
+the `pixel` and `bot` styles in particular take cues from DiceBear's catalog.
+All of Cast Avatar's artwork is original and procedurally generated; no DiceBear
+assets are bundled or copied.
