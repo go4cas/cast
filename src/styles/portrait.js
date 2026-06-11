@@ -97,7 +97,7 @@ export function renderPortraitAvatar(config) {
   const skin = palette.skinTones[traits.skinTone] || palette.skinTones.medium;
   const hairFill = palette.hairColors[traits.hairColor] || palette.hairColors.brown;
   const browColor = palette.hairColors[traits.hairColor] || SHADOW;
-  const clothing = config.clothing || '#64748b';
+  const clothing = config.traits.clothing || config.clothing || '#64748b';
   const isHijab = traits.headwear === 'hijab' || traits.hairStyle === 'hijab';
   const shoulderSpread = traits.gender === 'masculine' ? 40 : traits.gender === 'feminine' ? 34 : 37;
 

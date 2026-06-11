@@ -705,7 +705,7 @@ const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, colum
         eyebrows: 'eyebrows', eyes: 'eyes', nose: 'nose', mouth: 'mouth',
         hair: 'hairStyle', hairColor: 'hairColor', facialHair: 'facialHair',
         freckles: 'freckles', blush: 'blush', headwear: 'headwear',
-        earrings: 'earrings', accessories: 'accessories'
+        earrings: 'earrings', accessories: 'accessories', clothing: 'clothing'
       };
       const traitControls = Object.keys(traitFields).map((id) => document.getElementById(id));
       const seedInput = document.getElementById('seed');
@@ -713,7 +713,6 @@ const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, colum
       const styleInput = document.getElementById('style');
       const sizeValue = document.getElementById('sizeValue');
       const backgroundInput = document.getElementById('background');
-      const clothingInput = document.getElementById('clothing');
       const statusInput = document.getElementById('status');
       const statusShapeInput = document.getElementById('statusShape');
       const statusPositionInput = document.getElementById('statusPosition');
@@ -834,7 +833,6 @@ const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, colum
           size: Number(sizeInput.value),
           radius: radiusInput.value,
           background: backgroundInput.value,
-          clothing: clothingInput.value,
           palette: palettes[themeInput.value],
           fontWeight: Number(fontWeightInput.value),
           status: statusInput.value === 'none' ? undefined : {
@@ -888,7 +886,6 @@ const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, colum
         setSelect(themeInput, themeNameFor(config.palette));
         setSelect(fontWeightInput, config.fontWeight ?? 800);
         setSelect(backgroundInput, config.background);
-        setSelect(clothingInput, config.clothing);
         const status = config.status;
         if (!status) {
           setSelect(statusInput, 'none');
@@ -931,7 +928,7 @@ const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, colum
 
       randomizeButton.addEventListener('click', () => {
         seedInput.value = Math.random().toString(36).slice(2, 10);
-        [...traitControls, backgroundInput, clothingInput].forEach((control) => {
+        [...traitControls, backgroundInput].forEach((control) => {
           control.value = 'auto';
         });
         render(true);
@@ -981,7 +978,7 @@ const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, colum
         loadFromHash();
       });
 
-      [seedInput, sizeInput, styleInput, radiusInput, themeInput, fontWeightInput, backgroundInput, clothingInput, statusInput, statusShapeInput, statusPositionInput, statusPulseInput, ...traitControls].forEach((control) => control.addEventListener('input', () => render(true)));
+      [seedInput, sizeInput, styleInput, radiusInput, themeInput, fontWeightInput, backgroundInput, statusInput, statusShapeInput, statusPositionInput, statusPulseInput, ...traitControls].forEach((control) => control.addEventListener('input', () => render(true)));
       renderVariationGallery();
       if (!loadFromHash()) {
         render(false);

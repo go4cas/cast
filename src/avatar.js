@@ -68,7 +68,7 @@ function resolveHeadwear(headwear, hairStyle, random) {
   return optionOrAuto(headwear, AVATAR_OPTIONS.headwear, random);
 }
 
-function normalizeTraits(options, draw) {
+function normalizeTraits(options, draw, palette) {
   const rawTraits = options.traits || {};
   const aliased = Object.fromEntries(
     Object.entries(OPTION_ALIASES).map(([from, to]) => [to, options[from]])
@@ -78,6 +78,9 @@ function normalizeTraits(options, draw) {
   const hairStyle = optionOrAuto(traits.hairStyle, AVATAR_OPTIONS.hairStyle, draw('hairStyle'));
 
   return {
+    // `clothing` is the one free-color trait (a CSS color rather than an enum);
+    // legacy top-level `clothing` is still accepted via the merge above.
+    clothing: chooseColor(traits.clothing, palette.clothingColors, draw('clothing')),
     gender: optionOrAuto(traits.gender, AVATAR_OPTIONS.gender, draw('gender')),
     skinTone: optionOrAuto(traits.skinTone, AVATAR_OPTIONS.skinTone, draw('skinTone')),
     faceShape: optionOrAuto(traits.faceShape, AVATAR_OPTIONS.faceShape, draw('faceShape')),
@@ -114,9 +117,8 @@ export function resolveAvatarOptions(seedOrOptions = {}, maybeOptions = {}) {
     seed,
     style,
     size: clampSize(options.size),
-    traits: normalizeTraits(options, draw),
+    traits: normalizeTraits(options, draw, palette),
     background: chooseColor(options.background, palette.backgrounds, draw('background')),
-    clothing: chooseColor(options.clothing, palette.clothingColors, draw('clothing')),
     // Stored raw (and dropped from the hash when absent) so a decoded avatar
     // re-renders with the same custom palette.
     palette: options.palette,

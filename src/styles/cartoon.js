@@ -256,7 +256,7 @@ export function renderCartoonAvatar(config) {
   const skin = palette.skinTones[traits.skinTone] || palette.skinTones.medium;
   const hairFill = palette.hairColors[traits.hairColor] || palette.hairColors.brown;
   const browColor = palette.hairColors[traits.hairColor] || '#3f2d20';
-  const clothing = config.clothing || '#64748b';
+  const clothing = config.traits.clothing || config.clothing || '#64748b';
   const headwear = traits.headwear;
   const hair = headwear === 'none' ? renderHair(traits.hairStyle, hairFill) : '';
   const backLayer = headwear === 'hijab' ? renderHeadwear(headwear) : '';

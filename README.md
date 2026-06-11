@@ -225,7 +225,6 @@ full trait control, render with the JavaScript API instead.
 | `style` | `portrait` (default), `cartoon`, `minimal`, `line`, `pixel`, `initials`, `bot`, `shapes`, `mesh`; or `auto` for a seed-random style. `face` is a legacy alias for `cartoon`. |
 | `size` | Pixel size from `24` to `1024`; defaults to `128`. |
 | `background` | Any CSS color, `transparent`, a seeded `gradient`, a seeded pattern (`dots`, `rings`, `grid`), or `auto`. |
-| `clothing` | Any CSS color or `auto`; colors the shoulders/collar in the face styles. |
 | `radius` | SVG corner radius — a number (px) or CSS length; defaults to `50%` (circle). |
 | `title` | Accessible label for the SVG; defaults to `"<seed> avatar"`. |
 | `initials` | Optional text override for the `initials` style. |
@@ -269,12 +268,13 @@ auto-generated value of another.
 | `headwear` | `none`, `beanie`, `cap`, `turban`, `bucket`, `hijab`. |
 | `earrings` | `none`, `studs`, `hoops`. |
 | `accessories` | `none`, `glasses`, `sunglasses`. |
+| `clothing` | Any CSS color or `auto`; colors the shoulders/collar in the face styles. The one free-color trait. |
 
 The `face` style uses every trait. The `pixel` style derives a comparable
 character (skin, hair, hat, glasses, beard) from the seed. A `hijab` hairstyle
 implies `hijab` headwear unless you set a different `headwear` explicitly.
 
-The legacy top-level `hair` option is still accepted as an alias for `traits.hairStyle`.
+The legacy top-level `hair` and `clothing` options are still accepted as aliases for `traits.hairStyle` and `traits.clothing`.
 
 The complete, machine-readable list of every allowed value lives in the
 exported `avatarOptions` table — see below.

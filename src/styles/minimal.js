@@ -26,7 +26,7 @@ export function renderMinimalAvatar(config) {
   const palette = resolvePalette(config.palette);
   const skin = palette.skinTones[traits.skinTone] || palette.skinTones.medium;
   const hairFill = palette.hairColors[traits.hairColor] || palette.hairColors.brown;
-  const clothing = config.clothing || '#64748b';
+  const clothing = config.traits.clothing || config.clothing || '#64748b';
   const isHijab = traits.headwear === 'hijab' || traits.hairStyle === 'hijab';
 
   const parts = [

@@ -102,6 +102,8 @@ export interface AvatarTraits {
   headwear?: Auto<Headwear>;
   earrings?: Auto<Earrings>;
   accessories?: Auto<Accessories>;
+  /** Clothing color — the one free-color trait. A CSS color or `'auto'`. */
+  clothing?: 'auto' | (string & {});
 }
 
 /** Fully resolved traits, as produced by {@link resolveAvatarOptions}. */
@@ -121,6 +123,7 @@ export interface ResolvedAvatarTraits {
   headwear: Headwear;
   earrings: Earrings;
   accessories: Accessories;
+  clothing: string;
 }
 
 export interface AvatarOptions {
@@ -138,7 +141,7 @@ export interface AvatarOptions {
    * pick a color from the palette.
    */
   background?: BackgroundKeyword | (string & {});
-  /** CSS color for clothing/shoulders. `'auto'` or omitted picks from the palette. */
+  /** @deprecated Use `traits.clothing`. Top-level `clothing` is still accepted. */
   clothing?: 'auto' | (string & {});
   /** Presence badge. A state string (corner dot) or a full config object. Omitted = no badge. */
   status?: Status | StatusBadge;
@@ -166,7 +169,6 @@ export interface ResolvedAvatarConfig {
   size: number;
   traits: ResolvedAvatarTraits;
   background: string;
-  clothing: string;
   radius: number | string;
   title: string;
   initials?: string;

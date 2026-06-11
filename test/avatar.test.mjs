@@ -134,18 +134,20 @@ const resolved = resolveAvatarOptions('trait-coverage', {});
 for (const field of ['eyebrows', 'nose', 'freckles', 'blush', 'earrings']) {
   assert.ok(AVATAR_OPTIONS[field].includes(resolved.traits[field]), `${field} resolves to a valid value`);
 }
-assert.ok(typeof resolved.clothing === 'string' && resolved.clothing.startsWith('#'), 'clothing resolves to a color');
+assert.ok(typeof resolved.traits.clothing === 'string' && resolved.traits.clothing.startsWith('#'), 'clothing resolves to a color under traits');
 
 const pinned = resolveAvatarOptions('pin', {
-  traits: { eyebrows: 'angled', nose: 'wide', freckles: 'heavy', blush: 'soft', earrings: 'hoops' },
-  clothing: '#123456'
+  traits: { eyebrows: 'angled', nose: 'wide', freckles: 'heavy', blush: 'soft', earrings: 'hoops', clothing: '#123456' }
 });
 assert.equal(pinned.traits.eyebrows, 'angled', 'explicit eyebrows honoured');
 assert.equal(pinned.traits.nose, 'wide', 'explicit nose honoured');
 assert.equal(pinned.traits.freckles, 'heavy', 'explicit freckles honoured');
 assert.equal(pinned.traits.blush, 'soft', 'explicit blush honoured');
 assert.equal(pinned.traits.earrings, 'hoops', 'explicit earrings honoured');
-assert.equal(pinned.clothing, '#123456', 'explicit clothing colour honoured');
+assert.equal(pinned.traits.clothing, '#123456', 'explicit clothing colour honoured under traits');
+
+// Legacy top-level clothing still flows into traits.clothing.
+assert.equal(resolveAvatarOptions('legacy', { clothing: '#abcdef' }).traits.clothing, '#abcdef', 'top-level clothing is accepted as a legacy alias');
 
 // avatarOptions exposes the full vocabulary, including the new options.
 for (const key of ['eyebrows', 'nose', 'freckles', 'blush', 'earrings']) {

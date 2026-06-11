@@ -9,6 +9,12 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-11
+
+### Changed
+
+- Moved `clothing` into `traits` (`traits.clothing`) so it sits with the other identity features — it's the one free-color trait (a CSS color or `'auto'`). Top-level `clothing` is still accepted as a legacy alias, and avatars encoded before this change still render their clothing color.
+
 ## [0.5.0] - 2026-06-11
 
 ### Changed
@@ -64,7 +70,8 @@ change — see "Stability and versioning" in the README.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/go4cas/cast/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/go4cas/cast/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/go4cas/cast/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/go4cas/cast/compare/v0.2.0...v0.3.0
