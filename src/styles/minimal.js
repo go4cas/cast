@@ -1,13 +1,11 @@
-import { HAIR_COLORS, SKIN_TONES } from '../palettes.js';
+import { resolvePalette } from '../palettes.js';
 import { svgFrame } from './common.js';
 
 // Flat geometric / minimal face: bold rounded shapes, muted flat fills, no
 // outlines, and reduced features. Shares the face trait set but renders a
 // clean, modern silhouette rather than detailed features.
 
-function renderHair(hairStyle, hairColor) {
-  const fill = HAIR_COLORS[hairColor] || HAIR_COLORS.brown;
-
+function renderHair(hairStyle, fill) {
   if (hairStyle === 'none' || hairStyle === 'hijab') {
     return '';
   }
@@ -25,7 +23,9 @@ function renderHair(hairStyle, hairColor) {
 
 export function renderMinimalAvatar(config) {
   const traits = config.traits;
-  const skin = SKIN_TONES[traits.skinTone] || SKIN_TONES.medium;
+  const palette = resolvePalette(config.palette);
+  const skin = palette.skinTones[traits.skinTone] || palette.skinTones.medium;
+  const hairFill = palette.hairColors[traits.hairColor] || palette.hairColors.brown;
   const clothing = config.clothing || '#64748b';
   const isHijab = traits.headwear === 'hijab' || traits.hairStyle === 'hijab';
 
@@ -40,7 +40,7 @@ export function renderMinimalAvatar(config) {
     parts.push(`<path d="M34 104c-3-24-1-52 6-64a24 26 0 0 1 48 0c7 12 9 40 6 64Z" fill="${clothing}"/>`);
     parts.push(`<rect x="46" y="40" width="36" height="46" rx="18" fill="${skin}"/>`);
   } else {
-    parts.push(renderHair(traits.hairStyle, traits.hairColor));
+    parts.push(renderHair(traits.hairStyle, hairFill));
   }
 
   // minimal features: two soft square eyes and a short mouth bar

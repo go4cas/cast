@@ -1,12 +1,14 @@
 import { createRandom, pick } from '../hash.js';
-import { shapeColor, svgFrame } from './common.js';
+import { resolvePalette } from '../palettes.js';
+import { colorAt, svgFrame } from './common.js';
 
 // Geometric robot face composed from primitives: a body color and an accent
 // "screen" color, with seeded variation in the eye and mouth hardware.
 export function renderBotAvatar(config) {
   const random = createRandom(`${config.seed}:bot`);
-  const body = shapeColor(random);
-  const accent = shapeColor(random, 4);
+  const colors = resolvePalette(config.palette).shapeColors;
+  const body = colorAt(colors, random);
+  const accent = colorAt(colors, random, 4);
 
   const antennaType = pick(['single', 'double', 'none'], random);
   let antenna = '';

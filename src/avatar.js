@@ -1,4 +1,4 @@
-import { BACKGROUNDS, CLOTHING_COLORS, AVATAR_OPTIONS, OPTION_ALIASES } from './palettes.js';
+import { AVATAR_OPTIONS, OPTION_ALIASES, resolvePalette } from './palettes.js';
 import { createRandom, decodeObject, encodeObject, hashConfig, pick } from './hash.js';
 import { renderFaceAvatar } from './styles/face.js';
 import { renderPortraitAvatar } from './styles/portrait.js';
@@ -92,6 +92,7 @@ export function resolveAvatarOptions(seedOrOptions = {}, maybeOptions = {}) {
   // change the avatar's identity, and specifying one trait never reshuffles
   // the others.
   const draw = (field) => createRandom(`${seed}:${field}`);
+  const palette = resolvePalette(options.palette);
   const style = optionOrAuto(options.style, AVATAR_OPTIONS.style, draw('style'));
 
   return {
@@ -100,11 +101,17 @@ export function resolveAvatarOptions(seedOrOptions = {}, maybeOptions = {}) {
     style,
     size: clampSize(options.size),
     traits: normalizeTraits(options, draw),
-    background: chooseColor(options.background, BACKGROUNDS, draw('background')),
-    clothing: chooseColor(options.clothing, CLOTHING_COLORS, draw('clothing')),
+    background: chooseColor(options.background, palette.backgrounds, draw('background')),
+    clothing: chooseColor(options.clothing, palette.clothingColors, draw('clothing')),
+    // Stored raw (and dropped from the hash when absent) so a decoded avatar
+    // re-renders with the same custom palette.
+    palette: options.palette,
     radius: options.radius ?? '50%',
     title: options.title ?? `${seed} avatar`,
     initials: options.initials,
+    // Monogram styling for the `initials` style (undefined when unused).
+    fontWeight: options.fontWeight,
+    fontFamily: options.fontFamily,
     // Presence overlay; left undefined (and dropped from the hash) when unused.
     status: options.status
   };
@@ -181,6 +188,39 @@ export function createAvatar(seedOrOptions = {}, maybeOptions = {}) {
   }
 
   return renderFaceAvatar(config);
+}
+
+// Render many avatars at once. Each item is a seed (string/number) or an
+// options object; `sharedOptions` is merged under every item. Returns an array
+// of SVG strings in input order.
+export function createAvatars(items = [], sharedOptions = {}) {
+  return items.map((item) => {
+    if (typeof item === 'string' || typeof item === 'number') {
+      return createAvatar(item, sharedOptions);
+    }
+
+    return createAvatar({ ...sharedOptions, ...item });
+  });
+}
+
+// Render a roster of avatars into a single SVG sprite sheet (a grid of nested
+// SVGs). Layout options: `columns`, `cell` (px per avatar), `gap`. Remaining
+// options are shared across every avatar.
+export function createAvatarSprite(items = [], options = {}) {
+  const { columns = 8, cell = 64, gap = 8, ...shared } = options;
+  const svgs = createAvatars(items, { ...shared, size: cell });
+  const cols = Math.max(1, Math.floor(columns));
+  const stride = cell + gap;
+  const width = Math.max(0, Math.min(cols, svgs.length) * stride - gap);
+  const height = Math.max(0, Math.ceil(svgs.length / cols) * stride - gap);
+
+  const cells = svgs.map((svg, index) => {
+    const x = (index % cols) * stride;
+    const y = Math.floor(index / cols) * stride;
+    return svg.replace('<svg ', `<svg x="${x}" y="${y}" `);
+  });
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${cells.join('')}</svg>`;
 }
 
 export function toDataUri(svg) {

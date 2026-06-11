@@ -16,6 +16,20 @@ export type AvatarStyle =
 /** Built-in background keywords (any CSS color is also accepted). */
 export type BackgroundKeyword = 'auto' | 'transparent' | 'gradient' | 'dots' | 'rings' | 'grid';
 
+/**
+ * Override any of the default color sets to theme avatars (e.g. to a brand
+ * palette). Tone maps (`skinTones`/`hairColors`) merge over the defaults;
+ * color lists replace the defaults when provided.
+ */
+export interface AvatarPalette {
+  skinTones?: Record<string, string>;
+  hairColors?: Record<string, string>;
+  backgrounds?: string[];
+  shapeColors?: string[];
+  clothingColors?: string[];
+  inks?: string[];
+}
+
 /** Presence state shown by the status badge. */
 export type Status = 'online' | 'busy' | 'away' | 'offline';
 
@@ -126,6 +140,12 @@ export interface AvatarOptions {
   clothing?: 'auto' | (string & {});
   /** Presence badge. A state string (corner dot) or a full config object. Omitted = no badge. */
   status?: Status | StatusBadge;
+  /** Override the default color sets (skin tones, hair, backgrounds, etc.). */
+  palette?: AvatarPalette;
+  /** Monogram font weight for the `initials` style (default `800`). */
+  fontWeight?: number | string;
+  /** Monogram font family for the `initials` style. */
+  fontFamily?: string;
   /** Corner radius for the frame; number (px) or CSS length. Defaults to `'50%'`. */
   radius?: number | string;
   /** Accessible title / aria-label. Defaults to `` `${seed} avatar` ``. */
@@ -148,7 +168,10 @@ export interface ResolvedAvatarConfig {
   radius: number | string;
   title: string;
   initials?: string;
+  fontWeight?: number | string;
+  fontFamily?: string;
   status?: Status | StatusBadge;
+  palette?: AvatarPalette;
 }
 
 /** The full set of allowed values for each option, keyed by trait name. */
@@ -196,6 +219,28 @@ export function decodeAvatar(encoded: string): ResolvedAvatarConfig;
 export function createAvatar(
   seedOrOptions?: SeedOrOptions | ResolvedAvatarConfig,
   maybeOptions?: AvatarOptions
+): string;
+
+/** Render many avatars at once. Each item is a seed or options object; `sharedOptions` is merged under each. */
+export function createAvatars(
+  items: Array<SeedOrOptions>,
+  sharedOptions?: AvatarOptions
+): string[];
+
+/** Options for {@link createAvatarSprite}: grid layout plus shared avatar options. */
+export interface SpriteOptions extends AvatarOptions {
+  /** Avatars per row (default 8). */
+  columns?: number;
+  /** Pixel size of each avatar cell (default 64). */
+  cell?: number;
+  /** Gap in px between cells (default 8). */
+  gap?: number;
+}
+
+/** Render a roster of avatars into a single SVG sprite-sheet grid. */
+export function createAvatarSprite(
+  items: Array<SeedOrOptions>,
+  options?: SpriteOptions
 ): string;
 
 /** Wrap an SVG string in a `data:image/svg+xml` URI. */

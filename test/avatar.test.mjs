@@ -4,6 +4,8 @@ import {
   avatarOptions,
   createAvatar,
   createAvatarDataUri,
+  createAvatars,
+  createAvatarSprite,
   decodeAvatar,
   encodeAvatar,
   resolveAvatarOptions,
@@ -175,6 +177,32 @@ assert.match(statusPos, /<circle cx="26" cy="26" r="10"/, 'dot status honours po
 const statusPulse = createAvatar('s', { style: 'face', status: { state: 'away', pulse: true } });
 assert.match(statusPulse, /<animate /, 'pulsing status emits an animation');
 assert.doesNotMatch(createAvatar('s', { style: 'face' }), /r="10" fill="#22c55e"/, 'no status renders no badge');
+
+// Custom palette overrides default color sets across styles, and is preserved
+// through encode/decode. It is dropped from the hash when absent.
+const brandPalette = { shapeColors: ['#ff00aa'], skinTones: { medium: '#abcdef' }, inks: ['#654321'] };
+assert.match(createAvatar('p', { style: 'shapes', palette: brandPalette }), /#ff00aa/, 'palette overrides shape colors');
+assert.match(createAvatar('p', { style: 'face', palette: brandPalette, traits: { skinTone: 'medium' } }), /#abcdef/, 'palette overrides skin tones');
+assert.match(createAvatar('p', { style: 'line', palette: brandPalette }), /#654321/, 'palette overrides ink');
+assert.equal(avatarHash('p'), avatarHash('p'), 'absent palette keeps the hash stable');
+assert.notEqual(avatarHash('p'), avatarHash('p', { palette: brandPalette }), 'palette changes the hash when set');
+const paletteRound = decodeAvatar(encodeAvatar('p', { style: 'shapes', palette: brandPalette }));
+assert.deepEqual(paletteRound.palette, brandPalette, 'palette survives encode/decode');
+
+// Batch + sprite helpers.
+const batch = createAvatars(['a', 'b', { seed: 'c', style: 'bot' }], { style: 'face' });
+assert.equal(batch.length, 3, 'createAvatars returns one SVG per item');
+assert.ok(batch.every((svg) => svg.startsWith('<svg ')), 'each batch entry is an SVG');
+assert.equal(batch[0], createAvatar('a', { style: 'face' }), 'batch seed matches single render');
+assert.match(batch[2], /viewBox="0 0 128 128"/, 'per-item options override the shared options');
+const sprite = createAvatarSprite(['a', 'b', 'c'], { columns: 2, cell: 64, gap: 8 });
+assert.match(sprite, /^<svg /, 'sprite is a single SVG');
+assert.equal((sprite.match(/<svg /g) || []).length, 4, 'sprite nests one inner SVG per avatar');
+assert.match(sprite, /width="136" height="136"/, 'sprite sizes the grid (2 cols x 2 rows of 64+8)');
+
+// Initials monogram: custom font weight.
+assert.match(createAvatar('AB', { style: 'initials', fontWeight: 400 }), /font-weight="400"/, 'initials honour fontWeight');
+assert.match(createAvatar('AB', { style: 'initials' }), /font-weight="800"/, 'initials default to weight 800');
 
 // The <cast-avatar> custom element wraps createAvatar (tested without a DOM by
 // stubbing the attribute accessors on an instance).

@@ -1,5 +1,6 @@
 import { createRandom, hashString } from '../hash.js';
-import { shapeColor, svgFrame } from './common.js';
+import { resolvePalette } from '../palettes.js';
+import { colorAt, svgFrame } from './common.js';
 
 // Abstract mesh-gradient avatar: a base color overlaid with several soft radial
 // "blobs" that blend into a colorful gradient. No face — driven purely by the
@@ -7,13 +8,14 @@ import { shapeColor, svgFrame } from './common.js';
 export function renderMeshAvatar(config) {
   const random = createRandom(`${config.seed}:mesh`);
   const uid = hashString(`${config.seed}:mesh`).toString(36);
-  const base = shapeColor(random);
+  const colors = resolvePalette(config.palette).shapeColors;
+  const base = colorAt(colors, random);
 
   const defs = [];
   const blobs = [];
 
   for (let index = 0; index < 4; index += 1) {
-    const color = shapeColor(random, index * 2);
+    const color = colorAt(colors, random, index * 2);
     const cx = Math.round(20 + random() * 88);
     const cy = Math.round(20 + random() * 88);
     const r = Math.round(45 + random() * 45);

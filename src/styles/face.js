@@ -1,4 +1,4 @@
-import { HAIR_COLORS, SKIN_TONES } from '../palettes.js';
+import { resolvePalette } from '../palettes.js';
 import { svgFrame } from './common.js';
 
 // Deterministic dot pattern used for the stubble hair/beard styles. Walks a
@@ -49,8 +49,7 @@ function renderMouth(mouth) {
   return '<path d="M52 80q12 14 24 0" fill="none" stroke="#7f1d1d" stroke-width="4" stroke-linecap="round"/>';
 }
 
-function renderHair(hairStyle, hairColor) {
-  const fill = HAIR_COLORS[hairColor] || HAIR_COLORS.brown;
+function renderHair(hairStyle, fill) {
   const attrs = `fill="${fill}"`;
 
   if (hairStyle === 'none' || hairStyle === 'hijab') {
@@ -253,11 +252,13 @@ function renderCollar(gender) {
 
 export function renderFaceAvatar(config) {
   const traits = config.traits;
-  const skin = SKIN_TONES[traits.skinTone] || SKIN_TONES.medium;
-  const browColor = HAIR_COLORS[traits.hairColor] || '#3f2d20';
+  const palette = resolvePalette(config.palette);
+  const skin = palette.skinTones[traits.skinTone] || palette.skinTones.medium;
+  const hairFill = palette.hairColors[traits.hairColor] || palette.hairColors.brown;
+  const browColor = palette.hairColors[traits.hairColor] || '#3f2d20';
   const clothing = config.clothing || '#64748b';
   const headwear = traits.headwear;
-  const hair = headwear === 'none' ? renderHair(traits.hairStyle, traits.hairColor) : '';
+  const hair = headwear === 'none' ? renderHair(traits.hairStyle, hairFill) : '';
   const backLayer = headwear === 'hijab' ? renderHeadwear(headwear) : '';
   const frontLayer = headwear === 'hijab' ? '' : renderHeadwear(headwear);
 

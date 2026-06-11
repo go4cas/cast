@@ -70,3 +70,36 @@ export const AVATAR_OPTIONS = {
 export const OPTION_ALIASES = {
   hair: 'hairStyle'
 };
+
+// Dark inks used by the monochrome `line` style.
+export const INKS = ['#18181b', '#1e293b', '#3f3f46', '#292524', '#1f2937', '#374151'];
+
+// The default color sets. A caller can override any of these via the `palette`
+// option; resolvePalette merges the override over the defaults.
+export const DEFAULT_PALETTE = {
+  skinTones: SKIN_TONES,
+  hairColors: HAIR_COLORS,
+  backgrounds: BACKGROUNDS,
+  shapeColors: SHAPE_COLORS,
+  clothingColors: CLOTHING_COLORS,
+  inks: INKS
+};
+
+function list(override, fallback) {
+  return Array.isArray(override) && override.length ? override : fallback;
+}
+
+export function resolvePalette(override) {
+  if (!override) {
+    return DEFAULT_PALETTE;
+  }
+
+  return {
+    skinTones: { ...SKIN_TONES, ...(override.skinTones || {}) },
+    hairColors: { ...HAIR_COLORS, ...(override.hairColors || {}) },
+    backgrounds: list(override.backgrounds, BACKGROUNDS),
+    shapeColors: list(override.shapeColors, SHAPE_COLORS),
+    clothingColors: list(override.clothingColors, CLOTHING_COLORS),
+    inks: list(override.inks, INKS)
+  };
+}

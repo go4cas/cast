@@ -1,6 +1,6 @@
 import { createRandom, pick } from '../hash.js';
-import { HAIR_COLORS, SKIN_TONES } from '../palettes.js';
-import { shapeColor, svgFrame } from './common.js';
+import { resolvePalette } from '../palettes.js';
+import { colorAt, svgFrame } from './common.js';
 
 // 8-bit pixel-art character (inspired by DiceBear's pixel-art): a blocky face
 // built on a 12x12 grid with seeded skin/hair/clothing colors and variation in
@@ -14,10 +14,11 @@ function px(col, row, cols, rows, fill) {
 
 export function renderPixelAvatar(config) {
   const random = createRandom(`${config.seed}:pixel`);
-  const skin = SKIN_TONES[pick(Object.keys(SKIN_TONES), random)];
-  const hair = HAIR_COLORS[pick(Object.keys(HAIR_COLORS), random)];
-  const clothing = shapeColor(random, 2);
-  const hatColor = shapeColor(random, 5);
+  const palette = resolvePalette(config.palette);
+  const skin = palette.skinTones[pick(Object.keys(palette.skinTones), random)];
+  const hair = palette.hairColors[pick(Object.keys(palette.hairColors), random)];
+  const clothing = colorAt(palette.shapeColors, random, 2);
+  const hatColor = colorAt(palette.shapeColors, random, 5);
   const hairStyle = pick(['flat', 'tall', 'side', 'long', 'none'], random);
   const hat = pick(['none', 'none', 'none', 'beanie', 'cap'], random);
   const hasBeard = random() > 0.65;

@@ -1,11 +1,13 @@
 import { createRandom } from '../hash.js';
-import { shapeColor, svgFrame } from './common.js';
+import { resolvePalette } from '../palettes.js';
+import { colorAt, svgFrame } from './common.js';
 
 export function renderShapesAvatar(config) {
   const random = createRandom(`${config.seed}:shapes`);
-  const one = shapeColor(random);
-  const two = shapeColor(random, 2);
-  const three = shapeColor(random, 4);
+  const colors = resolvePalette(config.palette).shapeColors;
+  const one = colorAt(colors, random);
+  const two = colorAt(colors, random, 2);
+  const three = colorAt(colors, random, 4);
 
   return svgFrame(config, [
     `<circle cx="42" cy="44" r="29" fill="${one}" opacity="0.92"/>`,

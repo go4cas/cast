@@ -9,6 +9,14 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-11
+
+### Added
+
+- `palette` option — override the default color sets (skin tones, hair, backgrounds, shape colors, clothing, inks) to theme avatars; works across every style and is preserved through encode/decode.
+- `createAvatars(items, sharedOptions)` and `createAvatarSprite(items, options)` — render a roster of avatars in one call (array of SVGs, or a single SVG sprite-sheet grid).
+- `fontWeight` and `fontFamily` options for the `initials` monogram.
+
 ## [0.3.0] - 2026-06-10
 
 ### Added
@@ -48,7 +56,8 @@ change — see "Stability and versioning" in the README.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/go4cas/cast/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/go4cas/cast/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/go4cas/cast/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/go4cas/cast/releases/tag/v0.1.0

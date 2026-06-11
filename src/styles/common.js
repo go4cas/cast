@@ -1,4 +1,4 @@
-import { BACKGROUNDS, SHAPE_COLORS } from '../palettes.js';
+import { resolvePalette } from '../palettes.js';
 import { createRandom, hashString } from '../hash.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -19,6 +19,7 @@ export function svgFrame(config, children) {
   // don't share a clip path or gradient definition.
   const uid = hashString(`${config.seed}:${config.style}:${config.radius}`).toString(36);
   const clipId = `cast-clip-${uid}`;
+  const palette = resolvePalette(config.palette);
 
   // Clip every style to the background shape so content (e.g. the face's
   // shoulders/hair) can never spill outside the rounded frame.
@@ -30,15 +31,15 @@ export function svgFrame(config, children) {
   } else if (config.background === 'gradient') {
     const gradId = `cast-grad-${uid}`;
     const random = createRandom(`${config.seed}:gradient`);
-    const from = colorAt(BACKGROUNDS, random);
-    const to = colorAt(BACKGROUNDS, random, 3);
+    const from = colorAt(palette.backgrounds, random);
+    const to = colorAt(palette.backgrounds, random, 3);
     defs += `<linearGradient id="${gradId}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient>`;
     background = `<rect width="128" height="128" rx="${radius}" fill="url(#${gradId})"/>`;
   } else if (config.background === 'dots' || config.background === 'rings' || config.background === 'grid') {
     const patId = `cast-pat-${uid}`;
     const random = createRandom(`${config.seed}:pattern`);
-    const base = colorAt(BACKGROUNDS, random);
-    const motif = colorAt(SHAPE_COLORS, random, 2);
+    const base = colorAt(palette.backgrounds, random);
+    const motif = colorAt(palette.shapeColors, random, 2);
     let shape;
     if (config.background === 'dots') {
       shape = `<circle cx="8" cy="8" r="2.5" fill="${motif}" opacity="0.25"/>`;
@@ -113,8 +114,4 @@ export function initialsFrom(seed) {
   }
 
   return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
-}
-
-export function shapeColor(random, offset) {
-  return colorAt(SHAPE_COLORS, random, offset);
 }

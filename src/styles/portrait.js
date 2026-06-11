@@ -1,4 +1,4 @@
-import { HAIR_COLORS, SKIN_TONES } from '../palettes.js';
+import { resolvePalette } from '../palettes.js';
 import { svgFrame } from './common.js';
 
 // A refined, less-cartoony illustrative portrait. Shares the face trait set but
@@ -7,9 +7,7 @@ import { svgFrame } from './common.js';
 
 const SHADOW = '#5b4a42';
 
-function renderHair(hairStyle, hairColor) {
-  const fill = HAIR_COLORS[hairColor] || HAIR_COLORS.brown;
-
+function renderHair(hairStyle, fill) {
   if (hairStyle === 'none' || hairStyle === 'hijab') {
     return '';
   }
@@ -61,9 +59,7 @@ function renderMouth(mouth) {
   return '<path d="M57 86q7 3 14 0" fill="none" stroke="#a8635a" stroke-width="2.4" stroke-linecap="round"/>';
 }
 
-function renderFacialHair(facialHair, hairColor) {
-  const fill = HAIR_COLORS[hairColor] || HAIR_COLORS.brown;
-
+function renderFacialHair(facialHair, fill) {
   if (facialHair === 'beard' || facialHair === 'fullBeard') {
     return `<path d="M39 80c4 17 13 26 25 26s21-9 25-26c-6 11-12 16-25 16s-19-5-25-16Z" fill="${fill}" opacity="0.9"/>`;
   }
@@ -97,8 +93,10 @@ function renderAccessories(accessories) {
 
 export function renderPortraitAvatar(config) {
   const traits = config.traits;
-  const skin = SKIN_TONES[traits.skinTone] || SKIN_TONES.medium;
-  const browColor = HAIR_COLORS[traits.hairColor] || SHADOW;
+  const palette = resolvePalette(config.palette);
+  const skin = palette.skinTones[traits.skinTone] || palette.skinTones.medium;
+  const hairFill = palette.hairColors[traits.hairColor] || palette.hairColors.brown;
+  const browColor = palette.hairColors[traits.hairColor] || SHADOW;
   const clothing = config.clothing || '#64748b';
   const isHijab = traits.headwear === 'hijab' || traits.hairStyle === 'hijab';
   const shoulderSpread = traits.gender === 'masculine' ? 40 : traits.gender === 'feminine' ? 34 : 37;
@@ -116,7 +114,7 @@ export function renderPortraitAvatar(config) {
     parts.push(`<path d="M30 112c-5-27-2-60 7-77 7-12 16-18 27-18s20 6 27 18c9 17 12 50 7 77Z" fill="${clothing}"/>`);
     parts.push(`<ellipse cx="64" cy="66" rx="22" ry="27" fill="${skin}"/>`);
   } else {
-    parts.push(renderHair(traits.hairStyle, traits.hairColor));
+    parts.push(renderHair(traits.hairStyle, hairFill));
   }
 
   // brows
@@ -128,7 +126,7 @@ export function renderPortraitAvatar(config) {
   parts.push(renderEye(76, traits.eyes));
   parts.push(`<path d="M63 65q-3 9 -1 12q2 2 6 1" fill="none" stroke="${SHADOW}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>`);
   parts.push(renderMouth(traits.mouth));
-  parts.push(renderFacialHair(traits.facialHair, traits.hairColor));
+  parts.push(renderFacialHair(traits.facialHair, hairFill));
   parts.push(renderAccessories(traits.accessories));
 
   return svgFrame(config, parts.join(''));

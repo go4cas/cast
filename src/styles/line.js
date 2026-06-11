@@ -1,11 +1,11 @@
 import { createRandom, pick } from '../hash.js';
+import { resolvePalette } from '../palettes.js';
 import { svgFrame } from './common.js';
 
 // Monochrome line-art style (shadcn-flavored): thin even strokes in a single
 // seeded dark ink, no fills except small eye dots. Shares the face trait set;
 // per-seed variation comes from the line features rather than color. Pairs well
 // with a transparent or light background.
-const INKS = ['#18181b', '#1e293b', '#3f3f46', '#292524', '#1f2937', '#374151'];
 
 function renderHair(hairStyle, stroke) {
   if (hairStyle === 'none' || hairStyle === 'hijab') {
@@ -86,7 +86,7 @@ function renderAccessories(accessories, stroke, ink) {
 export function renderLineAvatar(config) {
   const traits = config.traits;
   const random = createRandom(`${config.seed}:line`);
-  const ink = pick(INKS, random);
+  const ink = pick(resolvePalette(config.palette).inks, random);
   const stroke = `fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"`;
   const isHijab = traits.headwear === 'hijab' || traits.hairStyle === 'hijab';
 

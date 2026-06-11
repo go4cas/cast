@@ -165,8 +165,39 @@ The exported table of every allowed value for each style and trait — the canon
 ```js
 import { avatarOptions } from 'cast-avatar';
 
-avatarOptions.style;     // ['face', 'initials', 'shapes', 'pixel', 'bot']
+avatarOptions.style;     // ['face', 'portrait', 'minimal', 'line', ...]
 avatarOptions.hairStyle; // ['none', 'stubble', 'short', 'long', ...]
+```
+
+### `createAvatars(items, sharedOptions)` and `createAvatarSprite(items, options)`
+
+Render a roster in one call. `createAvatars` returns an array of SVG strings;
+`createAvatarSprite` packs them into a single SVG grid (handy for previewing a
+fleet of agents). Each item is a seed or an options object.
+
+```js
+import { createAvatars, createAvatarSprite } from 'cast-avatar';
+
+const avatars = createAvatars(['agent-1', 'agent-2'], { style: 'line' });
+const sheet = createAvatarSprite(agentIds, { columns: 8, cell: 64, style: 'bot' });
+```
+
+## Custom palettes
+
+Pass a `palette` to theme avatars to your own colors. Tone maps
+(`skinTones`/`hairColors`) merge over the defaults; color lists
+(`backgrounds`, `shapeColors`, `clothingColors`, `inks`) replace them. The
+result stays fully deterministic, and the palette is preserved through
+`encodeAvatar`/`decodeAvatar`.
+
+```js
+const brand = {
+  backgrounds: ['#0f172a', '#1e293b'],
+  shapeColors: ['#22d3ee', '#a78bfa', '#f472b6'],
+  clothingColors: ['#0ea5e9', '#6366f1'],
+};
+
+createAvatar('agent-7', { style: 'shapes', palette: brand });
 ```
 
 ## Web component
@@ -199,7 +230,13 @@ full trait control, render with the JavaScript API instead.
 | `title` | Accessible label for the SVG; defaults to `"<seed> avatar"`. |
 | `initials` | Optional text override for the `initials` style. |
 | `status` | Presence badge. A state string (`online`/`busy`/`away`/`offline`) for a corner dot, or an object `{ state, shape: 'dot'\|'ring', position, pulse }` for a ring border or custom placement/animation. Omitted = none. Applies to every style. |
+| `palette` | Override the default color sets — see [Custom palettes](#custom-palettes). |
+| `fontWeight` | Monogram font weight for the `initials` style (default `800`). |
+| `fontFamily` | Monogram font family for the `initials` style. |
 | `traits` | Object of per-feature traits; see below. |
+
+For the `initials` style, set `radius: 0` for a square monogram tile or keep the
+default `50%` for a circle, and use `fontWeight`/`fontFamily` to restyle the text.
 
 The styles are deterministic from the seed: `face`, `portrait`, `minimal`,
 `line`, and `pixel` use the trait set below (`portrait` is a refined
