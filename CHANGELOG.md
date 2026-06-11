@@ -9,11 +9,13 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-11
+
 ### Changed
 
 - Renamed the `face` style to `cartoon` (the old `face` value still works as an alias).
 - The default style (when none is requested) is now `portrait` instead of a seed-random style.
-- Demo: redesigned with a modern two-column layout; reordered the style gallery and dropdown.
+- Demo: redesigned with a modern two-column layout; reordered the style gallery and dropdown; deployed via GitHub Actions.
 
 ## [0.4.0] - 2026-06-11
 
@@ -62,7 +64,8 @@ change — see "Stability and versioning" in the README.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/go4cas/cast/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/go4cas/cast/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/go4cas/cast/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/go4cas/cast/compare/v0.1.0...v0.2.0
