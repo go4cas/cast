@@ -1,6 +1,6 @@
-import { AVATAR_OPTIONS, OPTION_ALIASES, resolvePalette } from './palettes.js';
+import { AVATAR_OPTIONS, OPTION_ALIASES, STYLE_ALIASES, DEFAULT_STYLE, resolvePalette } from './palettes.js';
 import { createRandom, decodeObject, encodeObject, hashConfig, pick } from './hash.js';
-import { renderFaceAvatar } from './styles/face.js';
+import { renderCartoonAvatar } from './styles/cartoon.js';
 import { renderPortraitAvatar } from './styles/portrait.js';
 import { renderMinimalAvatar } from './styles/minimal.js';
 import { renderLineAvatar } from './styles/line.js';
@@ -9,6 +9,18 @@ import { renderShapesAvatar } from './styles/shapes.js';
 import { renderPixelAvatar } from './styles/pixel.js';
 import { renderBotAvatar } from './styles/bot.js';
 import { renderMeshAvatar } from './styles/mesh.js';
+
+const RENDERERS = {
+  cartoon: renderCartoonAvatar,
+  portrait: renderPortraitAvatar,
+  minimal: renderMinimalAvatar,
+  line: renderLineAvatar,
+  pixel: renderPixelAvatar,
+  initials: renderInitialsAvatar,
+  bot: renderBotAvatar,
+  shapes: renderShapesAvatar,
+  mesh: renderMeshAvatar
+};
 
 const CONFIG_PREFIX = 'ca1';
 
@@ -93,7 +105,9 @@ export function resolveAvatarOptions(seedOrOptions = {}, maybeOptions = {}) {
   // the others.
   const draw = (field) => createRandom(`${seed}:${field}`);
   const palette = resolvePalette(options.palette);
-  const style = optionOrAuto(options.style, AVATAR_OPTIONS.style, draw('style'));
+  // No style requested -> the default; otherwise resolve aliases (e.g. face -> cartoon).
+  const requestedStyle = options.style == null ? DEFAULT_STYLE : (STYLE_ALIASES[options.style] || options.style);
+  const style = optionOrAuto(requestedStyle, AVATAR_OPTIONS.style, draw('style'));
 
   return {
     version: 1,
@@ -155,39 +169,8 @@ export function createAvatar(seedOrOptions = {}, maybeOptions = {}) {
     ? seedOrOptions
     : resolveAvatarOptions(seedOrOptions, maybeOptions);
 
-  if (config.style === 'initials') {
-    return renderInitialsAvatar(config);
-  }
-
-  if (config.style === 'shapes') {
-    return renderShapesAvatar(config);
-  }
-
-  if (config.style === 'pixel') {
-    return renderPixelAvatar(config);
-  }
-
-  if (config.style === 'bot') {
-    return renderBotAvatar(config);
-  }
-
-  if (config.style === 'portrait') {
-    return renderPortraitAvatar(config);
-  }
-
-  if (config.style === 'minimal') {
-    return renderMinimalAvatar(config);
-  }
-
-  if (config.style === 'line') {
-    return renderLineAvatar(config);
-  }
-
-  if (config.style === 'mesh') {
-    return renderMeshAvatar(config);
-  }
-
-  return renderFaceAvatar(config);
+  const style = STYLE_ALIASES[config.style] || config.style;
+  return (RENDERERS[style] || renderPortraitAvatar)(config);
 }
 
 // Render many avatars at once. Each item is a seed (string/number) or an

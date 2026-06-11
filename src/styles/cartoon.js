@@ -250,7 +250,7 @@ function renderCollar(gender) {
   return `<path d="M55 96h18" ${attrs}/>`;
 }
 
-export function renderFaceAvatar(config) {
+export function renderCartoonAvatar(config) {
   const traits = config.traits;
   const palette = resolvePalette(config.palette);
   const skin = palette.skinTones[traits.skinTone] || palette.skinTones.medium;

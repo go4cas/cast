@@ -178,6 +178,11 @@ const statusPulse = createAvatar('s', { style: 'face', status: { state: 'away', 
 assert.match(statusPulse, /<animate /, 'pulsing status emits an animation');
 assert.doesNotMatch(createAvatar('s', { style: 'face' }), /r="10" fill="#22c55e"/, 'no status renders no badge');
 
+// Style defaults to portrait, and `face` is a backward-compatible alias for `cartoon`.
+assert.equal(resolveAvatarOptions('def').style, 'portrait', 'no style defaults to portrait');
+assert.equal(resolveAvatarOptions('def', { style: 'face' }).style, 'cartoon', 'face resolves to cartoon');
+assert.equal(createAvatar('def', { style: 'face' }), createAvatar('def', { style: 'cartoon' }), 'face renders the same as cartoon');
+
 // Custom palette overrides default color sets across styles, and is preserved
 // through encode/decode. It is dropped from the hash when absent.
 const brandPalette = { shapeColors: ['#ff00aa'], skinTones: { medium: '#abcdef' }, inks: ['#654321'] };

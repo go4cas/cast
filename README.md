@@ -165,7 +165,7 @@ The exported table of every allowed value for each style and trait — the canon
 ```js
 import { avatarOptions } from 'cast-avatar';
 
-avatarOptions.style;     // ['face', 'portrait', 'minimal', 'line', ...]
+avatarOptions.style;     // ['portrait', 'cartoon', 'minimal', 'line', ...]
 avatarOptions.hairStyle; // ['none', 'stubble', 'short', 'long', ...]
 ```
 
@@ -222,7 +222,7 @@ full trait control, render with the JavaScript API instead.
 | Option | Values |
 | --- | --- |
 | `seed` | Any stable string, such as a user ID, email, or username. `name` and `id` are accepted as aliases. |
-| `style` | `face`, `portrait`, `minimal`, `line`, `initials`, `shapes`, `pixel`, `bot`, `mesh`; or `auto`. |
+| `style` | `portrait` (default), `cartoon`, `minimal`, `line`, `pixel`, `initials`, `bot`, `shapes`, `mesh`; or `auto` for a seed-random style. `face` is a legacy alias for `cartoon`. |
 | `size` | Pixel size from `24` to `1024`; defaults to `128`. |
 | `background` | Any CSS color, `transparent`, a seeded `gradient`, a seeded pattern (`dots`, `rings`, `grid`), or `auto`. |
 | `clothing` | Any CSS color or `auto`; colors the shoulders/collar in the face styles. |
@@ -238,12 +238,12 @@ full trait control, render with the JavaScript API instead.
 For the `initials` style, set `radius: 0` for a square monogram tile or keep the
 default `50%` for a circle, and use `fontWeight`/`fontFamily` to restyle the text.
 
-The styles are deterministic from the seed: `face`, `portrait`, `minimal`,
-`line`, and `pixel` use the trait set below (`portrait` is a refined
-illustrative take on `face`, `minimal` a flat geometric one, and `line` a
-monochrome thin-line one), `initials` renders a monogram, and
-`shapes`/`bot`/`mesh` derive their colors and composition from the seed alone
-(`mesh` is an abstract gradient-blob style).
+The styles are deterministic from the seed. `portrait` (the default),
+`cartoon`, `minimal`, `line`, and `pixel` use the trait set below — `portrait`
+is a refined illustrative face, `cartoon` a playful one (formerly `face`),
+`minimal` a flat geometric one, and `line` a monochrome thin-line one.
+`initials` renders a monogram, and `bot`/`shapes`/`mesh` derive their colors and
+composition from the seed alone (`mesh` is an abstract gradient-blob style).
 
 ## Trait options
 

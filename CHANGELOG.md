@@ -9,6 +9,12 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed the `face` style to `cartoon` (the old `face` value still works as an alias).
+- The default style (when none is requested) is now `portrait` instead of a seed-random style.
+- Demo: redesigned with a modern two-column layout; reordered the style gallery and dropdown.
+
 ## [0.4.0] - 2026-06-11
 
 ### Added

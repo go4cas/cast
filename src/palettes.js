@@ -49,7 +49,7 @@ export const CLOTHING_COLORS = [
 ];
 
 export const AVATAR_OPTIONS = {
-  style: ['face', 'portrait', 'minimal', 'line', 'initials', 'shapes', 'pixel', 'bot', 'mesh'],
+  style: ['portrait', 'cartoon', 'minimal', 'line', 'pixel', 'initials', 'bot', 'shapes', 'mesh'],
   gender: ['neutral', 'feminine', 'masculine'],
   skinTone: Object.keys(SKIN_TONES),
   faceShape: ['round', 'oval', 'soft'],
@@ -70,6 +70,14 @@ export const AVATAR_OPTIONS = {
 export const OPTION_ALIASES = {
   hair: 'hairStyle'
 };
+
+// `face` was renamed to `cartoon` in v0.5; the old name still resolves.
+export const STYLE_ALIASES = {
+  face: 'cartoon'
+};
+
+// The style used when none is requested.
+export const DEFAULT_STYLE = 'portrait';
 
 // Dark inks used by the monochrome `line` style.
 export const INKS = ['#18181b', '#1e293b', '#3f3f46', '#292524', '#1f2937', '#374151'];

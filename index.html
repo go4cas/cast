@@ -410,14 +410,14 @@
         <label>
           Style
           <select id="style">
-            <option value="face">Face</option>
             <option value="portrait">Portrait</option>
+            <option value="cartoon">Cartoon</option>
             <option value="minimal">Minimal</option>
             <option value="line">Line</option>
-            <option value="initials">Initials</option>
-            <option value="shapes">Shapes</option>
             <option value="pixel">Pixel</option>
+            <option value="initials">Initials</option>
             <option value="bot">Bot</option>
+            <option value="shapes">Shapes</option>
             <option value="mesh">Mesh</option>
           </select>
         </label>
@@ -739,17 +739,17 @@ const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, colum
       let suppressHashChange = false;
 
       const variations = {
-        face: [
-          { label: 'Curly + glasses', seed: 'maya@example.com', traits: { gender: 'feminine', skinTone: 'medium', hairStyle: 'curly', hairColor: 'black', eyes: 'round', mouth: 'smile', accessories: 'glasses' } },
-          { label: 'Short + beard', seed: 'noah@example.com', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'brown', facialHair: 'beard', eyes: 'sleepy', mouth: 'neutral' } },
-          { label: 'Hijab + smile', seed: 'amina@example.com', traits: { gender: 'feminine', skinTone: 'dark', hairStyle: 'hijab', headwear: 'hijab', eyes: 'smile', mouth: 'smile' } },
-          { label: 'Bun + sunglasses', seed: 'lee@example.com', traits: { gender: 'neutral', skinTone: 'light', hairStyle: 'bun', hairColor: 'red', eyes: 'wink', accessories: 'sunglasses' } }
-        ],
         portrait: [
           { label: 'Long + glasses', seed: 'mara@studio.co', traits: { skinTone: 'medium', hairStyle: 'long', hairColor: 'brown', mouth: 'smile', accessories: 'glasses' } },
           { label: 'Short + beard', seed: 'theo@studio.co', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'black', facialHair: 'beard' } },
           { label: 'Hijab', seed: 'aisha@studio.co', traits: { skinTone: 'dark', hairStyle: 'hijab' } },
           { label: 'Bun + neutral', seed: 'yuki@studio.co', traits: { skinTone: 'light', hairStyle: 'bun', hairColor: 'red', mouth: 'neutral' } }
+        ],
+        cartoon: [
+          { label: 'Curly + glasses', seed: 'maya@example.com', traits: { gender: 'feminine', skinTone: 'medium', hairStyle: 'curly', hairColor: 'black', eyes: 'round', mouth: 'smile', accessories: 'glasses' } },
+          { label: 'Short + beard', seed: 'noah@example.com', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'brown', facialHair: 'beard', eyes: 'sleepy', mouth: 'neutral' } },
+          { label: 'Hijab + smile', seed: 'amina@example.com', traits: { gender: 'feminine', skinTone: 'dark', hairStyle: 'hijab', headwear: 'hijab', eyes: 'smile', mouth: 'smile' } },
+          { label: 'Bun + sunglasses', seed: 'lee@example.com', traits: { gender: 'neutral', skinTone: 'light', hairStyle: 'bun', hairColor: 'red', eyes: 'wink', accessories: 'sunglasses' } }
         ],
         minimal: [
           { label: 'Flat one', seed: 'min-iris', traits: { skinTone: 'medium', hairStyle: 'short', hairColor: 'black' } },
@@ -757,29 +757,11 @@ const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, colum
           { label: 'Flat three', seed: 'min-noor', traits: { skinTone: 'dark', hairStyle: 'hijab' } },
           { label: 'Flat four', seed: 'min-sky', traits: { skinTone: 'light', hairStyle: 'bun', hairColor: 'red', mouth: 'smile' } }
         ],
-        mesh: [
-          { label: 'Mesh one', seed: 'mesh-aurora' },
-          { label: 'Mesh two', seed: 'mesh-dusk' },
-          { label: 'Mesh three', seed: 'mesh-tide' },
-          { label: 'Mesh four', seed: 'mesh-bloom' }
-        ],
         line: [
           { label: 'Line one', seed: 'line-ada', background: 'transparent', traits: { hairStyle: 'short', accessories: 'glasses' } },
           { label: 'Line two', seed: 'line-bo', background: 'transparent', traits: { hairStyle: 'long', mouth: 'smile' } },
           { label: 'Line three', seed: 'line-cy', background: 'transparent', traits: { hairStyle: 'hijab' } },
           { label: 'Line four', seed: 'line-di', background: 'transparent', traits: { hairStyle: 'bun', facialHair: 'beard' } }
-        ],
-        initials: [
-          { label: 'Ada Lovelace', seed: 'Ada Lovelace', initials: 'AL', background: '#dbeafe' },
-          { label: 'Grace Hopper', seed: 'Grace Hopper', initials: 'GH', background: '#dcfce7' },
-          { label: 'Katherine Johnson', seed: 'Katherine Johnson', initials: 'KJ', background: '#fef3c7' },
-          { label: 'Radia Perlman', seed: 'Radia Perlman', initials: 'RP', background: '#fce7f3' }
-        ],
-        shapes: [
-          { label: 'Blue geometry', seed: 'shape-blue', background: '#dbeafe' },
-          { label: 'Warm geometry', seed: 'shape-warm', background: '#fee2e2' },
-          { label: 'Green geometry', seed: 'shape-green', background: '#dcfce7' },
-          { label: 'Purple geometry', seed: 'shape-purple', background: '#ede9fe' }
         ],
         pixel: [
           { label: 'Pixel one', seed: 'pixel-aurora', background: '#e0f2fe' },
@@ -787,11 +769,29 @@ const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, colum
           { label: 'Pixel three', seed: 'pixel-moss', background: '#dcfce7' },
           { label: 'Pixel four', seed: 'pixel-violet', background: '#ede9fe' }
         ],
+        initials: [
+          { label: 'Ada Lovelace', seed: 'Ada Lovelace', initials: 'AL', background: '#dbeafe' },
+          { label: 'Grace Hopper', seed: 'Grace Hopper', initials: 'GH', background: '#dcfce7' },
+          { label: 'Katherine Johnson', seed: 'Katherine Johnson', initials: 'KJ', background: '#fef3c7' },
+          { label: 'Radia Perlman', seed: 'Radia Perlman', initials: 'RP', background: '#fce7f3' }
+        ],
         bot: [
           { label: 'Bot one', seed: 'bot-zap', background: '#dbeafe' },
           { label: 'Bot two', seed: 'bot-circuit', background: '#fef3c7' },
           { label: 'Bot three', seed: 'bot-pixel', background: '#dcfce7' },
           { label: 'Bot four', seed: 'bot-rust', background: '#fee2e2' }
+        ],
+        shapes: [
+          { label: 'Blue geometry', seed: 'shape-blue', background: '#dbeafe' },
+          { label: 'Warm geometry', seed: 'shape-warm', background: '#fee2e2' },
+          { label: 'Green geometry', seed: 'shape-green', background: '#dcfce7' },
+          { label: 'Purple geometry', seed: 'shape-purple', background: '#ede9fe' }
+        ],
+        mesh: [
+          { label: 'Mesh one', seed: 'mesh-aurora' },
+          { label: 'Mesh two', seed: 'mesh-dusk' },
+          { label: 'Mesh three', seed: 'mesh-tide' },
+          { label: 'Mesh four', seed: 'mesh-bloom' }
         ]
       };
 

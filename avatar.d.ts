@@ -2,16 +2,18 @@
 // The source is dependency-free ES module JavaScript (src/avatar.js); these
 // declarations describe its public API for TypeScript consumers.
 
+/** Avatar style. `'face'` is a legacy alias for `'cartoon'`. */
 export type AvatarStyle =
-  | 'face'
   | 'portrait'
+  | 'cartoon'
   | 'minimal'
   | 'line'
-  | 'initials'
-  | 'shapes'
   | 'pixel'
+  | 'initials'
   | 'bot'
-  | 'mesh';
+  | 'shapes'
+  | 'mesh'
+  | 'face';
 
 /** Built-in background keywords (any CSS color is also accepted). */
 export type BackgroundKeyword = 'auto' | 'transparent' | 'gradient' | 'dots' | 'rings' | 'grid';
