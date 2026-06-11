@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="Cast logo">
+  <title>Cast — Persona Tile</title>
+  <clipPath id="castTileClip"><rect x="0" y="0" width="96" height="96" rx="26"></rect></clipPath>
+  <rect x="0" y="0" width="96" height="96" rx="26" fill="#181C2C"></rect>
+  <g clip-path="url(#castTileClip)">
+    <circle cx="48" cy="38" r="17" fill="#3ECFEA"></circle>
+    <ellipse cx="48" cy="84" rx="28" ry="22" fill="#A78BFA"></ellipse>
+  </g>
+  <circle cx="76" cy="76" r="9" fill="#34D399" stroke="#181C2C" stroke-width="5"></circle>
+</svg>

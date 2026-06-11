@@ -1,988 +1,924 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-mode="dark">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cast Avatar Demo</title>
+    <title>Cast — deterministic SVG avatars</title>
+    <meta name="description" content="Cast is a tiny, dependency-free library for deterministic SVG avatars. Nine styles, deep traits, themeable palettes — the same seed always renders the same avatar.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+      /* Cast demo site — brand stylesheet */
+
       :root {
-        color-scheme: light dark;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1.5;
-        --bg: #f5f6fb;
-        --grad: radial-gradient(1100px 560px at 82% -12%, #ece9ff 0%, transparent 60%),
-          radial-gradient(900px 520px at -12% 8%, #e0ecff 0%, transparent 55%);
-        --surface: #ffffff;
-        --surface-2: #f7f8fc;
-        --border: #e7e9f2;
-        --text: #0f172a;
-        --muted: #6a7385;
-        --accent: #6366f1;
-        --accent-2: #8b5cf6;
-        --accent-3: #d946ef;
-        --shadow: 0 24px 60px -22px rgb(79 70 229 / 28%);
+        --bg: #0F1220;
+        --surface: #181C2C;
+        --surface-2: #1F2438;
+        --border: #2A2F45;
+        --text: #EDEEF4;
+        --dim: #8B91A7;
+        --acc1: #3ECFEA;
+        --acc2: #A78BFA;
+        --good: #34D399;
+        --tile: #181C2C;
+        --font-display: 'Space Grotesk', sans-serif;
+        --font-body: 'Instrument Sans', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --shadow: 0 12px 40px rgba(5, 8, 20, 0.45);
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #0a0e18;
-          --grad: radial-gradient(1100px 560px at 82% -12%, #221a52 0%, transparent 60%),
-            radial-gradient(900px 520px at -12% 8%, #0e1f38 0%, transparent 55%);
-          --surface: #111626;
-          --surface-2: #0d1220;
-          --border: #20283a;
-          --text: #e7e9f0;
-          --muted: #97a1b5;
-          --shadow: 0 24px 60px -22px rgb(0 0 0 / 55%);
-        }
+      html[data-mode="light"] {
+        --bg: #F4F4F7;
+        --surface: #FFFFFF;
+        --surface-2: #EEEFF4;
+        --border: #E0E2EC;
+        --text: #15182A;
+        --dim: #5E6478;
+        --tile: #0F1220;
+        --shadow: 0 10px 32px rgba(20, 24, 50, 0.10);
       }
 
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
       body {
         margin: 0;
         background: var(--bg);
-        background-image: var(--grad);
-        background-attachment: fixed;
         color: var(--text);
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        transition: background 0.25s ease, color 0.25s ease;
+      }
+      ::selection { background: color-mix(in oklab, var(--acc1) 35%, transparent); }
+      a { color: inherit; }
+      .mono, .mono-inline { font-family: var(--font-mono); }
+      .mono-inline { font-size: 0.88em; background: var(--surface-2); padding: 1px 6px; border-radius: 6px; }
+
+      /* ---------- Nav ---------- */
+      .nav {
+        position: sticky; top: 0; z-index: 50;
+        background: color-mix(in oklab, var(--bg) 78%, transparent);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-inner {
+        max-width: 1180px; margin: 0 auto; padding: 14px 28px;
+        display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      }
+      .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+      .logo-mark { display: flex; width: 30px; height: 30px; }
+      .logo-mark svg { display: block; width: 30px; height: 30px; border-radius: 8px; }
+      .logo-word {
+        font-family: var(--font-display); font-weight: 700; font-size: 22px;
+        letter-spacing: -0.04em; line-height: 1;
+      }
+      .version-pill {
+        font-family: var(--font-mono); font-size: 11px; color: var(--dim);
+        border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px;
+      }
+      .nav-links { display: flex; align-items: center; gap: 22px; }
+      .nav-links a {
+        text-decoration: none; font-size: 14.5px; font-weight: 500; color: var(--dim);
+        transition: color 0.15s ease;
+      }
+      .nav-links a:hover { color: var(--text); }
+      .nav-links a.ext::after { content: "↗"; font-size: 11px; margin-left: 3px; color: var(--dim); }
+      .nav-icon { display: inline-flex; align-items: center; color: var(--dim); transition: color 0.15s ease; }
+      .nav-icon:hover { color: var(--text); }
+      .nav-icon svg { width: 20px; height: 20px; display: block; fill: currentColor; }
+      .mode-toggle {
+        font-family: var(--font-mono); font-size: 12px; color: var(--dim); cursor: pointer;
+        background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px;
+        padding: 5px 12px; transition: color 0.15s ease, border-color 0.15s ease;
+      }
+      .mode-toggle:hover { color: var(--text); border-color: var(--dim); }
+
+      /* ---------- Hero ---------- */
+      .hero { border-bottom: 1px solid var(--border); overflow: hidden; }
+      .hero-inner {
+        max-width: 1180px; margin: 0 auto; padding: 84px 28px 72px;
+        display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center;
+      }
+      .kicker {
+        font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+        letter-spacing: 0.14em; text-transform: uppercase; color: var(--acc1);
+        margin: 0 0 14px;
+      }
+      .hero h1 {
+        font-family: var(--font-display); font-weight: 700;
+        font-size: clamp(46px, 6vw, 76px); line-height: 1.02; letter-spacing: -0.045em;
+        margin: 0 0 22px;
+        text-wrap: balance;
+      }
+      .hero-sub {
+        font-size: 18px; color: var(--dim); max-width: 33em; margin: 0 0 30px;
+        text-wrap: pretty;
+      }
+      .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+      .hero-facts {
+        list-style: none; display: flex; gap: 10px; flex-wrap: wrap;
+        margin: 30px 0 0; padding: 0;
+      }
+      .hero-facts li {
+        font-family: var(--font-mono); font-size: 12px; color: var(--dim);
+        border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px;
+        white-space: nowrap;
       }
 
-      main {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 44px 20px 88px;
-      }
-
-      .page-header {
-        margin-bottom: 8px;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: clamp(2.2rem, 6vw, 3.6rem);
-        letter-spacing: -0.05em;
-        background: linear-gradient(120deg, var(--accent), var(--accent-3));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-      }
-
-      .tagline {
-        margin: 12px 0 0;
-        max-width: 660px;
-        color: var(--muted);
-        font-size: 1.075rem;
-      }
-
-      .links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 20px;
-      }
-
-      .links a {
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: var(--text);
-        border: 1px solid var(--border);
-        background: var(--surface);
-        padding: 8px 15px;
-        border-radius: 999px;
-        transition: border-color 0.15s, color 0.15s;
-      }
-
-      .links a:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-
-      .studio {
-        display: grid;
-        grid-template-columns: minmax(0, 380px) 1fr;
-        gap: 22px;
-        align-items: start;
-        margin-top: 30px;
-      }
-
-      @media (max-width: 860px) {
-        .studio {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .controls,
-      .hero,
-      .card,
-      .gallery-section,
-      .snippet {
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        background: var(--surface);
-        box-shadow: var(--shadow);
-      }
-
-      .controls {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 14px;
-        padding: 20px;
-      }
-
-      label {
-        display: grid;
-        gap: 6px;
-        min-width: 0;
-        align-content: start;
-        color: var(--muted);
-        font-weight: 600;
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-
-      input,
-      select {
-        width: 100%;
-        min-width: 0;
-        min-height: 42px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 0 12px;
-        font: inherit;
-        background: var(--surface-2);
-        color: var(--text);
-      }
-
-      input:focus,
-      select:focus {
-        outline: 2px solid var(--accent);
-        outline-offset: 1px;
-        border-color: var(--accent);
-      }
-
-      select {
-        appearance: none;
-        -webkit-appearance: none;
-        cursor: pointer;
-        padding-right: 34px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-      }
-
-      input[type="range"] {
-        appearance: auto;
-        -webkit-appearance: auto;
-        height: 42px;
-        min-height: 0;
-        padding: 0;
-        border: none;
-        border-radius: 0;
-        background: transparent;
-        accent-color: var(--accent);
-        cursor: pointer;
-      }
-
-      input[type="range"]:focus {
-        outline: none;
-      }
-
-      .gallery-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 18px;
-      }
-
-      .gallery-section {
-        margin-top: 30px;
-        padding: 28px;
-      }
-
-      .gallery-section h2 {
-        margin: 0;
-        font-size: 1.5rem;
-        letter-spacing: -0.03em;
-      }
-
-      .gallery-section p {
-        margin: 4px 0 22px;
-        color: var(--muted);
-      }
-
-      .style-group + .style-group {
-        margin-top: 28px;
-      }
-
-      .style-group h3 {
-        margin: 0 0 12px;
-        color: var(--muted);
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-      }
-
-      .card {
-        display: grid;
+      .hero-roster {
+        display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
         justify-items: center;
-        gap: 10px;
-        padding: 20px;
-        text-align: center;
-        background: var(--surface-2);
-        box-shadow: none;
+      }
+      .hero-roster .cell {
+        border-radius: 50%;
+        transition: transform 0.18s ease;
+      }
+      .hero-roster.animate .cell {
+        animation: roster-in 0.5s ease backwards;
+      }
+      .hero-roster .cell:hover { transform: scale(1.12); }
+      .hero-roster .cell svg { display: block; }
+      @media (prefers-reduced-motion: reduce) {
+        .hero-roster .cell { animation: none; }
+      }
+      @keyframes roster-in {
+        from { opacity: 0; transform: translateY(10px) scale(0.92); }
+        to { opacity: 1; transform: none; }
       }
 
-      .variation-card {
-        align-content: start;
+      /* ---------- Buttons ---------- */
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        font-family: var(--font-display); font-weight: 600; font-size: 15px;
+        border-radius: 12px; padding: 12px 22px; cursor: pointer;
+        text-decoration: none; border: 1px solid transparent;
+        transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
       }
+      .btn:active { transform: scale(0.97); }
+      .btn-primary { background: var(--text); color: var(--bg); }
+      .btn-primary:hover { background: color-mix(in oklab, var(--text) 88%, var(--acc1)); }
+      .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+      .btn-ghost:hover { border-color: var(--dim); background: var(--surface-2); }
+      .btn-sm { font-size: 13.5px; padding: 9px 14px; border-radius: 10px; }
 
-      .variation-card strong {
-        font-size: 0.9rem;
+      .install-chip {
+        display: inline-flex; align-items: center; gap: 12px;
+        background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+        color: var(--text); padding: 12px 16px; font-size: 14px; cursor: pointer;
+        transition: border-color 0.15s ease;
       }
+      .install-chip:hover { border-color: var(--acc1); }
+      .install-chip .chip-copy { color: var(--dim); font-size: 15px; }
+      .install-chip .mono { white-space: nowrap; }
 
-      .variation-card p {
-        margin: -4px 0 0;
-        color: var(--muted);
-        font-size: 0.8rem;
+      /* ---------- Sections ---------- */
+      .section { max-width: 1180px; margin: 0 auto; padding: 88px 28px 8px; }
+      .section h2 {
+        font-family: var(--font-display); font-weight: 700;
+        font-size: clamp(30px, 3.6vw, 44px); letter-spacing: -0.035em; line-height: 1.08;
+        margin: 0 0 14px;
       }
+      .section-sub { color: var(--dim); font-size: 17px; max-width: 42em; margin: 0 0 38px; text-wrap: pretty; }
 
-      .avatar {
-        width: 128px;
-        height: 128px;
+      /* ---------- Playground ---------- */
+      .pg-grid {
+        display: grid; grid-template-columns: 380px 1fr; gap: 28px; align-items: start;
       }
-
-      .hero {
-        padding: 24px;
-        display: grid;
-        justify-items: center;
-        gap: 16px;
-        position: sticky;
-        top: 22px;
+      .pg-preview { position: sticky; top: 84px; }
+      .preview-card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+        padding: 24px; box-shadow: var(--shadow);
+        display: flex; flex-direction: column; gap: 18px;
       }
-
       .preview-stage {
-        display: grid;
-        place-items: center;
-        width: 100%;
-        min-height: 320px;
-        border-radius: 16px;
-        background-color: var(--surface-2);
-        background-image:
-          linear-gradient(45deg, rgb(100 116 139 / 9%) 25%, transparent 25%, transparent 75%, rgb(100 116 139 / 9%) 75%),
-          linear-gradient(45deg, rgb(100 116 139 / 9%) 25%, transparent 25%, transparent 75%, rgb(100 116 139 / 9%) 75%);
-        background-size: 24px 24px;
-        background-position: 0 0, 12px 12px;
+        display: flex; align-items: center; justify-content: center;
+        min-height: 280px; border-radius: 14px;
+        background:
+          repeating-conic-gradient(color-mix(in oklab, var(--dim) 12%, transparent) 0% 25%, transparent 0% 50%)
+          50% / 22px 22px;
       }
-
-      .preview-avatar svg {
-        display: block;
-        border-radius: 14px;
-        filter: drop-shadow(0 14px 32px rgb(15 23 42 / 22%));
+      .preview-stage svg { display: block; max-width: 100%; height: auto; }
+      .seed-field { display: flex; flex-direction: column; gap: 6px; }
+      .field-label {
+        font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+        letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim);
       }
-
-      .size-value {
-        font-weight: 600;
-        color: #64748b;
+      .seed-field input {
+        font-family: var(--font-mono); font-size: 14px; color: var(--text);
+        background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+        padding: 10px 12px; outline: none; width: 100%;
       }
+      .seed-field input:focus { border-color: var(--acc1); }
+      .preview-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
-      .toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        justify-content: center;
+      .pg-controls { display: flex; flex-direction: column; gap: 26px; }
+      .control-group { display: flex; flex-direction: column; gap: 12px; }
+      .control-group > h3 {
+        font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+        letter-spacing: 0.12em; text-transform: uppercase; color: var(--acc2);
+        margin: 0; padding-bottom: 8px; border-bottom: 1px solid var(--border);
       }
-
-      .toolbar button {
-        min-height: 38px;
-        padding: 0 15px;
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        background: var(--surface-2);
-        color: var(--text);
-        font: inherit;
-        font-weight: 600;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: border-color 0.15s, transform 0.05s;
+      .control-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 12px;
       }
-
-      .toolbar button:hover {
-        border-color: var(--accent);
+      .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+      .field select {
+        appearance: none; -webkit-appearance: none;
+        font-family: var(--font-body); font-size: 14px; color: var(--text);
+        background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+        padding: 9px 30px 9px 12px; cursor: pointer; outline: none; width: 100%;
+        background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%), linear-gradient(135deg, var(--dim) 50%, transparent 50%);
+        background-position: calc(100% - 17px) 55%, calc(100% - 12px) 55%;
+        background-size: 5px 5px;
+        background-repeat: no-repeat;
+        transition: border-color 0.15s ease;
       }
+      .field select:hover { border-color: var(--dim); }
+      .field select:focus { border-color: var(--acc1); }
+      .field input[type="range"] { accent-color: var(--acc1); width: 100%; margin: 8px 0 4px; }
 
-      .toolbar button:active {
-        transform: translateY(1px);
+      /* ---------- Gallery ---------- */
+      .gallery-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
       }
-
-      .toolbar button:disabled {
-        opacity: 0.7;
-        cursor: default;
+      .style-card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+        padding: 20px 20px 18px; display: flex; flex-direction: column; gap: 14px;
+        transition: border-color 0.15s ease, transform 0.15s ease;
       }
-
-      .toolbar button.primary {
-        background: linear-gradient(135deg, var(--accent), var(--accent-2));
-        border: 0;
-        color: #fff;
-        box-shadow: 0 10px 22px -8px var(--accent);
+      .style-card:hover { border-color: color-mix(in oklab, var(--acc1) 45%, var(--border)); transform: translateY(-2px); }
+      .style-card header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+      .style-card h3 {
+        font-family: var(--font-display); font-weight: 600; font-size: 19px;
+        letter-spacing: -0.02em; margin: 0; text-transform: capitalize;
       }
-
-      code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 0.8rem;
-        border-radius: 999px;
-        background: var(--surface-2);
-        border: 1px solid var(--border);
-        padding: 5px 12px;
-        color: var(--muted);
+      .style-card .try {
+        font-family: var(--font-mono); font-size: 11.5px; color: var(--acc1);
+        background: none; border: none; cursor: pointer; padding: 0;
+        white-space: nowrap;
       }
+      .style-card .try:hover { text-decoration: underline; }
+      .style-card .row { display: flex; gap: 10px; flex-wrap: wrap; }
+      .style-card .row svg { display: block; border-radius: 50%; }
 
-      .snippets {
-        margin-top: 30px;
-        display: grid;
-        gap: 16px;
+      /* ---------- Code ---------- */
+      .code-cols {
+        display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 80px;
       }
-
-      .snippet {
-        padding: 20px 22px;
+      .code-card {
+        position: relative; margin: 0;
+        background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+        padding: 18px 20px;
+        overflow: hidden;
       }
-
-      .snippet h3 {
-        margin: 0 0 12px;
-        font-size: 0.95rem;
-        letter-spacing: -0.01em;
+      .code-card figcaption {
+        font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.1em;
+        text-transform: uppercase; color: var(--dim); margin-bottom: 12px;
       }
+      .code-card pre { margin: 0; overflow-x: auto; }
+      .code-card code { font-family: var(--font-mono); font-size: 13px; line-height: 1.65; color: var(--text); }
+      .c-key { color: var(--acc2); }
+      .c-str { color: var(--acc1); }
+      .c-num { color: var(--good); }
+      .c-dim { color: var(--dim); }
+      .code-copy {
+        position: absolute; top: 12px; right: 14px;
+        font-family: var(--font-mono); font-size: 11px; color: var(--dim);
+        background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+        padding: 4px 10px; cursor: pointer; transition: color 0.15s ease, border-color 0.15s ease;
+      }
+      .code-copy:hover { color: var(--text); border-color: var(--dim); }
 
-      .snippet pre {
-        margin: 0;
-        overflow: auto;
-        background: #0b1020;
-        color: #e6e9f5;
-        border-radius: 12px;
-        padding: 14px 16px;
-        font-size: 0.82rem;
-        line-height: 1.6;
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      /* ---------- Footer ---------- */
+      .footer { border-top: 1px solid var(--border); margin-top: 80px; }
+
+      .footer-base {
+        max-width: 1180px; margin: 0 auto; padding: 32px 28px 44px;
+        display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+      }
+      .footer-brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 600; font-size: 14.5px; white-space: nowrap; }
+      .footer-brand svg { width: 22px; height: 22px; border-radius: 6px; display: block; }
+      .footer-note { margin: 0; color: var(--dim); font-size: 12.5px; }
+      .footer-note a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+      .footer-note a:hover { color: var(--acc1); }
+      .footer-links { display: flex; align-items: center; gap: 18px; margin-left: auto; }
+      .footer-links a { color: var(--dim); font-size: 13.5px; text-decoration: none; }
+      .footer-links a:hover { color: var(--text); }
+      .footer-links .nav-icon svg { width: 18px; height: 18px; }
+
+      /* ---------- Toast ---------- */
+      .toast {
+        position: fixed; bottom: 28px; left: 50%; transform: translate(-50%, 16px);
+        background: var(--text); color: var(--bg);
+        font-family: var(--font-display); font-weight: 600; font-size: 14px;
+        border-radius: 999px; padding: 10px 20px;
+        opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+        z-index: 100;
+      }
+      .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+      /* ---------- Responsive ---------- */
+      @media (max-width: 960px) {
+        .hero-inner { grid-template-columns: 1fr; padding-top: 56px; gap: 40px; }
+        .hero-roster { grid-template-columns: repeat(6, 1fr); }
+        .pg-grid { grid-template-columns: 1fr; }
+        .pg-preview { position: static; }
+        .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+        .code-cols { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 600px) {
+        .nav-links a:not(.ext) { display: none; }
+        .gallery-grid { grid-template-columns: 1fr; }
+        .hero-roster { grid-template-columns: repeat(4, 1fr); }
+        .footer-base { gap: 14px; }
+        .footer-links { margin-left: 0; }
       }
     </style>
   </head>
   <body>
-    <main>
-      <header class="page-header">
-        <h1>Cast Avatar</h1>
-        <p class="tagline">Tiny, dependency-free, deterministic SVG avatars — nine styles, deep traits, themeable palettes, and presence badges. The same seed always renders the same avatar.</p>
-        <nav class="links">
-          <a href="https://www.npmjs.com/package/cast-avatar">npm</a>
-          <a href="https://github.com/go4cas/cast">GitHub</a>
-          <a href="https://github.com/go4cas/cast#readme">Docs</a>
-        </nav>
-      </header>
-
-      <div class="studio">
-        <section class="hero">
-          <div class="preview-stage">
-            <div id="preview" class="preview-avatar" aria-live="polite"></div>
-          </div>
-          <div class="toolbar">
-            <button type="button" id="randomize" class="primary">Randomize</button>
-            <button type="button" id="copySvg">Copy SVG</button>
-            <button type="button" id="copyUri">Copy data-URI</button>
-            <button type="button" id="downloadPng">Download PNG</button>
-            <button type="button" id="copyLink">Copy link</button>
-          </div>
-          <code id="hash"></code>
-        </section>
-
-        <section class="controls" aria-label="Avatar controls">
-        <label>
-          Seed
-          <input id="seed" value="ada@example.com">
-        </label>
-        <label>
-          Size
-          <input id="size" type="range" min="64" max="384" step="8" value="256">
-          <span id="sizeValue" class="size-value">256px</span>
-        </label>
-        <label>
-          Style
-          <select id="style">
-            <option value="portrait">Portrait</option>
-            <option value="cartoon">Cartoon</option>
-            <option value="minimal">Minimal</option>
-            <option value="line">Line</option>
-            <option value="pixel">Pixel</option>
-            <option value="initials">Initials</option>
-            <option value="bot">Bot</option>
-            <option value="shapes">Shapes</option>
-            <option value="mesh">Mesh</option>
-          </select>
-        </label>
-        <label>
-          Gender
-          <select id="gender">
-            <option value="auto">Auto</option>
-            <option value="neutral">Neutral</option>
-            <option value="feminine">Feminine</option>
-            <option value="masculine">Masculine</option>
-          </select>
-        </label>
-        <label>
-          Skin tone
-          <select id="skinTone">
-            <option value="auto">Auto</option>
-            <option value="light">Light</option>
-            <option value="mediumLight">Medium light</option>
-            <option value="medium">Medium</option>
-            <option value="mediumDark">Medium dark</option>
-            <option value="dark">Dark</option>
-          </select>
-        </label>
-        <label>
-          Face shape
-          <select id="faceShape">
-            <option value="auto">Auto</option>
-            <option value="round">Round</option>
-            <option value="oval">Oval</option>
-            <option value="soft">Soft</option>
-          </select>
-        </label>
-        <label>
-          Hair
-          <select id="hair">
-            <option value="auto">Auto</option>
-            <option value="none">None</option>
-            <option value="stubble">Stubble</option>
-            <option value="short">Short</option>
-            <option value="long">Long</option>
-            <option value="curly">Curly</option>
-            <option value="coily">Coily</option>
-            <option value="bun">Bun</option>
-            <option value="afro">Afro</option>
-            <option value="mohawk">Mohawk</option>
-            <option value="spiky">Spiky</option>
-            <option value="hijab">Hijab</option>
-          </select>
-        </label>
-        <label>
-          Hair color
-          <select id="hairColor">
-            <option value="auto">Auto</option>
-            <option value="black">Black</option>
-            <option value="brown">Brown</option>
-            <option value="blonde">Blonde</option>
-            <option value="red">Red</option>
-            <option value="gray">Gray</option>
-            <option value="white">White</option>
-          </select>
-        </label>
-        <label>
-          Eyes
-          <select id="eyes">
-            <option value="auto">Auto</option>
-            <option value="round">Round</option>
-            <option value="smile">Smile</option>
-            <option value="sleepy">Sleepy</option>
-            <option value="wink">Wink</option>
-          </select>
-        </label>
-        <label>
-          Mouth
-          <select id="mouth">
-            <option value="auto">Auto</option>
-            <option value="smile">Smile</option>
-            <option value="neutral">Neutral</option>
-            <option value="open">Open</option>
-          </select>
-        </label>
-        <label>
-          Facial hair
-          <select id="facialHair">
-            <option value="auto">Auto</option>
-            <option value="none">None</option>
-            <option value="stubble">Stubble</option>
-            <option value="mustache">Mustache</option>
-            <option value="goatee">Goatee</option>
-            <option value="beard">Beard</option>
-            <option value="fullBeard">Full beard</option>
-            <option value="sideburns">Sideburns</option>
-          </select>
-        </label>
-        <label>
-          Headwear
-          <select id="headwear">
-            <option value="auto">Auto</option>
-            <option value="none" selected>None</option>
-            <option value="beanie">Beanie</option>
-            <option value="cap">Cap</option>
-            <option value="turban">Turban</option>
-            <option value="bucket">Bucket</option>
-            <option value="hijab">Hijab</option>
-          </select>
-        </label>
-        <label>
-          Accessories
-          <select id="accessories">
-            <option value="auto">Auto</option>
-            <option value="none">None</option>
-            <option value="glasses">Glasses</option>
-            <option value="sunglasses">Sunglasses</option>
-          </select>
-        </label>
-        <label>
-          Eyebrows
-          <select id="eyebrows">
-            <option value="auto">Auto</option>
-            <option value="flat">Flat</option>
-            <option value="raised">Raised</option>
-            <option value="angled">Angled</option>
-          </select>
-        </label>
-        <label>
-          Nose
-          <select id="nose">
-            <option value="auto">Auto</option>
-            <option value="soft">Soft</option>
-            <option value="button">Button</option>
-            <option value="wide">Wide</option>
-          </select>
-        </label>
-        <label>
-          Freckles
-          <select id="freckles">
-            <option value="auto">Auto</option>
-            <option value="none">None</option>
-            <option value="light">Light</option>
-            <option value="heavy">Heavy</option>
-          </select>
-        </label>
-        <label>
-          Blush
-          <select id="blush">
-            <option value="auto">Auto</option>
-            <option value="none">None</option>
-            <option value="soft">Soft</option>
-          </select>
-        </label>
-        <label>
-          Earrings
-          <select id="earrings">
-            <option value="auto">Auto</option>
-            <option value="none">None</option>
-            <option value="studs">Studs</option>
-            <option value="hoops">Hoops</option>
-          </select>
-        </label>
-        <label>
-          Background
-          <select id="background">
-            <option value="auto">Auto</option>
-            <option value="transparent">Transparent</option>
-            <option value="gradient">Gradient</option>
-            <option value="dots">Dots</option>
-            <option value="rings">Rings</option>
-            <option value="grid">Grid</option>
-            <option value="#dbeafe">Blue</option>
-            <option value="#dcfce7">Green</option>
-            <option value="#fce7f3">Pink</option>
-            <option value="#ede9fe">Purple</option>
-          </select>
-        </label>
-        <label>
-          Clothing
-          <select id="clothing">
-            <option value="auto">Auto</option>
-            <option value="#2563eb">Blue</option>
-            <option value="#dc2626">Red</option>
-            <option value="#16a34a">Green</option>
-            <option value="#7c3aed">Purple</option>
-            <option value="#475569">Slate</option>
-          </select>
-        </label>
-        <label>
-          Status
-          <select id="status">
-            <option value="none">None</option>
-            <option value="online">Online</option>
-            <option value="busy">Busy</option>
-            <option value="away">Away</option>
-            <option value="offline">Offline</option>
-          </select>
-        </label>
-        <label>
-          Status shape
-          <select id="statusShape">
-            <option value="dot">Dot</option>
-            <option value="ring">Ring</option>
-          </select>
-        </label>
-        <label>
-          Status position
-          <select id="statusPosition">
-            <option value="bottom-right">Bottom right</option>
-            <option value="bottom-left">Bottom left</option>
-            <option value="top-right">Top right</option>
-            <option value="top-left">Top left</option>
-          </select>
-        </label>
-        <label>
-          Status pulse
-          <select id="statusPulse">
-            <option value="off">Off</option>
-            <option value="on">On</option>
-          </select>
-        </label>
-        <label>
-          Shape
-          <select id="radius">
-            <option value="50%">Circle</option>
-            <option value="28">Squircle</option>
-            <option value="12">Rounded</option>
-            <option value="0">Square</option>
-          </select>
-        </label>
-        <label>
-          Theme (palette)
-          <select id="theme">
-            <option value="default">Default</option>
-            <option value="mono">Mono</option>
-            <option value="sunset">Sunset</option>
-            <option value="ocean">Ocean</option>
-            <option value="forest">Forest</option>
-          </select>
-        </label>
-        <label>
-          Initials weight
-          <select id="fontWeight">
-            <option value="800">Bold (800)</option>
-            <option value="400">Regular (400)</option>
-            <option value="600">Medium (600)</option>
-            <option value="900">Black (900)</option>
-          </select>
-        </label>
-        </section>
+    <nav class="nav">
+      <div class="nav-inner">
+        <a class="logo" href="#top">
+          <span class="logo-mark" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" aria-hidden="true">
+              <clipPath id="castTileClip"><rect x="0" y="0" width="96" height="96" rx="26"></rect></clipPath>
+              <rect x="0" y="0" width="96" height="96" rx="26" fill="#181C2C"></rect>
+              <g clip-path="url(#castTileClip)">
+                <circle cx="48" cy="38" r="17" fill="#3ECFEA"></circle>
+                <ellipse cx="48" cy="84" rx="28" ry="22" fill="#A78BFA"></ellipse>
+              </g>
+              <circle cx="76" cy="76" r="9" fill="#34D399" stroke="#181C2C" stroke-width="5"></circle>
+            </svg>
+          </span>
+          <span class="logo-word">cast</span>
+          <span class="version-pill">v1.0.0</span>
+        </a>
+        <div class="nav-links">
+          <a href="#playground">Playground</a>
+          <a href="#styles">Styles</a>
+          <a href="#code">Code</a>
+          <a class="nav-icon" href="https://github.com/go4cas/cast" target="_blank" rel="noopener noreferrer" aria-label="Cast on GitHub">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          </a>
+          <a class="nav-icon" href="https://www.npmjs.com/package/cast-avatar" target="_blank" rel="noopener noreferrer" aria-label="Cast on npm">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0H1.763zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113V5.323z"/></svg>
+          </a>
+          <button class="mode-toggle" id="mode-toggle" type="button" aria-label="Toggle color theme">theme</button>
+        </div>
       </div>
+    </nav>
 
-      <section class="gallery-section" aria-labelledby="gallery-title">
-        <h2 id="gallery-title">Style variations</h2>
-        <p>Compare 36 deterministic outputs across every avatar style. These examples use fixed seeds and trait overrides so you can see the range without changing the live controls.</p>
-        <div id="variationGallery"></div>
+    <header class="hero" id="top">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="kicker">Deterministic SVG avatars</p>
+          <h1>One seed in, the same avatar out — every time.</h1>
+          <p class="hero-sub">Cast is a tiny, dependency-free library that turns any string into a crisp SVG avatar. Nine styles, deep traits, themeable palettes, and presence badges — all generated in the browser, no network required.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#playground">Open the playground</a>
+            <button class="install-chip" id="hero-install" type="button">
+              <span class="mono">npm install cast-avatar</span>
+              <span class="chip-copy">copy</span>
+            </button>
+          </div>
+          <ul class="hero-facts">
+            <li>Zero dependencies</li>
+            <li>9 styles</li>
+            <li>Deterministic</li>
+            <li>TypeScript types</li>
+            <li>Web component</li>
+            <li>MIT</li>
+          </ul>
+        </div>
+        <div class="hero-roster" id="hero-roster" aria-hidden="true"></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section" id="playground">
+        <h2>Playground</h2>
+        <p class="section-sub">Tweak the seed and traits and watch the avatar resolve live. Everything here runs in your browser — copy the SVG, grab a data-URI, export a PNG, or share a link to this exact avatar.</p>
+        <div class="pg-grid">
+          <div class="pg-preview">
+            <div class="preview-card">
+              <div class="preview-stage" id="preview-stage" aria-live="polite"></div>
+              <div class="seed-field">
+                <span class="field-label">Seed</span>
+                <input id="seed-input" spellcheck="false" autocomplete="off" aria-label="Avatar seed">
+              </div>
+              <div class="preview-actions">
+                <button class="btn btn-ghost btn-sm" id="btn-random" type="button">Randomize</button>
+                <button class="btn btn-ghost btn-sm" id="btn-copy-svg" type="button">Copy SVG</button>
+                <button class="btn btn-ghost btn-sm" id="btn-copy-uri" type="button">Copy URI</button>
+                <button class="btn btn-ghost btn-sm" id="btn-png" type="button">PNG</button>
+                <button class="btn btn-ghost btn-sm" id="btn-link" type="button">Share</button>
+              </div>
+            </div>
+          </div>
+          <div class="pg-controls" id="pg-controls"></div>
+        </div>
       </section>
 
-      <section class="snippets" aria-label="Usage">
-        <div class="snippet">
-          <h3>Install &amp; render</h3>
-          <pre>npm install cast-avatar
+      <section class="section" id="styles">
+        <h2>Nine styles, one seed</h2>
+        <p class="section-sub">Every style is deterministic from the seed. The same identity reads consistently across the illustrated faces, while the abstract styles derive their composition from the seed alone.</p>
+        <div class="gallery-grid" id="gallery-grid"></div>
+      </section>
 
-import { createAvatar } from 'cast-avatar';
-const svg = createAvatar('ada@example.com', { style: 'line', status: 'online' });</pre>
-        </div>
-        <div class="snippet">
-          <h3>Web component (or via CDN, no build)</h3>
-          <pre>&lt;script type="module"
-  src="https://cdn.jsdelivr.net/npm/cast-avatar/element/+esm"&gt;&lt;/script&gt;
-&lt;cast-avatar seed="ada@example.com" variant="portrait" size="96"&gt;&lt;/cast-avatar&gt;</pre>
-        </div>
-        <div class="snippet">
-          <h3>Theme a roster with a custom palette</h3>
-          <pre>import { createAvatarSprite } from 'cast-avatar';
+      <section class="section" id="code">
+        <h2>Drop it in</h2>
+        <p class="section-sub">Use it from npm, straight from a CDN, or as a custom element. Same deterministic output everywhere.</p>
+        <div class="code-cols">
+          <figure class="code-card">
+            <figcaption>npm</figcaption>
+            <button class="code-copy" type="button" data-copy="import { createAvatar } from 'cast-avatar';&#10;&#10;const svg = createAvatar('ada@example.com', { style: 'portrait', status: 'online' });">copy</button>
+<pre><code><span class="c-key">import</span> { createAvatar } <span class="c-key">from</span> <span class="c-str">'cast-avatar'</span>;
 
-const brand = { backgrounds: ['#0f172a'], shapeColors: ['#22d3ee', '#a78bfa'] };
-const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, columns: 8 });</pre>
+<span class="c-key">const</span> svg = <span class="c-key">createAvatar</span>(<span class="c-str">'ada@example.com'</span>, {
+  style: <span class="c-str">'portrait'</span>,
+  status: <span class="c-str">'online'</span>,
+});</code></pre>
+          </figure>
+          <figure class="code-card">
+            <figcaption>CDN / web component</figcaption>
+            <button class="code-copy" type="button" data-copy="<script type=&quot;module&quot; src=&quot;https://cdn.jsdelivr.net/npm/cast-avatar/element/+esm&quot;></script>&#10;<cast-avatar seed=&quot;ada@example.com&quot; variant=&quot;portrait&quot; size=&quot;96&quot;></cast-avatar>">copy</button>
+<pre><code><span class="c-dim">&lt;script type="module"
+  src="https://cdn.jsdelivr.net/npm/cast-avatar/element/+esm"&gt;&lt;/script&gt;</span>
+
+<span class="c-key">&lt;cast-avatar</span> seed=<span class="c-str">"ada@example.com"</span> variant=<span class="c-str">"portrait"</span> size=<span class="c-num">"96"</span><span class="c-key">&gt;&lt;/cast-avatar&gt;</span></code></pre>
+          </figure>
+          <figure class="code-card">
+            <figcaption>Theme a roster</figcaption>
+            <button class="code-copy" type="button" data-copy="import { createAvatarSprite } from 'cast-avatar';&#10;&#10;const brand = { backgrounds: ['#0f172a'], shapeColors: ['#22d3ee', '#a78bfa'] };&#10;const sheet = createAvatarSprite(agentIds, { style: 'bot', palette: brand, columns: 8 });">copy</button>
+<pre><code><span class="c-key">import</span> { createAvatarSprite } <span class="c-key">from</span> <span class="c-str">'cast-avatar'</span>;
+
+<span class="c-key">const</span> brand = { backgrounds: [<span class="c-str">'#0f172a'</span>], shapeColors: [<span class="c-str">'#22d3ee'</span>, <span class="c-str">'#a78bfa'</span>] };
+<span class="c-key">const</span> sheet = <span class="c-key">createAvatarSprite</span>(agentIds, { style: <span class="c-str">'bot'</span>, palette: brand, columns: <span class="c-num">8</span> });</code></pre>
+          </figure>
+          <figure class="code-card">
+            <figcaption>Persist by seed</figcaption>
+            <button class="code-copy" type="button" data-copy="import { avatarHash, encodeAvatar } from 'cast-avatar';&#10;&#10;// store the seed (and pin the version) for a stable avatar&#10;const key = avatarHash('agent-7');&#10;const config = encodeAvatar('agent-7', { style: 'portrait' });">copy</button>
+<pre><code><span class="c-key">import</span> { avatarHash, encodeAvatar } <span class="c-key">from</span> <span class="c-str">'cast-avatar'</span>;
+
+<span class="c-dim">// store the seed for a stable avatar; encodeAvatar pins the exact config</span>
+<span class="c-key">const</span> key = <span class="c-key">avatarHash</span>(<span class="c-str">'agent-7'</span>);
+<span class="c-key">const</span> config = <span class="c-key">encodeAvatar</span>(<span class="c-str">'agent-7'</span>, { style: <span class="c-str">'portrait'</span> });</code></pre>
+          </figure>
         </div>
       </section>
     </main>
 
+    <footer class="footer">
+      <div class="footer-base">
+        <span class="footer-brand">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" aria-hidden="true">
+            <clipPath id="castFootClip"><rect x="0" y="0" width="96" height="96" rx="26"></rect></clipPath>
+            <rect x="0" y="0" width="96" height="96" rx="26" fill="#181C2C"></rect>
+            <g clip-path="url(#castFootClip)">
+              <circle cx="48" cy="38" r="17" fill="#3ECFEA"></circle>
+              <ellipse cx="48" cy="84" rx="28" ry="22" fill="#A78BFA"></ellipse>
+            </g>
+            <circle cx="76" cy="76" r="9" fill="#34D399" stroke="#181C2C" stroke-width="5"></circle>
+          </svg>
+          cast
+        </span>
+        <p class="footer-note">Tiny, dependency-free, deterministic SVG avatars. Inspired by <a href="https://www.dicebear.com/" target="_blank" rel="noopener noreferrer">DiceBear</a>. MIT licensed.</p>
+        <div class="footer-links">
+          <a class="nav-icon" href="https://github.com/go4cas/cast" target="_blank" rel="noopener noreferrer" aria-label="Cast on GitHub">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          </a>
+          <a class="nav-icon" href="https://www.npmjs.com/package/cast-avatar" target="_blank" rel="noopener noreferrer" aria-label="Cast on npm">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0H1.763zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113V5.323z"/></svg>
+          </a>
+          <a href="https://github.com/go4cas/cast/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a>
+        </div>
+      </div>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <script type="module">
-      import { avatarHash, createAvatar, createAvatarDataUri, decodeAvatar, encodeAvatar, mountAvatar } from './src/avatar.js';
+      // Cast demo site — playground, gallery, hero roster.
+      // Loads the library from the repo source so the page always matches this checkout.
+      import {
+        createAvatar,
+        avatarOptions,
+        toDataUri,
+      } from './src/avatar.js';
 
-      // Demo control ids -> the trait key they feed (the `hair` control maps to traits.hairStyle).
-      const traitFields = {
-        gender: 'gender', skinTone: 'skinTone', faceShape: 'faceShape',
-        eyebrows: 'eyebrows', eyes: 'eyes', nose: 'nose', mouth: 'mouth',
-        hair: 'hairStyle', hairColor: 'hairColor', facialHair: 'facialHair',
-        freckles: 'freckles', blush: 'blush', headwear: 'headwear',
-        earrings: 'earrings', accessories: 'accessories', clothing: 'clothing'
-      };
-      const traitControls = Object.keys(traitFields).map((id) => document.getElementById(id));
-      const seedInput = document.getElementById('seed');
-      const sizeInput = document.getElementById('size');
-      const styleInput = document.getElementById('style');
-      const sizeValue = document.getElementById('sizeValue');
-      const backgroundInput = document.getElementById('background');
-      const statusInput = document.getElementById('status');
-      const statusShapeInput = document.getElementById('statusShape');
-      const statusPositionInput = document.getElementById('statusPosition');
-      const statusPulseInput = document.getElementById('statusPulse');
-      const radiusInput = document.getElementById('radius');
-      const themeInput = document.getElementById('theme');
-      const fontWeightInput = document.getElementById('fontWeight');
-      const hash = document.getElementById('hash');
-      const variationGallery = document.getElementById('variationGallery');
+      /* ---------------- helpers ---------------- */
 
-      // Custom palette presets (showcasing the `palette` option).
-      const palettes = {
-        mono: { backgrounds: ['#e5e7eb', '#f3f4f6'], shapeColors: ['#111827', '#374151', '#6b7280'], clothingColors: ['#1f2937', '#4b5563'] },
-        sunset: { backgrounds: ['#fff1e6', '#ffe3ec'], shapeColors: ['#f97316', '#ef4444', '#db2777', '#f59e0b'], clothingColors: ['#ea580c', '#be123c'] },
-        ocean: { backgrounds: ['#e0f2fe', '#cffafe'], shapeColors: ['#0ea5e9', '#06b6d4', '#6366f1', '#14b8a6'], clothingColors: ['#0284c7', '#0891b2'] },
-        forest: { backgrounds: ['#dcfce7', '#ecfccb'], shapeColors: ['#16a34a', '#65a30d', '#0d9488', '#4d7c0f'], clothingColors: ['#15803d', '#3f6212'] }
-      };
-      const randomizeButton = document.getElementById('randomize');
-      const copySvgButton = document.getElementById('copySvg');
-      const copyUriButton = document.getElementById('copyUri');
-      const downloadButton = document.getElementById('downloadPng');
-      const copyLinkButton = document.getElementById('copyLink');
-      let suppressHashChange = false;
+      const $ = (sel) => document.querySelector(sel);
 
-      const variations = {
-        portrait: [
-          { label: 'Long + glasses', seed: 'mara@studio.co', traits: { skinTone: 'medium', hairStyle: 'long', hairColor: 'brown', mouth: 'smile', accessories: 'glasses' } },
-          { label: 'Short + beard', seed: 'theo@studio.co', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'black', facialHair: 'beard' } },
-          { label: 'Hijab', seed: 'aisha@studio.co', traits: { skinTone: 'dark', hairStyle: 'hijab' } },
-          { label: 'Bun + neutral', seed: 'yuki@studio.co', traits: { skinTone: 'light', hairStyle: 'bun', hairColor: 'red', mouth: 'neutral' } }
-        ],
-        cartoon: [
-          { label: 'Curly + glasses', seed: 'maya@example.com', traits: { gender: 'feminine', skinTone: 'medium', hairStyle: 'curly', hairColor: 'black', eyes: 'round', mouth: 'smile', accessories: 'glasses' } },
-          { label: 'Short + beard', seed: 'noah@example.com', traits: { gender: 'masculine', skinTone: 'mediumLight', hairStyle: 'short', hairColor: 'brown', facialHair: 'beard', eyes: 'sleepy', mouth: 'neutral' } },
-          { label: 'Hijab + smile', seed: 'amina@example.com', traits: { gender: 'feminine', skinTone: 'dark', hairStyle: 'hijab', headwear: 'hijab', eyes: 'smile', mouth: 'smile' } },
-          { label: 'Bun + sunglasses', seed: 'lee@example.com', traits: { gender: 'neutral', skinTone: 'light', hairStyle: 'bun', hairColor: 'red', eyes: 'wink', accessories: 'sunglasses' } }
-        ],
-        minimal: [
-          { label: 'Flat one', seed: 'min-iris', traits: { skinTone: 'medium', hairStyle: 'short', hairColor: 'black' } },
-          { label: 'Flat two', seed: 'min-arlo', traits: { skinTone: 'mediumLight', hairStyle: 'long', hairColor: 'brown', accessories: 'glasses' } },
-          { label: 'Flat three', seed: 'min-noor', traits: { skinTone: 'dark', hairStyle: 'hijab' } },
-          { label: 'Flat four', seed: 'min-sky', traits: { skinTone: 'light', hairStyle: 'bun', hairColor: 'red', mouth: 'smile' } }
-        ],
-        line: [
-          { label: 'Line one', seed: 'line-ada', background: 'transparent', traits: { hairStyle: 'short', accessories: 'glasses' } },
-          { label: 'Line two', seed: 'line-bo', background: 'transparent', traits: { hairStyle: 'long', mouth: 'smile' } },
-          { label: 'Line three', seed: 'line-cy', background: 'transparent', traits: { hairStyle: 'hijab' } },
-          { label: 'Line four', seed: 'line-di', background: 'transparent', traits: { hairStyle: 'bun', facialHair: 'beard' } }
-        ],
-        pixel: [
-          { label: 'Pixel one', seed: 'pixel-aurora', background: '#e0f2fe' },
-          { label: 'Pixel two', seed: 'pixel-ember', background: '#fee2e2' },
-          { label: 'Pixel three', seed: 'pixel-moss', background: '#dcfce7' },
-          { label: 'Pixel four', seed: 'pixel-violet', background: '#ede9fe' }
-        ],
-        initials: [
-          { label: 'Ada Lovelace', seed: 'Ada Lovelace', initials: 'AL', background: '#dbeafe' },
-          { label: 'Grace Hopper', seed: 'Grace Hopper', initials: 'GH', background: '#dcfce7' },
-          { label: 'Katherine Johnson', seed: 'Katherine Johnson', initials: 'KJ', background: '#fef3c7' },
-          { label: 'Radia Perlman', seed: 'Radia Perlman', initials: 'RP', background: '#fce7f3' }
-        ],
-        bot: [
-          { label: 'Bot one', seed: 'bot-zap', background: '#dbeafe' },
-          { label: 'Bot two', seed: 'bot-circuit', background: '#fef3c7' },
-          { label: 'Bot three', seed: 'bot-pixel', background: '#dcfce7' },
-          { label: 'Bot four', seed: 'bot-rust', background: '#fee2e2' }
-        ],
-        shapes: [
-          { label: 'Blue geometry', seed: 'shape-blue', background: '#dbeafe' },
-          { label: 'Warm geometry', seed: 'shape-warm', background: '#fee2e2' },
-          { label: 'Green geometry', seed: 'shape-green', background: '#dcfce7' },
-          { label: 'Purple geometry', seed: 'shape-purple', background: '#ede9fe' }
-        ],
-        mesh: [
-          { label: 'Mesh one', seed: 'mesh-aurora' },
-          { label: 'Mesh two', seed: 'mesh-dusk' },
-          { label: 'Mesh three', seed: 'mesh-tide' },
-          { label: 'Mesh four', seed: 'mesh-bloom' }
-        ]
-      };
-
-      function renderVariationGallery() {
-        variationGallery.innerHTML = Object.entries(variations).map(([style, examples]) => `
-          <section class="style-group" aria-labelledby="${style}-examples">
-            <h3 id="${style}-examples">${style}</h3>
-            <div class="gallery-grid">
-              ${examples.map((example, index) => `
-                <article class="card variation-card">
-                  <div id="variation-${style}-${index}" class="avatar"></div>
-                  <strong>${example.label}</strong>
-                  <p>${example.seed}</p>
-                </article>
-              `).join('')}
-            </div>
-          </section>
-        `).join('');
-
-        Object.entries(variations).forEach(([style, examples]) => {
-          examples.forEach((example, index) => {
-            mountAvatar(`#variation-${style}-${index}`, {
-              ...example,
-              style,
-              size: 128,
-              title: `${example.label} ${style} avatar`
-            });
-          });
-        });
+      function humanize(v) {
+        if (v === 'auto') return 'Auto';
+        return String(v)
+          .replace(/([a-z])([A-Z])/g, '$1 $2')
+          .replace(/[-_]/g, ' ')
+          .replace(/^./, (c) => c.toUpperCase());
       }
 
-      function options() {
+      function toast(msg) {
+        const el = $('#toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => el.classList.remove('show'), 1800);
+      }
+
+      function copyText(text, msg) {
+        navigator.clipboard.writeText(text).then(
+          () => toast(msg),
+          () => toast('Copy failed — clipboard blocked'),
+        );
+      }
+
+      const opt = (key, fallback) => (avatarOptions && avatarOptions[key]) || fallback;
+
+      /* ---------------- palettes & value maps ---------------- */
+
+      const THEMES = {
+        default: undefined,
+        mono: {
+          backgrounds: ['#E5E7EB', '#D1D5DB'],
+          shapeColors: ['#111827', '#4B5563', '#9CA3AF'],
+          clothingColors: ['#111827', '#374151'],
+          inks: ['#111827'],
+        },
+        sunset: {
+          backgrounds: ['#FFE4D6', '#FFD6E0'],
+          shapeColors: ['#F97316', '#F43F5E', '#FACC15'],
+          clothingColors: ['#F97316', '#E11D48'],
+        },
+        ocean: {
+          backgrounds: ['#D8F3F7', '#DBEAFE'],
+          shapeColors: ['#0EA5E9', '#22D3EE', '#6366F1'],
+          clothingColors: ['#0EA5E9', '#0369A1'],
+        },
+        forest: {
+          backgrounds: ['#DCFCE7', '#ECFCCB'],
+          shapeColors: ['#16A34A', '#65A30D', '#0D9488'],
+          clothingColors: ['#15803D', '#3F6212'],
+        },
+      };
+
+      const BACKGROUNDS = {
+        auto: 'auto', transparent: 'transparent', gradient: 'gradient',
+        dots: 'dots', rings: 'rings', grid: 'grid',
+        blue: '#BFDBFE', green: '#BBF7D0', pink: '#FBCFE8', purple: '#DDD6FE',
+      };
+
+      const CLOTHING = {
+        auto: 'auto', blue: '#3B82F6', red: '#EF4444',
+        green: '#22C55E', purple: '#8B5CF6', slate: '#64748B',
+      };
+
+      const SHAPES = { circle: '50%', squircle: '28%', rounded: '16', square: '0' };
+
+      /* ---------------- state ---------------- */
+
+      const TRAIT_KEYS = [
+        'gender', 'skinTone', 'faceShape', 'hairStyle', 'hairColor', 'eyebrows',
+        'eyes', 'nose', 'mouth', 'facialHair', 'freckles', 'blush', 'headwear',
+        'earrings', 'accessories',
+      ];
+
+      const state = {
+        seed: 'ada@example.com',
+        style: 'portrait',
+        size: 256,
+        shape: 'circle',
+        theme: 'default',
+        background: 'auto',
+        clothing: 'auto',
+        fontWeight: '800',
+        status: 'none',
+        statusShape: 'dot',
+        statusPosition: 'bottom-right',
+        statusPulse: 'off',
+        traits: Object.fromEntries(TRAIT_KEYS.map((k) => [k, 'auto'])),
+      };
+
+      function buildOptions(s = state) {
         const traits = {};
-        Object.values(traitFields).forEach((field, index) => {
-          traits[field] = traitControls[index].value;
-        });
-        return {
-          seed: seedInput.value,
-          style: styleInput.value,
-          size: Number(sizeInput.value),
-          radius: radiusInput.value,
-          background: backgroundInput.value,
-          palette: palettes[themeInput.value],
-          fontWeight: Number(fontWeightInput.value),
-          status: statusInput.value === 'none' ? undefined : {
-            state: statusInput.value,
-            shape: statusShapeInput.value,
-            position: statusPositionInput.value,
-            pulse: statusPulseInput.value === 'on'
-          },
-          traits
+        for (const k of TRAIT_KEYS) if (s.traits[k] !== 'auto') traits[k] = s.traits[k];
+        const o = {
+          seed: s.seed || 'cast',
+          style: s.style,
+          size: s.size,
+          radius: SHAPES[s.shape],
+          background: BACKGROUNDS[s.background] ?? s.background,
+          clothing: CLOTHING[s.clothing] ?? s.clothing,
+          fontWeight: Number(s.fontWeight),
         };
+        if (s.theme !== 'default' && THEMES[s.theme]) o.palette = THEMES[s.theme];
+        if (Object.keys(traits).length) o.traits = traits;
+        if (s.status !== 'none') {
+          o.status = {
+            state: s.status,
+            shape: s.statusShape,
+            position: s.statusPosition,
+            pulse: s.statusPulse === 'on',
+          };
+        }
+        return o;
       }
 
-      // Find a preset name whose palette matches a decoded config (for restoring a shared link).
-      function themeNameFor(palette) {
-        if (!palette) {
-          return 'default';
-        }
-        const match = Object.keys(palettes).find((name) => JSON.stringify(palettes[name]) === JSON.stringify(palette));
-        return match || 'default';
-      }
+      /* ---------------- preview ---------------- */
 
-      function render(updateHash) {
-        const current = options();
-        mountAvatar('#preview', current);
-        sizeValue.textContent = `${current.size}px`;
-        hash.textContent = `hash: ${avatarHash(current)}`;
-        if (updateHash) {
-          suppressHashChange = true;
-          location.hash = encodeAvatar(current);
-        }
-      }
+      let currentSvg = '';
 
-      // Restore a select to a value, adding the option first if it isn't listed
-      // (e.g. a resolved background/clothing color from a shared link).
-      function setSelect(select, value) {
-        const str = String(value);
-        if (![...select.options].some((option) => option.value === str)) {
-          const option = document.createElement('option');
-          option.value = str;
-          option.textContent = str;
-          select.appendChild(option);
-        }
-        select.value = str;
-      }
-
-      function applyConfig(config) {
-        seedInput.value = config.seed;
-        sizeInput.value = config.size;
-        setSelect(styleInput, config.style);
-        setSelect(radiusInput, config.radius);
-        setSelect(themeInput, themeNameFor(config.palette));
-        setSelect(fontWeightInput, config.fontWeight ?? 800);
-        setSelect(backgroundInput, config.background);
-        const status = config.status;
-        if (!status) {
-          setSelect(statusInput, 'none');
-        } else if (typeof status === 'string') {
-          setSelect(statusInput, status);
-        } else {
-          setSelect(statusInput, status.state);
-          setSelect(statusShapeInput, status.shape || 'dot');
-          setSelect(statusPositionInput, status.position || 'bottom-right');
-          setSelect(statusPulseInput, status.pulse ? 'on' : 'off');
-        }
-        Object.entries(traitFields).forEach(([id, field]) => {
-          setSelect(document.getElementById(id), config.traits[field]);
-        });
-      }
-
-      function loadFromHash() {
-        const encoded = location.hash.slice(1);
-        if (!encoded) {
-          return false;
-        }
+      function renderPreview() {
         try {
-          applyConfig(decodeAvatar(encoded));
-          render(false);
-          return true;
-        } catch (error) {
-          return false;
+          currentSvg = createAvatar(buildOptions());
+          $('#preview-stage').innerHTML = currentSvg;
+        } catch (e) {
+          console.error(e);
+          $('#preview-stage').innerHTML = '<p style="color:var(--dim);font-size:14px;">Could not render: ' + e.message + '</p>';
         }
       }
 
-      function flash(button, message) {
-        const original = button.textContent;
-        button.textContent = message;
-        button.disabled = true;
-        setTimeout(() => {
-          button.textContent = original;
-          button.disabled = false;
-        }, 1200);
+      /* ---------------- controls ---------------- */
+
+      const CONTROL_GROUPS = [
+        {
+          title: 'Identity',
+          fields: [
+            { key: 'style', label: 'Style', values: opt('style', ['portrait', 'cartoon', 'minimal', 'line', 'pixel', 'initials', 'bot', 'shapes', 'mesh']).filter((s) => s !== 'face') },
+            { key: 'size', label: 'Size', type: 'range', min: 64, max: 512, step: 16 },
+            { key: 'shape', label: 'Shape', values: Object.keys(SHAPES) },
+            { key: 'theme', label: 'Theme (palette)', values: Object.keys(THEMES) },
+            { key: 'background', label: 'Background', values: Object.keys(BACKGROUNDS) },
+            { key: 'clothing', label: 'Clothing', values: Object.keys(CLOTHING) },
+            { key: 'fontWeight', label: 'Initials weight', values: ['400', '600', '800', '900'] },
+          ],
+        },
+        {
+          title: 'Traits',
+          fields: TRAIT_KEYS.map((k) => ({
+            key: k, label: humanize(k), trait: true,
+            values: ['auto', ...opt(k, []).filter((v) => v !== 'auto')],
+          })),
+        },
+        {
+          title: 'Presence',
+          fields: [
+            { key: 'status', label: 'Status', values: ['none', 'online', 'busy', 'away', 'offline'] },
+            { key: 'statusShape', label: 'Badge shape', values: ['dot', 'ring'] },
+            { key: 'statusPosition', label: 'Position', values: opt('statusPosition', ['bottom-right', 'bottom-left', 'top-right', 'top-left']) },
+            { key: 'statusPulse', label: 'Pulse', values: ['off', 'on'] },
+          ],
+        },
+      ];
+
+      function buildControls() {
+        const root = $('#pg-controls');
+        root.textContent = '';
+        for (const group of CONTROL_GROUPS) {
+          const section = document.createElement('section');
+          section.className = 'control-group';
+          const h = document.createElement('h3');
+          h.textContent = group.title;
+          section.appendChild(h);
+          const grid = document.createElement('div');
+          grid.className = 'control-grid';
+          for (const f of group.fields) {
+            grid.appendChild(buildField(f));
+          }
+          section.appendChild(grid);
+          root.appendChild(section);
+        }
       }
 
-      randomizeButton.addEventListener('click', () => {
-        seedInput.value = Math.random().toString(36).slice(2, 10);
-        [...traitControls, backgroundInput].forEach((control) => {
-          control.value = 'auto';
-        });
-        render(true);
-      });
+      function buildField(f) {
+        const wrap = document.createElement('label');
+        wrap.className = 'field';
+        const label = document.createElement('span');
+        label.className = 'field-label';
+        label.textContent = f.label;
+        wrap.appendChild(label);
 
-      copySvgButton.addEventListener('click', async () => {
-        await navigator.clipboard.writeText(createAvatar(options()));
-        flash(copySvgButton, 'Copied!');
-      });
-
-      copyUriButton.addEventListener('click', async () => {
-        await navigator.clipboard.writeText(createAvatarDataUri(options()));
-        flash(copyUriButton, 'Copied!');
-      });
-
-      copyLinkButton.addEventListener('click', async () => {
-        render(true);
-        await navigator.clipboard.writeText(location.href);
-        flash(copyLinkButton, 'Link copied!');
-      });
-
-      downloadButton.addEventListener('click', () => {
-        const current = options();
-        const size = current.size || 128;
-        const image = new Image();
-        image.addEventListener('load', () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = size;
-          canvas.height = size;
-          canvas.getContext('2d').drawImage(image, 0, 0, size, size);
-          canvas.toBlob((blob) => {
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `${current.seed || 'avatar'}.png`;
-            link.click();
-            URL.revokeObjectURL(link.href);
+        if (f.type === 'range') {
+          const input = document.createElement('input');
+          input.type = 'range';
+          input.min = f.min; input.max = f.max; input.step = f.step;
+          input.value = state.size;
+          input.dataset.key = f.key;
+          label.textContent = f.label + ' · ' + state.size + 'px';
+          input.addEventListener('input', () => {
+            state.size = Number(input.value);
+            label.textContent = f.label + ' · ' + state.size + 'px';
+            renderPreview();
           });
-        });
-        image.src = createAvatarDataUri(current);
-      });
-
-      window.addEventListener('hashchange', () => {
-        if (suppressHashChange) {
-          suppressHashChange = false;
-          return;
+          wrap.appendChild(input);
+          return wrap;
         }
-        loadFromHash();
-      });
 
-      [seedInput, sizeInput, styleInput, radiusInput, themeInput, fontWeightInput, backgroundInput, statusInput, statusShapeInput, statusPositionInput, statusPulseInput, ...traitControls].forEach((control) => control.addEventListener('input', () => render(true)));
-      renderVariationGallery();
-      if (!loadFromHash()) {
-        render(false);
+        const select = document.createElement('select');
+        select.dataset.key = f.key;
+        for (const v of f.values) {
+          const o = document.createElement('option');
+          o.value = v;
+          o.textContent = humanize(v);
+          select.appendChild(o);
+        }
+        select.value = f.trait ? state.traits[f.key] : state[f.key];
+        select.addEventListener('change', () => {
+          if (f.trait) state.traits[f.key] = select.value;
+          else state[f.key] = select.value;
+          renderPreview();
+        });
+        wrap.appendChild(select);
+        return wrap;
       }
+
+      function syncControls() {
+        document.querySelectorAll('#pg-controls select').forEach((select) => {
+          const k = select.dataset.key;
+          select.value = k in state.traits ? state.traits[k] : state[k];
+        });
+        const range = document.querySelector('#pg-controls input[type="range"]');
+        if (range) {
+          range.value = state.size;
+          range.closest('.field').querySelector('.field-label').textContent = 'Size · ' + state.size + 'px';
+        }
+        $('#seed-input').value = state.seed;
+      }
+
+      /* ---------------- actions ---------------- */
+
+      const RANDOM_NAMES = [
+        'ada', 'grace', 'alan', 'edsger', 'barbara', 'linus', 'margaret', 'dennis',
+        'katherine', 'tim', 'radia', 'vint', 'frances', 'ken', 'hedy', 'guido',
+      ];
+
+      function wireActions() {
+        $('#seed-input').addEventListener('input', (e) => {
+          state.seed = e.target.value;
+          renderPreview();
+        });
+
+        $('#btn-random').addEventListener('click', () => {
+          const name = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+          state.seed = name + '-' + Math.random().toString(36).slice(2, 7);
+          syncControls();
+          renderPreview();
+        });
+
+        $('#btn-copy-svg').addEventListener('click', () => copyText(currentSvg, 'SVG copied'));
+        $('#btn-copy-uri').addEventListener('click', () => copyText(toDataUri(currentSvg), 'Data-URI copied'));
+
+        $('#btn-png').addEventListener('click', () => {
+          const img = new Image();
+          const scale = 2;
+          img.onload = () => {
+            const c = document.createElement('canvas');
+            c.width = state.size * scale;
+            c.height = state.size * scale;
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            const a = document.createElement('a');
+            a.download = 'cast-avatar-' + (state.seed || 'avatar').replace(/[^a-z0-9@._-]/gi, '_') + '.png';
+            a.href = c.toDataURL('image/png');
+            a.click();
+            toast('PNG downloaded');
+          };
+          img.onerror = () => toast('PNG export failed');
+          img.src = toDataUri(currentSvg);
+        });
+
+        $('#btn-link').addEventListener('click', () => {
+          const url = location.origin + location.pathname + '#a=' + encodeURIComponent(btoa(JSON.stringify(state)));
+          copyText(url, 'Link copied');
+        });
+
+        $('#hero-install').addEventListener('click', () => copyText('npm install cast-avatar', 'Install command copied'));
+
+        document.querySelectorAll('.code-copy').forEach((btn) => {
+          btn.addEventListener('click', () => copyText(btn.dataset.copy, 'Copied'));
+        });
+
+        const modeBtn = $('#mode-toggle');
+        const storedMode = localStorage.getItem('cast-mode');
+        if (storedMode) document.documentElement.dataset.mode = storedMode;
+        modeBtn.addEventListener('click', () => {
+          const next = document.documentElement.dataset.mode === 'light' ? 'dark' : 'light';
+          document.documentElement.dataset.mode = next;
+          localStorage.setItem('cast-mode', next);
+        });
+      }
+
+      function restoreFromHash() {
+        const m = location.hash.match(/#a=(.+)/);
+        if (!m) return;
+        try {
+          const saved = JSON.parse(atob(decodeURIComponent(m[1])));
+          if (saved && typeof saved === 'object') {
+            Object.assign(state, saved, { traits: { ...state.traits, ...(saved.traits || {}) } });
+          }
+        } catch (e) {
+          console.warn('Could not restore avatar from URL', e);
+        }
+      }
+
+      /* ---------------- hero roster ---------------- */
+
+      const ROSTER = [
+        ['ada@example.com', 'portrait', 'online'], ['grace.h', 'cartoon', null], ['unit-7', 'bot', 'online'],
+        ['lin.chen', 'minimal', null], ['amara', 'line', null],
+        ['kai_dev', 'pixel', 'busy'], ['June Park', 'initials', null], ['noor', 'portrait', null],
+        ['agent-42', 'shapes', null], ['mesh-01', 'mesh', null],
+        ['sofia.r', 'cartoon', 'away'], ['dev-bot', 'bot', null], ['tomás', 'portrait', 'online'],
+        ['pixel-pal', 'pixel', null], ['Yuki Ito', 'initials', 'offline'],
+      ];
+
+      function renderRoster() {
+        const root = $('#hero-roster');
+        root.textContent = '';
+        root.classList.add('animate');
+        setTimeout(() => root.classList.remove('animate'), 1400);
+        ROSTER.forEach(([seed, style, status], i) => {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.style.animationDelay = (i * 45) + 'ms';
+          cell.title = seed + ' · ' + style;
+          const o = { seed, style, size: 76 };
+          if (status) o.status = status;
+          try { cell.innerHTML = createAvatar(o); } catch (e) { console.warn(e); }
+          root.appendChild(cell);
+        });
+      }
+
+      /* ---------------- style gallery ---------------- */
+
+      const GALLERY_SEEDS = ['ada@example.com', 'grace.h', 'lin.chen', 'kai_dev', 'noor'];
+      const STYLE_BLURBS = {
+        portrait: 'Refined illustrative face — the default.',
+        cartoon: 'Playful, expressive face style.',
+        minimal: 'Flat geometric face.',
+        line: 'Monochrome thin-line face.',
+        pixel: 'Retro pixel character.',
+        initials: 'Clean monogram tile.',
+        bot: 'Friendly seed-built robot.',
+        shapes: 'Abstract geometric identity.',
+        mesh: 'Soft gradient blob.',
+      };
+
+      function renderGallery() {
+        const root = $('#gallery-grid');
+        root.textContent = '';
+        const styles = opt('style', Object.keys(STYLE_BLURBS)).filter((s) => s !== 'auto' && s !== 'face');
+        for (const style of styles) {
+          const card = document.createElement('article');
+          card.className = 'style-card';
+
+          const header = document.createElement('header');
+          const h = document.createElement('h3');
+          h.textContent = style;
+          const btn = document.createElement('button');
+          btn.className = 'try';
+          btn.type = 'button';
+          btn.textContent = 'try it →';
+          btn.addEventListener('click', () => {
+            state.style = style;
+            syncControls();
+            renderPreview();
+            const target = document.getElementById('playground');
+            window.scrollTo({ top: target.offsetTop - 60, behavior: 'smooth' });
+          });
+          header.appendChild(h);
+          header.appendChild(btn);
+          card.appendChild(header);
+
+          const row = document.createElement('div');
+          row.className = 'row';
+          for (const seed of GALLERY_SEEDS) {
+            const holder = document.createElement('div');
+            try { holder.innerHTML = createAvatar(seed, { style, size: 56 }); } catch (e) { console.warn(e); }
+            row.appendChild(holder.firstElementChild || holder);
+          }
+          card.appendChild(row);
+
+          const blurb = document.createElement('p');
+          blurb.style.cssText = 'margin:0;font-size:13.5px;color:var(--dim);';
+          blurb.textContent = STYLE_BLURBS[style] || '';
+          card.appendChild(blurb);
+
+          root.appendChild(card);
+        }
+      }
+
+      /* ---------------- boot ---------------- */
+
+      restoreFromHash();
+      buildControls();
+      syncControls();
+      wireActions();
+      renderPreview();
+      renderRoster();
+      renderGallery();
     </script>
   </body>
 </html>

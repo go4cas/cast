@@ -9,6 +9,17 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-11
+
+First stable release. The public API and trait/option vocabulary are now
+considered stable and follow semantic versioning — a change to the generated
+SVG for an existing seed will be a major bump.
+
+### Added
+
+- Brand logo (`logo.svg`).
+- Redesigned product landing page / demo.
+
 ## [0.6.0] - 2026-06-11
 
 ### Changed
@@ -70,7 +81,8 @@ change — see "Stability and versioning" in the README.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/go4cas/cast/compare/v0.6.0...v1.0.0
 [0.6.0]: https://github.com/go4cas/cast/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/go4cas/cast/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/go4cas/cast/compare/v0.3.0...v0.4.0

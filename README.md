@@ -1,8 +1,11 @@
+<p align="center">
+  <img src="logo.svg" width="96" height="96" alt="Cast logo">
+</p>
+
 # Cast Avatar
 
 [![npm version](https://img.shields.io/npm/v/cast-avatar)](https://www.npmjs.com/package/cast-avatar)
 [![tests](https://img.shields.io/github/actions/workflow/status/go4cas/cast/test.yml?branch=main&label=tests)](https://github.com/go4cas/cast/actions/workflows/test.yml)
-[![minzipped size](https://img.shields.io/bundlephobia/minzip/cast-avatar)](https://bundlephobia.com/package/cast-avatar)
 [![license](https://img.shields.io/npm/l/cast-avatar)](./LICENSE)
 
 **[Live demo →](https://go4cas.github.io/cast/)** — try every style and trait in the browser.
