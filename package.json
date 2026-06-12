@@ -1,6 +1,6 @@
 {
   "name": "cast-avatar",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Dependency-free deterministic SVG avatar generator for browsers.",
   "type": "module",
   "main": "./src/avatar.js",
