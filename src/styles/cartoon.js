@@ -39,7 +39,7 @@ function renderEyes(eyes) {
 
 function renderMouth(mouth) {
   if (mouth === 'open') {
-    return '<ellipse cx="64" cy="82" rx="9" ry="11" fill="#7f1d1d"/><path d="M58 86q6 5 12 0" stroke="#fecaca" stroke-width="3" stroke-linecap="round"/>';
+    return '<ellipse cx="64" cy="83" rx="8" ry="8" fill="#7f1d1d"/><path d="M57 89q7 4 14 0" fill="none" stroke="#e8918a" stroke-width="3" stroke-linecap="round"/>';
   }
 
   if (mouth === 'neutral') {

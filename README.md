@@ -225,7 +225,7 @@ full trait control, render with the JavaScript API instead.
 | Option | Values |
 | --- | --- |
 | `seed` | Any stable string, such as a user ID, email, or username. `name` and `id` are accepted as aliases. |
-| `style` | `portrait` (default), `cartoon`, `minimal`, `line`, `pixel`, `initials`, `bot`, `shapes`, `mesh`; or `auto` for a seed-random style. `face` is a legacy alias for `cartoon`. |
+| `style` | `portrait` (default), `studio`, `cartoon`, `minimal`, `line`, `pixel`, `initials`, `bot`, `shapes`, `mesh`; or `auto` for a seed-random style. `face` is a legacy alias for `cartoon`. |
 | `size` | Pixel size from `24` to `1024`; defaults to `128`. |
 | `background` | Any CSS color, `transparent`, a seeded `gradient`, a seeded pattern (`dots`, `rings`, `grid`), or `auto`. |
 | `radius` | SVG corner radius — a number (px) or CSS length; defaults to `50%` (circle). |
@@ -240,9 +240,10 @@ full trait control, render with the JavaScript API instead.
 For the `initials` style, set `radius: 0` for a square monogram tile or keep the
 default `50%` for a circle, and use `fontWeight`/`fontFamily` to restyle the text.
 
-The styles are deterministic from the seed. `portrait` (the default),
+The styles are deterministic from the seed. `portrait` (the default), `studio`,
 `cartoon`, `minimal`, `line`, and `pixel` use the trait set below — `portrait`
-is a refined illustrative face, `cartoon` a playful one (formerly `face`),
+is a refined illustrative face, `studio` a softly-shaded version of it with
+gradient skin and detailed eyes, `cartoon` a playful one (formerly `face`),
 `minimal` a flat geometric one, and `line` a monochrome thin-line one.
 `initials` renders a monogram, and `bot`/`shapes`/`mesh` derive their colors and
 composition from the seed alone (`mesh` is an abstract gradient-blob style).

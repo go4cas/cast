@@ -2,6 +2,7 @@ import { AVATAR_OPTIONS, OPTION_ALIASES, STYLE_ALIASES, DEFAULT_STYLE, resolvePa
 import { createRandom, decodeObject, encodeObject, hashConfig, pick } from './hash.js';
 import { renderCartoonAvatar } from './styles/cartoon.js';
 import { renderPortraitAvatar } from './styles/portrait.js';
+import { renderStudioAvatar } from './styles/studio.js';
 import { renderMinimalAvatar } from './styles/minimal.js';
 import { renderLineAvatar } from './styles/line.js';
 import { renderInitialsAvatar } from './styles/initials.js';
@@ -13,6 +14,7 @@ import { renderMeshAvatar } from './styles/mesh.js';
 const RENDERERS = {
   cartoon: renderCartoonAvatar,
   portrait: renderPortraitAvatar,
+  studio: renderStudioAvatar,
   minimal: renderMinimalAvatar,
   line: renderLineAvatar,
   pixel: renderPixelAvatar,

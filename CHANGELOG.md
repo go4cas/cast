@@ -9,6 +9,16 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-12
+
+### Added
+
+- `studio` style — a softly-shaded, more realistic portrait (gradient skin, detailed irises with a catch-light, shaped lips). Reuses the face trait set.
+
+### Fixed
+
+- Open-mouth (`mouth: 'open'`) on the `cartoon`, `portrait`, and `studio` styles drew a stray line across the mouth; it now renders as parted lips with the lip below the opening.
+
 ## [1.0.0] - 2026-06-11
 
 First stable release. The public API and trait/option vocabulary are now
@@ -81,7 +91,8 @@ SVG for an existing seed will be a major bump.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/go4cas/cast/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/go4cas/cast/compare/v0.6.0...v1.0.0
 [0.6.0]: https://github.com/go4cas/cast/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/go4cas/cast/compare/v0.4.0...v0.5.0

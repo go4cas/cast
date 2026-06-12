@@ -49,7 +49,7 @@ export const CLOTHING_COLORS = [
 ];
 
 export const AVATAR_OPTIONS = {
-  style: ['portrait', 'cartoon', 'minimal', 'line', 'pixel', 'initials', 'bot', 'shapes', 'mesh'],
+  style: ['portrait', 'studio', 'cartoon', 'minimal', 'line', 'pixel', 'initials', 'bot', 'shapes', 'mesh'],
   gender: ['neutral', 'feminine', 'masculine'],
   skinTone: Object.keys(SKIN_TONES),
   faceShape: ['round', 'oval', 'soft'],

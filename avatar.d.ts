@@ -5,6 +5,7 @@
 /** Avatar style. `'face'` is a legacy alias for `'cartoon'`. */
 export type AvatarStyle =
   | 'portrait'
+  | 'studio'
   | 'cartoon'
   | 'minimal'
   | 'line'
