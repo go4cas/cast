@@ -226,6 +226,13 @@ assert.equal(exOverride.mouth, 'smile', 'expression still applies to non-overrid
 assert.equal(avatarHash('exp'), avatarHash('exp'), 'no expression leaves the hash stable');
 assert.notEqual(avatarHash('exp'), avatarHash('exp', { expression: 'sad' }), 'expression changes the hash');
 
+// animate adds a reduced-motion-respecting CSS animation; off by default.
+assert.match(createAvatar('an', { animate: 'breathe' }), /@keyframes cast-anim-/, 'breathe emits keyframes');
+assert.match(createAvatar('an', { animate: 'breathe' }), /prefers-reduced-motion/, 'animation respects reduced-motion');
+assert.match(createAvatar('an', { animate: 'bounce' }), /translateY/, 'bounce bobs');
+assert.doesNotMatch(createAvatar('an', {}), /cast-anim-/, 'no animation by default');
+assert.equal(avatarHash('an'), avatarHash('an'), 'no animate leaves the hash stable');
+
 // The <cast-avatar> custom element wraps createAvatar (tested without a DOM by
 // stubbing the attribute accessors on an instance).
 assert.deepEqual([...CastAvatarElement.observedAttributes], ['seed', 'variant', 'size', 'background'], 'element observes the expected attributes');

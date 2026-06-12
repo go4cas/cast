@@ -9,6 +9,13 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-06-12
+
+### Added
+
+- `animate` option — a subtle looping animation (`breathe`, `bounce`) applied to the avatar content via deterministic, dependency-free CSS that respects `prefers-reduced-motion`. Works on every style.
+- Documented edge / serverless rendering: `createAvatar` and the other string helpers have no DOM/Node APIs, so they run on Cloudflare Workers, Vercel/Netlify Edge, Deno, and Bun. Added an "Edge & server rendering" guide and example.
+
 ## [1.2.0] - 2026-06-12
 
 ### Added
@@ -97,7 +104,8 @@ SVG for an existing seed will be a major bump.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/go4cas/cast/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/go4cas/cast/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/go4cas/cast/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/go4cas/cast/compare/v0.6.0...v1.0.0

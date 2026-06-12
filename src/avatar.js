@@ -135,7 +135,9 @@ export function resolveAvatarOptions(seedOrOptions = {}, maybeOptions = {}) {
     fontWeight: options.fontWeight,
     fontFamily: options.fontFamily,
     // Presence overlay; left undefined (and dropped from the hash) when unused.
-    status: options.status
+    status: options.status,
+    // Optional CSS animation ('breathe' | 'bounce'); undefined when unused.
+    animate: options.animate
   };
 }
 

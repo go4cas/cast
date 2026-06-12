@@ -43,6 +43,12 @@ export type Status = 'online' | 'busy' | 'away' | 'offline';
  */
 export type Expression = 'neutral' | 'happy' | 'sad' | 'surprised' | 'thinking' | 'wink';
 
+/**
+ * A subtle, deterministic CSS animation applied to the avatar content. Respects
+ * `prefers-reduced-motion`. `breathe` gently scales; `bounce` bobs.
+ */
+export type Animate = 'breathe' | 'bounce';
+
 /** Corner placement for a `dot` status badge. */
 export type StatusPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -155,6 +161,8 @@ export interface AvatarOptions {
   clothing?: 'auto' | (string & {});
   /** Presence badge. A state string (corner dot) or a full config object. Omitted = no badge. */
   status?: Status | StatusBadge;
+  /** A subtle looping animation (`breathe` | `bounce`). Respects reduced-motion. */
+  animate?: Animate;
   /** Override the default color sets (skin tones, hair, backgrounds, etc.). */
   palette?: AvatarPalette;
   /** Monogram font weight for the `initials` style (default `800`). */
@@ -185,6 +193,7 @@ export interface ResolvedAvatarConfig {
   fontWeight?: number | string;
   fontFamily?: string;
   status?: Status | StatusBadge;
+  animate?: Animate;
   palette?: AvatarPalette;
 }
 

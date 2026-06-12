@@ -251,6 +251,7 @@ full trait control, render with the JavaScript API instead.
 | `title` | Accessible label for the SVG; defaults to `"<seed> avatar"`. |
 | `initials` | Optional text override for the `initials` style. |
 | `status` | Presence badge. A state string (`online`/`busy`/`away`/`offline`) for a corner dot, or an object `{ state, shape: 'dot'\|'ring', position, pulse }` for a ring border or custom placement/animation. Omitted = none. Applies to every style. |
+| `animate` | A subtle looping animation: `breathe` or `bounce`. Respects `prefers-reduced-motion`. Works on every style. |
 | `palette` | Override the default color sets — see [Custom palettes](#custom-palettes). |
 | `fontWeight` | Monogram font weight for the `initials` style (default `800`). |
 | `fontFamily` | Monogram font family for the `initials` style. |
@@ -301,6 +302,38 @@ The legacy top-level `hair` and `clothing` options are still accepted as aliases
 
 The complete, machine-readable list of every allowed value lives in the
 exported `avatarOptions` table — see below.
+
+## Edge & server rendering
+
+`createAvatar` — and `createAvatars`, `createAvatarSprite`, `createAvatarDataUri`,
+`avatarHash`, `encodeAvatar` — are pure string functions with **no DOM or Node
+APIs**, so they run anywhere: Node, Deno, Bun, Cloudflare Workers, and Vercel /
+Netlify Edge. And because Cast is dependency-free, there's nothing to bundle.
+
+```js
+// Cloudflare Workers / any fetch handler
+import { createAvatar } from 'cast-avatar';
+
+export default {
+  fetch(request) {
+    const seed = new URL(request.url).searchParams.get('seed') || 'cast';
+    const svg = createAvatar(seed, { style: 'portrait' });
+    return new Response(svg, {
+      headers: {
+        'content-type': 'image/svg+xml; charset=utf-8',
+        'cache-control': 'public, max-age=31536000, immutable',
+      },
+    });
+  },
+};
+```
+
+For **Open Graph / social images**, use the avatar SVG (or its data-URI from
+`createAvatarDataUri`) directly as `og:image`, or rasterize it to PNG at the
+edge. The output is deterministic, so a CDN can cache it forever.
+
+(`createAvatarElement` and `mountAvatar` are the only DOM-bound helpers — not
+needed for edge/SSR.)
 
 ## Stability and versioning
 

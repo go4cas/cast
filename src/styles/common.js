@@ -54,7 +54,26 @@ export function svgFrame(config, children) {
     background = `<rect width="128" height="128" rx="${radius}" fill="${escapeText(config.background)}"/>`;
   }
 
-  return `<svg xmlns="${SVG_NS}" width="${size}" height="${size}" viewBox="0 0 128 128" role="img" aria-label="${escapeText(config.title)}"><defs>${defs}</defs><g clip-path="url(#${clipId})">${background}${children}</g>${statusBadge(config.status, radius)}</svg>`;
+  const anim = animation(config.animate, uid);
+  return `<svg xmlns="${SVG_NS}" width="${size}" height="${size}" viewBox="0 0 128 128" role="img" aria-label="${escapeText(config.title)}"><defs>${defs}</defs>${anim.css}<g clip-path="url(#${clipId})">${background}${anim.open}${children}${anim.close}</g>${statusBadge(config.status, radius)}</svg>`;
+}
+
+// Optional, deterministic CSS animation applied to the avatar content (not the
+// frame). Respects prefers-reduced-motion. Keyframe/class names are namespaced
+// by `uid` so multiple inlined avatars don't clash.
+function animation(animate, uid) {
+  if (animate !== 'breathe' && animate !== 'bounce') {
+    return { css: '', open: '', close: '' };
+  }
+
+  const cls = `cast-anim-${uid}`;
+  const keyframes = animate === 'bounce'
+    ? `@keyframes ${cls}{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}`
+    : `@keyframes ${cls}{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}`;
+  const duration = animate === 'bounce' ? '1.8s' : '3.6s';
+  const css = `<style>${keyframes}@media(prefers-reduced-motion:no-preference){.${cls}{transform-box:fill-box;transform-origin:center;animation:${cls} ${duration} ease-in-out infinite}}</style>`;
+
+  return { css, open: `<g class="${cls}">`, close: '</g>' };
 }
 
 const STATUS_COLORS = { online: '#22c55e', busy: '#ef4444', away: '#f59e0b', offline: '#94a3b8' };

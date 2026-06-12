@@ -354,7 +354,7 @@
             </svg>
           </span>
           <span class="logo-word">cast</span>
-          <span class="version-pill">v1.2.0</span>
+          <span class="version-pill">v1.3.0</span>
         </a>
         <div class="nav-links">
           <a href="#playground">Playground</a>
@@ -466,6 +466,19 @@
 <span class="c-dim">// store the seed for a stable avatar; encodeAvatar pins the exact config</span>
 <span class="c-key">const</span> key = <span class="c-key">avatarHash</span>(<span class="c-str">'agent-7'</span>);
 <span class="c-key">const</span> config = <span class="c-key">encodeAvatar</span>(<span class="c-str">'agent-7'</span>, { style: <span class="c-str">'portrait'</span> });</code></pre>
+          </figure>
+          <figure class="code-card">
+            <figcaption>Serve from the edge</figcaption>
+            <button class="code-copy" type="button" data-copy="import { createAvatar } from 'cast-avatar';&#10;&#10;// Cloudflare Workers / Vercel Edge / Deno — no DOM, zero deps&#10;export default {&#10;  fetch(req) {&#10;    const seed = new URL(req.url).searchParams.get('seed') ?? 'cast';&#10;    return new Response(createAvatar(seed, { style: 'portrait' }), {&#10;      headers: { 'content-type': 'image/svg+xml' },&#10;    });&#10;  },&#10;};">copy</button>
+<pre><code><span class="c-dim">// Cloudflare Workers / Vercel Edge / Deno — no DOM, zero deps</span>
+<span class="c-key">export default</span> {
+  <span class="c-key">fetch</span>(req) {
+    <span class="c-key">const</span> seed = <span class="c-key">new</span> URL(req.url).searchParams.get(<span class="c-str">'seed'</span>) ?? <span class="c-str">'cast'</span>;
+    <span class="c-key">return new</span> Response(<span class="c-key">createAvatar</span>(seed, { style: <span class="c-str">'portrait'</span> }), {
+      headers: { <span class="c-str">'content-type'</span>: <span class="c-str">'image/svg+xml'</span> },
+    });
+  },
+};</code></pre>
           </figure>
         </div>
       </section>
@@ -600,6 +613,7 @@
         statusShape: 'dot',
         statusPosition: 'bottom-right',
         statusPulse: 'off',
+        animate: 'none',
         traits: Object.fromEntries(TRAIT_KEYS.map((k) => [k, 'auto'])),
       };
 
@@ -616,6 +630,7 @@
           fontWeight: Number(s.fontWeight),
         };
         if (s.expression !== 'auto') o.expression = s.expression;
+        if (s.animate !== 'none') o.animate = s.animate;
         if (s.theme !== 'default' && THEMES[s.theme]) o.palette = THEMES[s.theme];
         if (Object.keys(traits).length) o.traits = traits;
         if (s.status !== 'none') {
@@ -673,6 +688,7 @@
             { key: 'statusShape', label: 'Badge shape', values: ['dot', 'ring'] },
             { key: 'statusPosition', label: 'Position', values: opt('statusPosition', ['bottom-right', 'bottom-left', 'top-right', 'top-left']) },
             { key: 'statusPulse', label: 'Pulse', values: ['off', 'on'] },
+            { key: 'animate', label: 'Animate', values: ['none', 'breathe', 'bounce'] },
           ],
         },
       ];
