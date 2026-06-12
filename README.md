@@ -203,6 +203,24 @@ const brand = {
 createAvatar('agent-7', { style: 'shapes', palette: brand });
 ```
 
+## Expressions
+
+`expression` is a shorthand that presets the expressive traits
+(`eyes` + `mouth` + `eyebrows`) **while leaving identity traits seed-derived** —
+so the *same* avatar can change mood without becoming a different person. It's
+ideal for reflecting user or agent state (idle, thinking, done, error). Explicit
+`traits` still take precedence over an expression, and it applies to the face
+styles (`portrait`, `studio`, `cartoon`, `minimal`, `line`).
+
+```js
+createAvatar('agent-7', { expression: 'thinking' });  // same agent, pensive
+createAvatar('agent-7', { expression: 'happy' });      // same agent, pleased
+// per-trait overrides still win:
+createAvatar('agent-7', { expression: 'happy', traits: { eyes: 'wink' } });
+```
+
+Values: `neutral`, `happy`, `sad`, `surprised`, `thinking`, `wink`.
+
 ## Web component
 
 A zero-dependency `<cast-avatar>` custom element is available from the
@@ -226,6 +244,7 @@ full trait control, render with the JavaScript API instead.
 | --- | --- |
 | `seed` | Any stable string, such as a user ID, email, or username. `name` and `id` are accepted as aliases. |
 | `style` | `portrait` (default), `studio`, `cartoon`, `minimal`, `line`, `pixel`, `initials`, `bot`, `shapes`, `mesh`; or `auto` for a seed-random style. `face` is a legacy alias for `cartoon`. |
+| `expression` | `neutral`, `happy`, `sad`, `surprised`, `thinking`, `wink` — presets the expressive traits while keeping identity stable. See [Expressions](#expressions). |
 | `size` | Pixel size from `24` to `1024`; defaults to `128`. |
 | `background` | Any CSS color, `transparent`, a seeded `gradient`, a seeded pattern (`dots`, `rings`, `grid`), or `auto`. |
 | `radius` | SVG corner radius — a number (px) or CSS length; defaults to `50%` (circle). |

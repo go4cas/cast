@@ -9,6 +9,12 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-12
+
+### Added
+
+- `expression` option — a shorthand (`neutral`, `happy`, `sad`, `surprised`, `thinking`, `wink`) that presets eyes/mouth/eyebrows while keeping identity seed-stable, so the same avatar can reflect a mood or agent state. Explicit `traits` still take precedence; applies to the face styles.
+
 ## [1.1.0] - 2026-06-12
 
 ### Added
@@ -91,7 +97,8 @@ SVG for an existing seed will be a major bump.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/go4cas/cast/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/go4cas/cast/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/go4cas/cast/compare/v0.6.0...v1.0.0
 [0.6.0]: https://github.com/go4cas/cast/compare/v0.5.0...v0.6.0

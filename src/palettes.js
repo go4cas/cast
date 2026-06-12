@@ -48,8 +48,21 @@ export const CLOTHING_COLORS = [
   '#d97706'
 ];
 
+// Expression presets map onto the expressive traits (eyes/mouth/eyebrows) while
+// leaving identity traits (skin, hair, …) seed-derived. Explicit per-trait
+// values still take precedence over an expression. Affects the face styles.
+export const EXPRESSIONS = {
+  neutral: { eyes: 'round', mouth: 'neutral', eyebrows: 'flat' },
+  happy: { eyes: 'smile', mouth: 'smile', eyebrows: 'raised' },
+  sad: { eyes: 'sleepy', mouth: 'neutral', eyebrows: 'angled' },
+  surprised: { eyes: 'round', mouth: 'open', eyebrows: 'raised' },
+  thinking: { eyes: 'sleepy', mouth: 'neutral', eyebrows: 'raised' },
+  wink: { eyes: 'wink', mouth: 'smile', eyebrows: 'flat' }
+};
+
 export const AVATAR_OPTIONS = {
   style: ['portrait', 'studio', 'cartoon', 'minimal', 'line', 'pixel', 'initials', 'bot', 'shapes', 'mesh'],
+  expression: Object.keys(EXPRESSIONS),
   gender: ['neutral', 'feminine', 'masculine'],
   skinTone: Object.keys(SKIN_TONES),
   faceShape: ['round', 'oval', 'soft'],

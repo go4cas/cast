@@ -36,6 +36,13 @@ export interface AvatarPalette {
 /** Presence state shown by the status badge. */
 export type Status = 'online' | 'busy' | 'away' | 'offline';
 
+/**
+ * A shorthand that presets the expressive traits (eyes, mouth, eyebrows) while
+ * leaving identity traits seed-derived. Explicit `traits` still take precedence.
+ * Applies to the face styles. Great for reflecting agent/user state.
+ */
+export type Expression = 'neutral' | 'happy' | 'sad' | 'surprised' | 'thinking' | 'wink';
+
 /** Corner placement for a `dot` status badge. */
 export type StatusPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -133,6 +140,8 @@ export interface AvatarOptions {
   name?: string | number;
   id?: string | number;
   style?: Auto<AvatarStyle>;
+  /** Preset the expressive traits (eyes/mouth/eyebrows) to reflect a mood/state. */
+  expression?: Expression;
   /** Rendered pixel size, clamped to 24–1024. Defaults to 128. */
   size?: number;
   traits?: AvatarTraits;

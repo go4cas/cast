@@ -211,6 +211,21 @@ assert.match(sprite, /width="136" height="136"/, 'sprite sizes the grid (2 cols 
 assert.match(createAvatar('AB', { style: 'initials', fontWeight: 400 }), /font-weight="400"/, 'initials honour fontWeight');
 assert.match(createAvatar('AB', { style: 'initials' }), /font-weight="800"/, 'initials default to weight 800');
 
+// `expression` presets eyes/mouth/eyebrows while keeping identity seed-stable;
+// explicit traits still win, and it's dropped from the hash when unused.
+const exHappy = resolveAvatarOptions('exp', { expression: 'happy' }).traits;
+assert.equal(exHappy.eyes, 'smile', 'expression sets eyes');
+assert.equal(exHappy.mouth, 'smile', 'expression sets mouth');
+assert.equal(exHappy.eyebrows, 'raised', 'expression sets eyebrows');
+const exBase = resolveAvatarOptions('exp', {}).traits;
+assert.equal(exHappy.skinTone, exBase.skinTone, 'expression keeps identity (skinTone) stable');
+assert.equal(exHappy.hairStyle, exBase.hairStyle, 'expression keeps identity (hairStyle) stable');
+const exOverride = resolveAvatarOptions('exp', { expression: 'happy', traits: { eyes: 'wink' } }).traits;
+assert.equal(exOverride.eyes, 'wink', 'explicit trait overrides expression');
+assert.equal(exOverride.mouth, 'smile', 'expression still applies to non-overridden traits');
+assert.equal(avatarHash('exp'), avatarHash('exp'), 'no expression leaves the hash stable');
+assert.notEqual(avatarHash('exp'), avatarHash('exp', { expression: 'sad' }), 'expression changes the hash');
+
 // The <cast-avatar> custom element wraps createAvatar (tested without a DOM by
 // stubbing the attribute accessors on an instance).
 assert.deepEqual([...CastAvatarElement.observedAttributes], ['seed', 'variant', 'size', 'background'], 'element observes the expected attributes');

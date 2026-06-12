@@ -1,4 +1,4 @@
-import { AVATAR_OPTIONS, OPTION_ALIASES, STYLE_ALIASES, DEFAULT_STYLE, resolvePalette } from './palettes.js';
+import { AVATAR_OPTIONS, OPTION_ALIASES, STYLE_ALIASES, DEFAULT_STYLE, EXPRESSIONS, resolvePalette } from './palettes.js';
 import { createRandom, decodeObject, encodeObject, hashConfig, pick } from './hash.js';
 import { renderCartoonAvatar } from './styles/cartoon.js';
 import { renderPortraitAvatar } from './styles/portrait.js';
@@ -77,6 +77,10 @@ function normalizeTraits(options, draw, palette) {
   );
   const traits = { ...aliased, ...options, ...rawTraits };
 
+  // An `expression` presets eyes/mouth/eyebrows; explicit traits still win.
+  const expr = EXPRESSIONS[options.expression] || {};
+  const expressive = (key) => (traits[key] !== undefined ? traits[key] : expr[key]);
+
   const hairStyle = optionOrAuto(traits.hairStyle, AVATAR_OPTIONS.hairStyle, draw('hairStyle'));
 
   return {
@@ -88,10 +92,10 @@ function normalizeTraits(options, draw, palette) {
     faceShape: optionOrAuto(traits.faceShape, AVATAR_OPTIONS.faceShape, draw('faceShape')),
     hairStyle,
     hairColor: optionOrAuto(traits.hairColor, AVATAR_OPTIONS.hairColor, draw('hairColor')),
-    eyebrows: optionOrAuto(traits.eyebrows, AVATAR_OPTIONS.eyebrows, draw('eyebrows')),
-    eyes: optionOrAuto(traits.eyes, AVATAR_OPTIONS.eyes, draw('eyes')),
+    eyebrows: optionOrAuto(expressive('eyebrows'), AVATAR_OPTIONS.eyebrows, draw('eyebrows')),
+    eyes: optionOrAuto(expressive('eyes'), AVATAR_OPTIONS.eyes, draw('eyes')),
     nose: optionOrAuto(traits.nose, AVATAR_OPTIONS.nose, draw('nose')),
-    mouth: optionOrAuto(traits.mouth, AVATAR_OPTIONS.mouth, draw('mouth')),
+    mouth: optionOrAuto(expressive('mouth'), AVATAR_OPTIONS.mouth, draw('mouth')),
     facialHair: optionOrAuto(traits.facialHair, AVATAR_OPTIONS.facialHair, draw('facialHair')),
     freckles: optionOrAuto(traits.freckles, AVATAR_OPTIONS.freckles, draw('freckles')),
     blush: optionOrAuto(traits.blush, AVATAR_OPTIONS.blush, draw('blush')),

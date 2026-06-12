@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cast — deterministic SVG avatars</title>
-    <meta name="description" content="Cast is a tiny, dependency-free library for deterministic SVG avatars. Nine styles, deep traits, themeable palettes — the same seed always renders the same avatar.">
+    <meta name="description" content="Cast is a tiny, dependency-free library for deterministic SVG avatars. Many styles, deep traits, themeable palettes — the same seed always renders the same avatar.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -354,7 +354,7 @@
             </svg>
           </span>
           <span class="logo-word">cast</span>
-          <span class="version-pill">v1.1.0</span>
+          <span class="version-pill">v1.2.0</span>
         </a>
         <div class="nav-links">
           <a href="#playground">Playground</a>
@@ -376,7 +376,7 @@
         <div class="hero-copy">
           <p class="kicker">Deterministic SVG avatars</p>
           <h1>One seed in, the same avatar out — every time.</h1>
-          <p class="hero-sub">Cast is a tiny, dependency-free library that turns any string into a crisp SVG avatar. Nine styles, deep traits, themeable palettes, and presence badges — all generated in the browser, no network required.</p>
+          <p class="hero-sub">Cast is a tiny, dependency-free library that turns any string into a crisp SVG avatar. Many styles, deep traits, themeable palettes, and presence badges — all generated in the browser, no network required.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#playground">Open the playground</a>
             <button class="install-chip" id="hero-install" type="button">
@@ -386,7 +386,7 @@
           </div>
           <ul class="hero-facts">
             <li>Zero dependencies</li>
-            <li>9 styles</li>
+            <li>Many styles</li>
             <li>Deterministic</li>
             <li>TypeScript types</li>
             <li>Web component</li>
@@ -423,7 +423,7 @@
       </section>
 
       <section class="section" id="styles">
-        <h2>Nine styles, one seed</h2>
+        <h2>Every style, one seed</h2>
         <p class="section-sub">Every style is deterministic from the seed. The same identity reads consistently across the illustrated faces, while the abstract styles derive their composition from the seed alone.</p>
         <div class="gallery-grid" id="gallery-grid"></div>
       </section>
@@ -589,6 +589,7 @@
       const state = {
         seed: 'ada@example.com',
         style: 'portrait',
+        expression: 'auto',
         size: 256,
         shape: 'circle',
         theme: 'default',
@@ -614,6 +615,7 @@
           clothing: CLOTHING[s.clothing] ?? s.clothing,
           fontWeight: Number(s.fontWeight),
         };
+        if (s.expression !== 'auto') o.expression = s.expression;
         if (s.theme !== 'default' && THEMES[s.theme]) o.palette = THEMES[s.theme];
         if (Object.keys(traits).length) o.traits = traits;
         if (s.status !== 'none') {
@@ -648,6 +650,7 @@
           title: 'Identity',
           fields: [
             { key: 'style', label: 'Style', values: opt('style', ['portrait', 'cartoon', 'minimal', 'line', 'pixel', 'initials', 'bot', 'shapes', 'mesh']).filter((s) => s !== 'face') },
+            { key: 'expression', label: 'Expression', values: ['auto', ...opt('expression', ['neutral', 'happy', 'sad', 'surprised', 'thinking', 'wink'])] },
             { key: 'size', label: 'Size', type: 'range', min: 64, max: 512, step: 16 },
             { key: 'shape', label: 'Shape', values: Object.keys(SHAPES) },
             { key: 'theme', label: 'Theme (palette)', values: Object.keys(THEMES) },
