@@ -264,6 +264,19 @@
       .style-card .row { display: flex; gap: 10px; flex-wrap: wrap; }
       .style-card .row svg { display: block; border-radius: 50%; }
 
+      /* ---------- Groups ---------- */
+      .group-row { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+      .group-row .group { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+      .group-row .group svg { display: block; box-shadow: var(--shadow); border-radius: 28%; }
+      .group-row .cap { font-family: var(--font-mono); font-size: 12px; color: var(--dim); }
+      .merge-row { display: flex; gap: 36px; flex-wrap: wrap; }
+      .merge-ex { display: flex; align-items: center; gap: 14px; }
+      .merge-ex .who { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+      .merge-ex .who svg { display: block; border-radius: 50%; }
+      .merge-ex .who.result svg { box-shadow: var(--shadow); }
+      .merge-ex .cap { font-family: var(--font-mono); font-size: 11px; color: var(--dim); }
+      .merge-ex .op { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--dim); }
+
       /* ---------- Code ---------- */
       .code-cols {
         display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 80px;
@@ -354,7 +367,7 @@
             </svg>
           </span>
           <span class="logo-word">cast</span>
-          <span class="version-pill">v1.3.0</span>
+          <span class="version-pill">v1.4.0</span>
         </a>
         <div class="nav-links">
           <a href="#playground">Playground</a>
@@ -426,6 +439,15 @@
         <h2>Every style, one seed</h2>
         <p class="section-sub">Every style is deterministic from the seed. The same identity reads consistently across the illustrated faces, while the abstract styles derive their composition from the seed alone.</p>
         <div class="gallery-grid" id="gallery-grid"></div>
+      </section>
+
+      <section class="section" id="teams">
+        <h2>One mark for a team</h2>
+        <p class="section-sub">Compose member seeds into a single group avatar — a clipped mosaic with a <span class="mono-inline">+N</span> chip for larger teams. Perfect for squads, channels, and group DMs.</p>
+        <div class="group-row" id="group-row"></div>
+
+        <p class="section-sub" style="margin-top: 44px;">Or <span class="mono-inline">mergeSeeds()</span> two identities into one stable, order-independent mark — for a pair, a connection, or a DM thread. <span class="mono-inline">merge(a, b) === merge(b, a)</span>.</p>
+        <div class="merge-row" id="merge-row"></div>
       </section>
 
       <section class="section" id="code">
@@ -518,6 +540,8 @@
       // Loads the library from the repo source so the page always matches this checkout.
       import {
         createAvatar,
+        createAvatarGroup,
+        mergeSeeds,
         avatarOptions,
         toDataUri,
       } from './src/avatar.js';
@@ -930,6 +954,70 @@
         }
       }
 
+      /* ---------------- group avatars ---------------- */
+
+      const GROUPS = [
+        { label: 'pair', style: 'portrait', seeds: ['ada@example.com', 'grace.h'] },
+        { label: 'trio', style: 'cartoon', seeds: ['lin.chen', 'kai_dev', 'noor'] },
+        { label: 'squad', style: 'bot', seeds: ['unit-7', 'dev-bot', 'agent-42', 'mesh-01'] },
+        { label: '8 members', style: 'minimal', seeds: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] },
+      ];
+
+      function renderGroups() {
+        const root = $('#group-row');
+        root.textContent = '';
+        for (const { label, style, seeds } of GROUPS) {
+          const cell = document.createElement('div');
+          cell.className = 'group';
+          try { cell.innerHTML = createAvatarGroup(seeds, { style, size: 92, radius: '28%' }); } catch (e) { console.warn(e); }
+          const cap = document.createElement('span');
+          cap.className = 'cap';
+          cap.textContent = label;
+          cell.appendChild(cap);
+          root.appendChild(cell);
+        }
+      }
+
+      /* ---------------- merge (two seeds -> one identity) ---------------- */
+
+      const MERGES = [
+        { a: 'alice', b: 'bob', style: 'portrait' },
+        { a: 'lin.chen', b: 'kai_dev', style: 'cartoon' },
+      ];
+
+      function mergePerson(seed, style, label, isResult) {
+        const who = document.createElement('div');
+        who.className = isResult ? 'who result' : 'who';
+        try { who.innerHTML = createAvatar(seed, { style, size: 56 }); } catch (e) { console.warn(e); }
+        const cap = document.createElement('span');
+        cap.className = 'cap';
+        cap.textContent = label;
+        who.appendChild(cap);
+        return who;
+      }
+
+      function mergeOp(symbol) {
+        const op = document.createElement('span');
+        op.className = 'op';
+        op.textContent = symbol;
+        return op;
+      }
+
+      function renderMerges() {
+        const root = $('#merge-row');
+        root.textContent = '';
+        for (const { a, b, style } of MERGES) {
+          const ex = document.createElement('div');
+          ex.className = 'merge-ex';
+          ex.appendChild(mergePerson(a, style, a));
+          ex.appendChild(mergeOp('✕'));
+          ex.appendChild(mergePerson(b, style, b));
+          ex.appendChild(mergeOp('='));
+          ex.appendChild(mergePerson(mergeSeeds(a, b), style, 'merged', true));
+          root.appendChild(ex);
+        }
+      }
+
       /* ---------------- boot ---------------- */
 
       restoreFromHash();
@@ -939,6 +1027,8 @@
       renderPreview();
       renderRoster();
       renderGallery();
+      renderGroups();
+      renderMerges();
     </script>
   </body>
 </html>

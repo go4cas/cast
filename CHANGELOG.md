@@ -9,6 +9,13 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-06-12
+
+### Added
+
+- `createAvatarGroup(seeds, options)` — compose several member seeds into one cohesive group mark (a clipped mosaic of 1–4 tiles, with extra members collapsing into a `+N` chip). Great for team/squad/group-DM icons.
+- `mergeSeeds(...seeds)` — combine seeds into a single deterministic, order-independent seed for a stable "pair"/relationship avatar.
+
 ## [1.3.0] - 2026-06-12
 
 ### Added
@@ -104,7 +111,8 @@ SVG for an existing seed will be a major bump.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/go4cas/cast/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/go4cas/cast/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/go4cas/cast/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/go4cas/cast/compare/v1.0.0...v1.1.0

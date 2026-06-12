@@ -185,6 +185,23 @@ const avatars = createAvatars(['agent-1', 'agent-2'], { style: 'line' });
 const sheet = createAvatarSprite(agentIds, { columns: 8, cell: 64, style: 'bot' });
 ```
 
+### `createAvatarGroup(seeds, options)` and `mergeSeeds(...seeds)`
+
+`createAvatarGroup` composes several member seeds into **one cohesive mark** — a
+clipped mosaic (1–4 tiles), with extra members collapsing into a `+N` chip.
+Great for a team channel, an agent squad, or a group DM icon. `mergeSeeds`
+combines seeds into a single deterministic, **order-independent** seed for a
+stable "pair"/relationship avatar.
+
+```js
+import { createAvatarGroup, mergeSeeds, createAvatar } from 'cast-avatar';
+
+const team = createAvatarGroup(['ada', 'grace', 'lin', 'noor', 'kai'], { style: 'portrait' });
+// '+1' chip for the 5th member; pass { max: 4 } to tune the cap.
+
+const pair = createAvatar(mergeSeeds('alice', 'bob')); // same avatar regardless of order
+```
+
 ## Custom palettes
 
 Pass a `palette` to theme avatars to your own colors. Tone maps

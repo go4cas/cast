@@ -6,6 +6,8 @@ import {
   createAvatarDataUri,
   createAvatars,
   createAvatarSprite,
+  createAvatarGroup,
+  mergeSeeds,
   decodeAvatar,
   encodeAvatar,
   resolveAvatarOptions,
@@ -232,6 +234,21 @@ assert.match(createAvatar('an', { animate: 'breathe' }), /prefers-reduced-motion
 assert.match(createAvatar('an', { animate: 'bounce' }), /translateY/, 'bounce bobs');
 assert.doesNotMatch(createAvatar('an', {}), /cast-anim-/, 'no animation by default');
 assert.equal(avatarHash('an'), avatarHash('an'), 'no animate leaves the hash stable');
+
+// mergeSeeds is deterministic and order-independent.
+assert.equal(mergeSeeds('a', 'b'), mergeSeeds('b', 'a'), 'mergeSeeds is order-independent');
+assert.equal(mergeSeeds('a', 'b'), mergeSeeds('a', 'b'), 'mergeSeeds is deterministic');
+assert.notEqual(mergeSeeds('a', 'b'), mergeSeeds('a', 'c'), 'different members → different merge');
+assert.match(createAvatar(mergeSeeds('alice', 'bob')), /^<svg /, 'a merged seed renders an avatar');
+
+// createAvatarGroup composes member seeds into one mosaic mark.
+const grp2 = createAvatarGroup(['ada', 'grace']);
+assert.match(grp2, /^<svg /, 'group is a single SVG');
+assert.match(grp2, /preserveAspectRatio="xMidYMid slice"/, 'members are placed as cover tiles');
+assert.equal((grp2.match(/<svg /g) || []).length, 3, 'two members nested in the group SVG');
+assert.equal(grp2, createAvatarGroup(['ada', 'grace']), 'group is deterministic');
+assert.match(createAvatarGroup(['a', 'b', 'c', 'd', 'e', 'f']), /\+3<\/text>/, 'overflow collapses into a +N chip');
+assert.equal(createAvatarGroup(['solo']), createAvatar('solo', { size: 128 }), 'a single member is just the avatar');
 
 // The <cast-avatar> custom element wraps createAvatar (tested without a DOM by
 // stubbing the attribute accessors on an instance).

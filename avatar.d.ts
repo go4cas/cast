@@ -266,6 +266,26 @@ export function createAvatarSprite(
   options?: SpriteOptions
 ): string;
 
+/**
+ * Combine seeds into a single deterministic, order-independent seed — for a
+ * stable "pair"/relationship avatar. `mergeSeeds('a','b') === mergeSeeds('b','a')`.
+ */
+export function mergeSeeds(
+  ...seeds: Array<string | number | ReadonlyArray<string | number>>
+): string;
+
+/** Options for {@link createAvatarGroup}: shared avatar options plus the tile cap. */
+export interface GroupOptions extends AvatarOptions {
+  /** Max member tiles (2–4, default 4); extra members collapse into a "+N" chip. */
+  max?: number;
+}
+
+/** Render several member seeds into one cohesive group mark (a clipped mosaic). */
+export function createAvatarGroup(
+  seeds: Array<string | number>,
+  options?: GroupOptions
+): string;
+
 /** Wrap an SVG string in a `data:image/svg+xml` URI. */
 export function toDataUri(svg: string): string;
 

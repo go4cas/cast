@@ -1,5 +1,6 @@
 import { AVATAR_OPTIONS, OPTION_ALIASES, STYLE_ALIASES, DEFAULT_STYLE, EXPRESSIONS, resolvePalette } from './palettes.js';
-import { createRandom, decodeObject, encodeObject, hashConfig, pick } from './hash.js';
+import { createRandom, decodeObject, encodeObject, hashConfig, hashString, pick } from './hash.js';
+import { escapeText } from './styles/common.js';
 import { renderCartoonAvatar } from './styles/cartoon.js';
 import { renderPortraitAvatar } from './styles/portrait.js';
 import { renderStudioAvatar } from './styles/studio.js';
@@ -214,6 +215,63 @@ export function createAvatarSprite(items = [], options = {}) {
   });
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${cells.join('')}</svg>`;
+}
+
+// Combine seeds into a single deterministic, order-independent seed — useful for
+// a stable "pair"/relationship avatar. mergeSeeds('a','b') === mergeSeeds('b','a').
+export function mergeSeeds(...seeds) {
+  const list = seeds.flat().map((seed) => String(seed)).filter((seed) => seed.length > 0);
+  if (list.length === 0) {
+    return 'cast';
+  }
+  return `merge-${hashString(list.slice().sort().join(' ')).toString(36)}`;
+}
+
+// Mosaic cell rects in a 0..100 space, keyed by member count (1–4).
+const GROUP_LAYOUTS = {
+  1: [[0, 0, 100, 100]],
+  2: [[0, 0, 50, 100], [50, 0, 50, 100]],
+  3: [[0, 0, 50, 100], [50, 0, 50, 50], [50, 50, 50, 50]],
+  4: [[0, 0, 50, 50], [50, 0, 50, 50], [0, 50, 50, 50], [50, 50, 50, 50]]
+};
+
+// Render several member seeds into ONE cohesive group mark (a clipped mosaic).
+// `max` (2–4) caps the tiles; extra members collapse into a "+N" chip.
+export function createAvatarGroup(seeds = [], options = {}) {
+  const { size = 128, radius = '50%', max = 4, title, ...shared } = options;
+  const list = (Array.isArray(seeds) ? seeds : [seeds]).map((seed) => String(seed)).filter((seed) => seed.length > 0);
+  const dimension = clampSize(size);
+
+  if (list.length <= 1) {
+    return createAvatar(list[0] ?? 'cast', { ...shared, size: dimension, radius });
+  }
+
+  const cap = Math.max(2, Math.min(4, Math.floor(max)));
+  const shown = Math.min(list.length, cap);
+  const overflow = list.length > cap;
+  const cells = GROUP_LAYOUTS[shown];
+  const memberCount = overflow ? cells.length - 1 : cells.length;
+  const uid = hashString(`group:${list.join('|')}:${radius}`).toString(36);
+  const rx = typeof radius === 'number' ? radius : escapeText(radius);
+
+  const content = cells.map((cell, index) => {
+    const [x, y, w, h] = cell;
+    if (index < memberCount) {
+      const member = createAvatar(list[index], { ...shared, size: 128, radius: 0 });
+      return member.replace('width="128" height="128"', `x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice"`);
+    }
+    const extra = list.length - memberCount;
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#e2e8f0"/>`
+      + `<text x="${x + w / 2}" y="${y + h / 2}" text-anchor="middle" dominant-baseline="central" font-family="ui-sans-serif, system-ui, sans-serif" font-size="${Math.round(Math.min(w, h) * 0.4)}" font-weight="700" fill="#475569">+${extra}</text>`;
+  });
+
+  let dividers = '<path d="M50 0V100" stroke="#fff" stroke-width="2.5"/>';
+  if (shown === 3) dividers += '<path d="M50 50H100" stroke="#fff" stroke-width="2.5"/>';
+  if (shown === 4) dividers += '<path d="M0 50H100" stroke="#fff" stroke-width="2.5"/>';
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${dimension}" height="${dimension}" viewBox="0 0 100 100" role="img" aria-label="${escapeText(title || 'group avatar')}">`
+    + `<defs><clipPath id="cast-gclip-${uid}"><rect width="100" height="100" rx="${rx}"/></clipPath></defs>`
+    + `<g clip-path="url(#cast-gclip-${uid})">${content.join('')}${dividers}</g></svg>`;
 }
 
 export function toDataUri(svg) {
