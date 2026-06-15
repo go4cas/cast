@@ -9,6 +9,14 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-06-15
+
+### Added
+
+- `decorative` option — render the SVG with `aria-hidden="true"` (and no role/label/title) so assistive tech skips it, for avatars that sit beside their own visible name. Defaults to `false` (a labelled `role="img"` image).
+- A native `<title>` element is now emitted alongside the existing `aria-label`, giving a hover tooltip and broader screen-reader support.
+- Colorblind-safe palette preset (Okabe–Ito based). Opt in with `palette: 'accessible'` (or `'colorblind-safe'`); it recolors the abstract styles, clothing, and inks while keeping skin and hair natural. Exported as `COLORBLIND_SAFE_PALETTE` / `PALETTE_PRESETS`, and `resolvePalette` now accepts a preset name. `resolvePalette` is also re-exported from the package entry.
+
 ## [1.4.0] - 2026-06-12
 
 ### Added
@@ -111,7 +119,8 @@ SVG for an existing seed will be a major bump.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/go4cas/cast/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/go4cas/cast/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/go4cas/cast/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/go4cas/cast/compare/v1.1.0...v1.2.0

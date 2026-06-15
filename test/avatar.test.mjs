@@ -11,7 +11,10 @@ import {
   decodeAvatar,
   encodeAvatar,
   resolveAvatarOptions,
-  toDataUri
+  toDataUri,
+  COLORBLIND_SAFE_PALETTE,
+  PALETTE_PRESETS,
+  resolvePalette
 } from '../src/avatar.js';
 import { AVATAR_OPTIONS } from '../src/palettes.js';
 import { CastAvatarElement } from '../src/element.js';
@@ -260,5 +263,25 @@ element.hasAttribute = (key) => key in elementAttrs;
 element.render();
 assert.match(element.innerHTML, /^<svg /, 'cast-avatar renders an SVG');
 assert.match(element.innerHTML, /width="64" height="64"/, 'cast-avatar honours the size attribute');
+
+// Accessibility: labelled image by default, with a native <title>; decorative
+// hides it from assistive tech instead.
+const a11yDefault = createAvatar('ada', { style: 'portrait' });
+assert.match(a11yDefault, /role="img"/, 'avatar is a labelled image by default');
+assert.match(a11yDefault, /<title>ada avatar<\/title>/, 'avatar includes a <title> element');
+assert.match(a11yDefault, /aria-label="ada avatar"/, 'avatar exposes an accessible name');
+const a11yDecorative = createAvatar('ada', { style: 'portrait', decorative: true });
+assert.match(a11yDecorative, /aria-hidden="true"/, 'decorative avatar is hidden from assistive tech');
+assert.doesNotMatch(a11yDecorative, /role="img"|<title>/, 'decorative avatar drops the role and title');
+assert.equal(resolveAvatarOptions('ada', { decorative: true }).decorative, true, 'decorative flows into the resolved config');
+assert.equal(createAvatar(decodeAvatar(encodeAvatar('ada', { decorative: true })), {}), a11yDecorative, 'decorative survives encode/decode');
+
+// Colorblind-safe palette preset, resolvable by string.
+const accessible = createAvatar('ada', { style: 'shapes', palette: 'accessible' });
+assert.match(accessible, /#0072B2|#D55E00|#009E73/, 'accessible palette applies Okabe–Ito colors');
+assert.equal(accessible, createAvatar('ada', { style: 'shapes', palette: 'accessible' }), 'accessible palette is deterministic');
+assert.equal(PALETTE_PRESETS.accessible, COLORBLIND_SAFE_PALETTE, 'accessible preset is registered');
+assert.deepEqual(resolvePalette('accessible').shapeColors, COLORBLIND_SAFE_PALETTE.shapeColors, 'resolvePalette resolves the preset by name');
+assert.equal(resolvePalette('accessible').skinTones.dark, resolvePalette().skinTones.dark, 'accessible palette keeps natural skin tones');
 
 console.log('avatar tests passed');

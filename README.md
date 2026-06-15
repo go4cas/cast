@@ -220,6 +220,42 @@ const brand = {
 createAvatar('agent-7', { style: 'shapes', palette: brand });
 ```
 
+For a built-in **colorblind-safe** option, pass the preset name instead of an
+object. It uses the Okabe–Ito palette (distinguishable across common color-vision
+deficiencies) for the abstract styles, clothing, and inks, while leaving skin and
+hair tones natural:
+
+```js
+createAvatar('agent-7', { style: 'shapes', palette: 'accessible' });
+```
+
+The preset is also exported (`COLORBLIND_SAFE_PALETTE`, `PALETTE_PRESETS`) if you
+want to extend or compose it, and `resolvePalette(override)` resolves an object or
+preset name into a full color set.
+
+## Accessibility
+
+Every avatar renders as an accessible image: `role="img"` with an `aria-label`
+and a native `<title>` (defaulting to `` `${seed} avatar` ``). Set a meaningful
+`title` when the seed isn't human-friendly:
+
+```js
+createAvatar('u_8f3a1', { title: 'Ada Lovelace' });
+```
+
+When an avatar sits next to text that already names the person, mark it
+`decorative` so assistive tech skips it (it renders `aria-hidden="true"` with no
+role, label, or title):
+
+```js
+createAvatar('u_8f3a1', { decorative: true });
+```
+
+For color-vision accessibility, use `palette: 'accessible'` (see
+[Custom palettes](#custom-palettes)). Note that the `status` badge conveys state
+through color and corner position; pair it with visible text where presence is
+important.
+
 ## Expressions
 
 `expression` is a shorthand that presets the expressive traits
@@ -265,11 +301,12 @@ full trait control, render with the JavaScript API instead.
 | `size` | Pixel size from `24` to `1024`; defaults to `128`. |
 | `background` | Any CSS color, `transparent`, a seeded `gradient`, a seeded pattern (`dots`, `rings`, `grid`), or `auto`. |
 | `radius` | SVG corner radius — a number (px) or CSS length; defaults to `50%` (circle). |
-| `title` | Accessible label for the SVG; defaults to `"<seed> avatar"`. |
+| `title` | Accessible label (and `<title>` tooltip) for the SVG; defaults to `"<seed> avatar"`. |
+| `decorative` | When `true`, hide the SVG from assistive tech (`aria-hidden`, no role/label/title). Defaults to `false`. See [Accessibility](#accessibility). |
 | `initials` | Optional text override for the `initials` style. |
 | `status` | Presence badge. A state string (`online`/`busy`/`away`/`offline`) for a corner dot, or an object `{ state, shape: 'dot'\|'ring', position, pulse }` for a ring border or custom placement/animation. Omitted = none. Applies to every style. |
 | `animate` | A subtle looping animation: `breathe` or `bounce`. Respects `prefers-reduced-motion`. Works on every style. |
-| `palette` | Override the default color sets — see [Custom palettes](#custom-palettes). |
+| `palette` | Override the default color sets (object), or a preset name (`'accessible'` / `'colorblind-safe'`) — see [Custom palettes](#custom-palettes). |
 | `fontWeight` | Monogram font weight for the `initials` style (default `800`). |
 | `fontFamily` | Monogram font family for the `initials` style. |
 | `traits` | Object of per-feature traits; see below. |

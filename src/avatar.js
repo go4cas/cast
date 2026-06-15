@@ -1,4 +1,4 @@
-import { AVATAR_OPTIONS, OPTION_ALIASES, STYLE_ALIASES, DEFAULT_STYLE, EXPRESSIONS, resolvePalette } from './palettes.js';
+import { AVATAR_OPTIONS, OPTION_ALIASES, STYLE_ALIASES, DEFAULT_STYLE, EXPRESSIONS, resolvePalette, COLORBLIND_SAFE_PALETTE, PALETTE_PRESETS } from './palettes.js';
 import { createRandom, decodeObject, encodeObject, hashConfig, hashString, pick } from './hash.js';
 import { escapeText } from './styles/common.js';
 import { renderCartoonAvatar } from './styles/cartoon.js';
@@ -138,7 +138,10 @@ export function resolveAvatarOptions(seedOrOptions = {}, maybeOptions = {}) {
     // Presence overlay; left undefined (and dropped from the hash) when unused.
     status: options.status,
     // Optional CSS animation ('breathe' | 'bounce'); undefined when unused.
-    animate: options.animate
+    animate: options.animate,
+    // When true the SVG is hidden from assistive tech (aria-hidden) instead of
+    // exposing a role/label — for avatars sitting beside their own visible text.
+    decorative: options.decorative === true ? true : undefined
   };
 }
 
@@ -309,3 +312,6 @@ export function mountAvatar(target, seedOrOptions = {}, maybeOptions = {}) {
 }
 
 export const avatarOptions = AVATAR_OPTIONS;
+
+// Re-exported so consumers can theme avatars or build their own palette presets.
+export { resolvePalette, COLORBLIND_SAFE_PALETTE, PALETTE_PRESETS };

@@ -33,6 +33,9 @@ export interface AvatarPalette {
   inks?: string[];
 }
 
+/** Names of the built-in palette presets resolvable by string. */
+export type PalettePreset = 'accessible' | 'colorblind-safe';
+
 /** Presence state shown by the status badge. */
 export type Status = 'online' | 'busy' | 'away' | 'offline';
 
@@ -163,16 +166,25 @@ export interface AvatarOptions {
   status?: Status | StatusBadge;
   /** A subtle looping animation (`breathe` | `bounce`). Respects reduced-motion. */
   animate?: Animate;
-  /** Override the default color sets (skin tones, hair, backgrounds, etc.). */
-  palette?: AvatarPalette;
+  /**
+   * Override the default color sets (skin tones, hair, backgrounds, etc.), or
+   * name a built-in preset (`'accessible'` / `'colorblind-safe'`).
+   */
+  palette?: AvatarPalette | PalettePreset;
   /** Monogram font weight for the `initials` style (default `800`). */
   fontWeight?: number | string;
   /** Monogram font family for the `initials` style. */
   fontFamily?: string;
   /** Corner radius for the frame; number (px) or CSS length. Defaults to `'50%'`. */
   radius?: number | string;
-  /** Accessible title / aria-label. Defaults to `` `${seed} avatar` ``. */
+  /** Accessible title / aria-label and native `<title>` tooltip. Defaults to `` `${seed} avatar` ``. */
   title?: string;
+  /**
+   * Hide the avatar from assistive technology (`aria-hidden`, no role/label/title)
+   * instead of exposing it as a labelled image. Use when adjacent text already
+   * names the person. Defaults to `false`.
+   */
+  decorative?: boolean;
   /** Explicit initials for the `initials` style. */
   initials?: string;
   /** Legacy alias for `traits.hairStyle`. */
@@ -194,7 +206,8 @@ export interface ResolvedAvatarConfig {
   fontFamily?: string;
   status?: Status | StatusBadge;
   animate?: Animate;
-  palette?: AvatarPalette;
+  palette?: AvatarPalette | PalettePreset;
+  decorative?: boolean;
 }
 
 /** The full set of allowed values for each option, keyed by trait name. */
@@ -316,3 +329,12 @@ export function mountAvatar(
 
 /** The allowed values for every trait (re-export of the internal option table). */
 export const avatarOptions: AvatarOptionSets;
+
+/** Resolve a palette override (object or preset name) into a full color set. */
+export function resolvePalette(override?: AvatarPalette | PalettePreset): Required<AvatarPalette>;
+
+/** A colorblind-safe palette preset (Okabe–Ito based). */
+export const COLORBLIND_SAFE_PALETTE: AvatarPalette;
+
+/** Built-in palette presets, keyed by preset name. */
+export const PALETTE_PRESETS: Record<PalettePreset, AvatarPalette>;

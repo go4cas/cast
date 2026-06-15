@@ -106,11 +106,32 @@ export const DEFAULT_PALETTE = {
   inks: INKS
 };
 
+// A colorblind-safe preset based on the Okabe–Ito qualitative palette, whose
+// hues stay distinguishable across the common color-vision deficiencies. It
+// recolors the abstract styles, clothing, and inks; skin and hair keep their
+// natural tones. Opt in with `palette: 'accessible'` (or pass this object).
+export const COLORBLIND_SAFE_PALETTE = {
+  backgrounds: ['#F2F2F2', '#E4F1FA', '#E3F3EC', '#FBF1DA', '#F6E7EF'],
+  shapeColors: ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#E69F00', '#56B4E9'],
+  clothingColors: ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#E69F00'],
+  inks: ['#000000', '#0072B2', '#D55E00']
+};
+
+// Named palette presets resolvable by string (e.g. `palette: 'accessible'`).
+export const PALETTE_PRESETS = {
+  accessible: COLORBLIND_SAFE_PALETTE,
+  'colorblind-safe': COLORBLIND_SAFE_PALETTE
+};
+
 function list(override, fallback) {
   return Array.isArray(override) && override.length ? override : fallback;
 }
 
 export function resolvePalette(override) {
+  if (typeof override === 'string') {
+    override = PALETTE_PRESETS[override];
+  }
+
   if (!override) {
     return DEFAULT_PALETTE;
   }

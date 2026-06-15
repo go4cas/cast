@@ -55,7 +55,13 @@ export function svgFrame(config, children) {
   }
 
   const anim = animation(config.animate, uid);
-  return `<svg xmlns="${SVG_NS}" width="${size}" height="${size}" viewBox="0 0 128 128" role="img" aria-label="${escapeText(config.title)}"><defs>${defs}</defs>${anim.css}<g clip-path="url(#${clipId})">${background}${anim.open}${children}${anim.close}</g>${statusBadge(config.status, radius)}</svg>`;
+  // Accessibility: by default the avatar is an image with an accessible name
+  // (and a native <title> tooltip). When `decorative` is set it is hidden from
+  // assistive tech instead — use that when adjacent text already names it.
+  const label = escapeText(config.title);
+  const a11y = config.decorative ? ' aria-hidden="true"' : ` role="img" aria-label="${label}"`;
+  const titleEl = config.decorative ? '' : `<title>${label}</title>`;
+  return `<svg xmlns="${SVG_NS}" width="${size}" height="${size}" viewBox="0 0 128 128"${a11y}>${titleEl}<defs>${defs}</defs>${anim.css}<g clip-path="url(#${clipId})">${background}${anim.open}${children}${anim.close}</g>${statusBadge(config.status, radius)}</svg>`;
 }
 
 // Optional, deterministic CSS animation applied to the avatar content (not the
