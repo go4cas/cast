@@ -67,6 +67,8 @@
       textarea:focus, select:focus { border-color: var(--acc1); }
       select { appearance: none; -webkit-appearance: none; cursor: pointer; }
       .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .hint { margin: 2px 0 0; font-size: 12px; color: var(--dim); line-height: 1.45; }
+      .hint .mono { font-family: var(--font-mono); font-size: 11.5px; color: var(--text); }
 
       .results { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
       .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
@@ -136,6 +138,7 @@
           <div class="field">
             <label class="field-label" for="names">Identifiers (one per line)</label>
             <textarea id="names" spellcheck="false"></textarea>
+            <p class="hint">Avatar seeds on the first value. Add a label after a comma, pipe, or tab to show a name: <span class="mono">ada@corp.com, Ada Lovelace</span></p>
           </div>
           <div class="grid-2">
             <div class="field">
@@ -262,10 +265,28 @@
       function copyText(text, msg) {
         navigator.clipboard.writeText(text).then(() => toast(msg), () => toast('Copy failed'));
       }
-      function memberNames() {
+      // Each line is "seed" or "seed <delimiter> label"; the avatar seeds on the
+      // first field, the caption shows the label. Delimiters: tab (spreadsheet
+      // paste), pipe, or comma — whichever appears first.
+      function parseInput() {
+        const list = [];
         const seen = new Set();
-        return state.names.map((n) => n.trim()).filter((n) => n && !seen.has(n) && seen.add(n));
+        let dropped = 0;
+        let blank = 0;
+        for (const raw of state.names) {
+          const line = raw.trim();
+          if (!line) { blank += 1; continue; }
+          const parts = line.split(/\t|\||,/);
+          const seed = parts[0].trim();
+          if (!seed) { blank += 1; continue; }
+          if (seen.has(seed)) { dropped += 1; continue; }
+          seen.add(seed);
+          list.push({ seed, label: (parts[1] || '').trim() || seed });
+        }
+        return { list, dropped, blank };
       }
+      function members() { return parseInput().list; }
+      function memberSeeds() { return members().map((m) => m.seed); }
       function optsFor(name, size) {
         const ov = state.overrides[name] || {};
         const o = { style: ov.style || state.style, size, radius: SHAPES[state.shape], background: BACKGROUNDS[state.background] ?? state.background };
@@ -342,20 +363,28 @@
         return out;
       }
 
+      function escapeHtml(s) {
+        return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
       /* ---------- render ---------- */
       function render() {
         const grid = $('#team-grid');
-        const names = memberNames();
-        $('#count').textContent = names.length ? `${names.length} member${names.length === 1 ? '' : 's'}` : '';
-        if (!names.length) {
-          grid.innerHTML = '<p class="empty">Add some names to build your team.</p>';
+        const { list, dropped, blank } = parseInput();
+        const notes = [];
+        if (dropped) notes.push(`${dropped} duplicate${dropped === 1 ? '' : 's'} skipped`);
+        if (blank) notes.push(`${blank} blank line${blank === 1 ? '' : 's'} skipped`);
+        const base = list.length ? `${list.length} member${list.length === 1 ? '' : 's'}` : '';
+        $('#count').textContent = [base, ...notes].filter(Boolean).join(' · ');
+        if (!list.length) {
+          grid.innerHTML = '<p class="empty">Add some identifiers to build your team.</p>';
         } else {
-          grid.innerHTML = names.map((name) => {
-            const edited = state.overrides[name] ? ' edited' : '';
-            return `<div class="tile${edited}" data-name="${encodeURIComponent(name)}" title="Customize ${name}">${createAvatar(name, optsFor(name, 72))}<span class="name">${name}</span></div>`;
+          grid.innerHTML = list.map((m) => {
+            const edited = state.overrides[m.seed] ? ' edited' : '';
+            return `<div class="tile${edited}" data-seed="${encodeURIComponent(m.seed)}" title="Customize ${escapeHtml(m.label)}">${createAvatar(m.seed, optsFor(m.seed, 72))}<span class="name">${escapeHtml(m.label)}</span></div>`;
           }).join('');
           grid.querySelectorAll('.tile').forEach((tile) => {
-            tile.addEventListener('click', () => openEditor(decodeURIComponent(tile.dataset.name)));
+            tile.addEventListener('click', () => openEditor(decodeURIComponent(tile.dataset.seed)));
           });
         }
         updateHash();
@@ -366,7 +395,8 @@
       function openEditor(name) {
         editing = name;
         const ov = state.overrides[name] || {};
-        $('#editor-name').textContent = name;
+        const m = members().find((x) => x.seed === name);
+        $('#editor-name').textContent = m ? m.label : name;
         fillSelect($('#ov-style'), ['(team default)', ...STYLES], ov.style || '(team default)');
         fillSelect($('#ov-expression'), EXPRESSIONS, ov.expression || 'auto');
         fillSelect($('#ov-status'), STATUSES, ov.status || 'none');
@@ -435,12 +465,12 @@
         URL.revokeObjectURL(a.href);
       }
       function downloadZip() {
-        const names = memberNames();
-        if (!names.length) return toast('Nothing to export');
+        const list = members();
+        if (!list.length) return toast('Nothing to export');
         const enc = new TextEncoder();
         const size = exportSize();
         const named = uniqueFileNamer();
-        const files = names.map((name) => ({ name: named(name, 'svg'), data: enc.encode(createAvatar(name, optsFor(name, size))) }));
+        const files = list.map((m) => ({ name: named(m.label, 'svg'), data: enc.encode(createAvatar(m.seed, optsFor(m.seed, size))) }));
         downloadBlob(zipStore(files), 'cast-team-svg.zip');
         toast(`${files.length} SVGs zipped`);
       }
@@ -463,16 +493,16 @@
         });
       }
       async function downloadPng() {
-        const names = memberNames();
-        if (!names.length) return toast('Nothing to export');
+        const list = members();
+        if (!list.length) return toast('Nothing to export');
         const size = exportSize();
-        toast(`Rendering ${names.length} PNGs…`);
+        toast(`Rendering ${list.length} PNGs…`);
         const named = uniqueFileNamer();
         try {
           const files = [];
-          for (const name of names) {
-            const svg = createAvatar(name, optsFor(name, size));
-            files.push({ name: named(name, 'png'), data: await svgToPngBytes(svg, size) });
+          for (const m of list) {
+            const svg = createAvatar(m.seed, optsFor(m.seed, size));
+            files.push({ name: named(m.label, 'png'), data: await svgToPngBytes(svg, size) });
           }
           downloadBlob(zipStore(files), 'cast-team-png.zip');
           toast(`${files.length} PNGs zipped`);
@@ -482,10 +512,10 @@
         }
       }
       function codeSnippet() {
-        const names = memberNames();
+        const seeds = memberSeeds();
         const opts = teamOptions();
         const optsStr = JSON.stringify({ style: opts.style, ...(opts.palette ? { palette: opts.palette } : {}), radius: opts.radius, background: opts.background, ...(opts.animate ? { animate: opts.animate } : {}) }, null, 2);
-        return `import { createAvatars } from 'cast-avatar';\n\nconst team = ${JSON.stringify(names, null, 2)};\nconst avatars = createAvatars(team, ${optsStr});`;
+        return `import { createAvatars } from 'cast-avatar';\n\nconst team = ${JSON.stringify(seeds, null, 2)};\nconst avatars = createAvatars(team, ${optsStr});`;
       }
 
       /* ---------- share via URL ---------- */
@@ -528,8 +558,8 @@
 
         $('#dl-zip').addEventListener('click', downloadZip);
         $('#dl-png').addEventListener('click', downloadPng);
-        $('#copy-sprite').addEventListener('click', () => copyText(createAvatarSprite(memberNames(), { ...teamOptions(), cell: 96 }), 'Sprite SVG copied'));
-        $('#copy-group').addEventListener('click', () => copyText(createAvatarGroup(memberNames(), teamOptions()), 'Group mark copied'));
+        $('#copy-sprite').addEventListener('click', () => copyText(createAvatarSprite(memberSeeds(), { ...teamOptions(), cell: 96 }), 'Sprite SVG copied'));
+        $('#copy-group').addEventListener('click', () => copyText(createAvatarGroup(memberSeeds(), teamOptions()), 'Group mark copied'));
         $('#copy-code').addEventListener('click', () => copyText(codeSnippet(), 'Code copied'));
         $('#copy-link').addEventListener('click', () => { updateHash(); copyText(location.href, 'Link copied'); });
 
