@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cast — Team Builder</title>
+    <meta name="description" content="Turn a list of names into a deterministic set of SVG avatars — no code. Style the whole team, tweak individuals, and export as SVGs, a sprite, a group mark, or a snippet.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0F1220; --surface: #181C2C; --surface-2: #1F2438; --border: #2A2F45;
+        --text: #EDEEF4; --dim: #8B91A7; --acc1: #3ECFEA; --acc2: #A78BFA;
+        --font-display: 'Space Grotesk', sans-serif;
+        --font-body: 'Instrument Sans', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --shadow: 0 12px 40px rgba(5, 8, 20, 0.45);
+      }
+      html[data-mode="light"] {
+        --bg: #F4F4F7; --surface: #FFFFFF; --surface-2: #EEEFF4; --border: #E0E2EC;
+        --text: #15182A; --dim: #5E6478; --shadow: 0 10px 32px rgba(20, 24, 50, 0.10);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: var(--bg); color: var(--text);
+        font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: inherit; }
+      .mono { font-family: var(--font-mono); }
+
+      .nav { border-bottom: 1px solid var(--border); }
+      .nav-inner {
+        max-width: 1180px; margin: 0 auto; padding: 14px 28px;
+        display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      }
+      .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+      .logo svg { width: 28px; height: 28px; display: block; border-radius: 8px; }
+      .logo-word { font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: -0.04em; }
+      .nav-links { display: flex; gap: 20px; align-items: center; }
+      .nav-links a { text-decoration: none; font-size: 14.5px; font-weight: 500; color: var(--dim); }
+      .nav-links a:hover { color: var(--text); }
+
+      main { max-width: 1180px; margin: 0 auto; padding: 40px 28px 80px; }
+      h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 4vw, 44px); letter-spacing: -0.04em; margin: 0 0 10px; }
+      .lede { color: var(--dim); font-size: 17px; max-width: 46em; margin: 0 0 32px; }
+
+      .builder { display: grid; grid-template-columns: 320px 1fr; gap: 28px; align-items: start; }
+      @media (max-width: 880px) { .builder { grid-template-columns: 1fr; } }
+
+      .panel {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+        padding: 20px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 18px;
+        position: sticky; top: 20px;
+      }
+      @media (max-width: 880px) { .panel { position: static; } }
+      .field { display: flex; flex-direction: column; gap: 6px; }
+      .field-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+      textarea, select {
+        font-family: var(--font-body); font-size: 14px; color: var(--text);
+        background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+        padding: 10px 12px; outline: none; width: 100%;
+      }
+      textarea { font-family: var(--font-mono); min-height: 160px; resize: vertical; line-height: 1.5; }
+      textarea:focus, select:focus { border-color: var(--acc1); }
+      select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+      .results { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .count { font-family: var(--font-mono); font-size: 12px; color: var(--dim); margin-right: auto; }
+      .btn {
+        font-family: var(--font-display); font-weight: 600; font-size: 13.5px;
+        border-radius: 10px; padding: 9px 14px; cursor: pointer; border: 1px solid var(--border);
+        background: var(--surface-2); color: var(--text);
+      }
+      .btn:hover { border-color: var(--dim); }
+      .btn.primary { background: linear-gradient(135deg, var(--acc1), var(--acc2)); border: 0; color: #0b0f1a; }
+
+      .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 16px; }
+      .tile {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+        padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+        cursor: pointer; transition: border-color 0.15s ease, transform 0.1s ease; position: relative;
+      }
+      .tile:hover { border-color: var(--acc1); transform: translateY(-2px); }
+      .tile svg { display: block; width: 72px; height: 72px; }
+      .tile .name { font-size: 12.5px; color: var(--text); text-align: center; word-break: break-word; line-height: 1.3; }
+      .tile.edited::after { content: ""; position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--acc2); }
+      .empty { color: var(--dim); font-size: 14px; padding: 30px 0; }
+
+      .overlay { position: fixed; inset: 0; background: rgba(5, 8, 20, 0.55); display: none; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
+      .overlay.show { display: flex; }
+      .editor { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px; width: 320px; max-width: 100%; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 16px; }
+      .editor h3 { font-family: var(--font-display); margin: 0; font-size: 18px; }
+      .editor .preview { display: flex; justify-content: center; }
+      .editor .preview svg { width: 92px; height: 92px; }
+      .editor-actions { display: flex; gap: 8px; justify-content: space-between; }
+
+      .toast { position: fixed; bottom: 28px; left: 50%; transform: translate(-50%, 16px); background: var(--text); color: var(--bg); font-family: var(--font-display); font-weight: 600; font-size: 14px; border-radius: 999px; padding: 10px 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 100; }
+      .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    </style>
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="nav-inner">
+        <a class="logo" href="./index.html">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" aria-hidden="true">
+            <clipPath id="tc"><rect width="96" height="96" rx="26"></rect></clipPath>
+            <rect width="96" height="96" rx="26" fill="#181C2C"></rect>
+            <g clip-path="url(#tc)"><circle cx="48" cy="38" r="17" fill="#3ECFEA"></circle><ellipse cx="48" cy="84" rx="28" ry="22" fill="#A78BFA"></ellipse></g>
+            <circle cx="76" cy="76" r="9" fill="#34D399" stroke="#181C2C" stroke-width="5"></circle>
+          </svg>
+          <span class="logo-word">cast</span>
+        </a>
+        <div class="nav-links">
+          <a href="./index.html">Playground</a>
+          <a href="https://github.com/go4cas/cast" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <h1>Team Builder</h1>
+      <p class="lede">Paste a list of names — one per line — and get a deterministic avatar for each. Style the whole team, click any tile to customize that person, then export. No code required.</p>
+
+      <div class="builder">
+        <section class="panel" aria-label="Team options">
+          <div class="field">
+            <label class="field-label" for="names">Names (one per line)</label>
+            <textarea id="names" spellcheck="false"></textarea>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label class="field-label" for="style">Style</label>
+              <select id="style"></select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="theme">Palette</label>
+              <select id="theme"></select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="shape">Shape</label>
+              <select id="shape"></select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="background">Background</label>
+              <select id="background"></select>
+            </div>
+          </div>
+        </section>
+
+        <section class="results">
+          <div class="toolbar">
+            <span class="count" id="count"></span>
+            <button class="btn primary" id="dl-zip" type="button">Download SVGs (.zip)</button>
+            <button class="btn" id="copy-sprite" type="button">Copy sprite</button>
+            <button class="btn" id="copy-group" type="button">Copy group mark</button>
+            <button class="btn" id="copy-code" type="button">Copy code</button>
+            <button class="btn" id="copy-link" type="button">Copy link</button>
+          </div>
+          <div class="team-grid" id="team-grid"></div>
+        </section>
+      </div>
+    </main>
+
+    <div class="overlay" id="overlay">
+      <div class="editor" role="dialog" aria-modal="true" aria-label="Customize member">
+        <h3 id="editor-name"></h3>
+        <div class="preview" id="editor-preview"></div>
+        <div class="field">
+          <label class="field-label" for="ov-style">Style</label>
+          <select id="ov-style"></select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="ov-expression">Expression</label>
+          <select id="ov-expression"></select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="ov-status">Status</label>
+          <select id="ov-status"></select>
+        </div>
+        <div class="editor-actions">
+          <button class="btn" id="ov-reset" type="button">Reset</button>
+          <button class="btn primary" id="ov-done" type="button">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module">
+      import {
+        createAvatar, createAvatars, createAvatarSprite, createAvatarGroup, avatarOptions,
+      } from './src/avatar.js';
+
+      const $ = (s) => document.querySelector(s);
+
+      const THEMES = {
+        default: undefined,
+        mono: { backgrounds: ['#E5E7EB', '#D1D5DB'], shapeColors: ['#111827', '#4B5563', '#9CA3AF'], clothingColors: ['#111827', '#374151'], inks: ['#111827'] },
+        sunset: { backgrounds: ['#FFE4D6', '#FFD6E0'], shapeColors: ['#F97316', '#F43F5E', '#FACC15'], clothingColors: ['#F97316', '#E11D48'] },
+        ocean: { backgrounds: ['#D8F3F7', '#DBEAFE'], shapeColors: ['#0EA5E9', '#22D3EE', '#6366F1'], clothingColors: ['#0EA5E9', '#0369A1'] },
+        forest: { backgrounds: ['#DCFCE7', '#ECFCCB'], shapeColors: ['#16A34A', '#65A30D', '#0D9488'], clothingColors: ['#15803D', '#3F6212'] },
+      };
+      const SHAPES = { circle: '50%', squircle: '28%', rounded: '16', square: '0' };
+      const BACKGROUNDS = { auto: 'auto', transparent: 'transparent', gradient: 'gradient', dots: 'dots', rings: 'rings', grid: 'grid' };
+      const STYLES = avatarOptions.style.filter((s) => s !== 'face');
+      const EXPRESSIONS = ['auto', ...(avatarOptions.expression || [])];
+      const STATUSES = ['none', 'online', 'busy', 'away', 'offline'];
+
+      const state = {
+        names: ['Ada Lovelace', 'Grace Hopper', 'Alan Turing', 'Katherine Johnson', 'Lin Chen', 'Noor', 'Kai', 'June Park'],
+        style: 'portrait', theme: 'default', shape: 'circle', background: 'auto',
+        overrides: {},
+      };
+
+      /* ---------- helpers ---------- */
+      function toast(msg) {
+        const el = $('#toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => el.classList.remove('show'), 1700);
+      }
+      function copyText(text, msg) {
+        navigator.clipboard.writeText(text).then(() => toast(msg), () => toast('Copy failed'));
+      }
+      function memberNames() {
+        const seen = new Set();
+        return state.names.map((n) => n.trim()).filter((n) => n && !seen.has(n) && seen.add(n));
+      }
+      function optsFor(name, size) {
+        const ov = state.overrides[name] || {};
+        const o = { style: ov.style || state.style, size, radius: SHAPES[state.shape], background: BACKGROUNDS[state.background] ?? state.background };
+        if (state.theme !== 'default' && THEMES[state.theme]) o.palette = THEMES[state.theme];
+        if (ov.expression && ov.expression !== 'auto') o.expression = ov.expression;
+        if (ov.status && ov.status !== 'none') o.status = ov.status;
+        return o;
+      }
+      function fileSafe(name) {
+        return name.replace(/[^a-z0-9@._-]+/gi, '_').replace(/^_+|_+$/g, '') || 'avatar';
+      }
+      function fillSelect(el, values, current) {
+        el.innerHTML = values.map((v) => `<option value="${v}">${v}</option>`).join('');
+        el.value = current;
+      }
+
+      /* ---------- zero-dependency ZIP (store / no compression) ---------- */
+      function crc32(bytes) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < bytes.length; i += 1) {
+          let c = (crc ^ bytes[i]) & 0xFF;
+          for (let k = 0; k < 8; k += 1) c = c & 1 ? (c >>> 1) ^ 0xEDB88320 : c >>> 1;
+          crc = (crc >>> 8) ^ c;
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+      }
+      function zipStore(files) {
+        const enc = new TextEncoder();
+        const chunks = [];
+        const central = [];
+        let offset = 0;
+        for (const f of files) {
+          const nameBytes = enc.encode(f.name);
+          const data = f.data;
+          const crc = crc32(data);
+          const lh = new Uint8Array(30 + nameBytes.length);
+          const dv = new DataView(lh.buffer);
+          dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true);
+          dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
+          dv.setUint16(26, nameBytes.length, true);
+          lh.set(nameBytes, 30);
+          chunks.push(lh, data);
+          const ch = new Uint8Array(46 + nameBytes.length);
+          const cv = new DataView(ch.buffer);
+          cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
+          cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
+          cv.setUint16(28, nameBytes.length, true); cv.setUint32(42, offset, true);
+          ch.set(nameBytes, 46);
+          central.push(ch);
+          offset += lh.length + data.length;
+        }
+        const centralStart = offset;
+        let centralSize = 0;
+        for (const ch of central) { chunks.push(ch); centralSize += ch.length; }
+        const end = new Uint8Array(22);
+        const ev = new DataView(end.buffer);
+        ev.setUint32(0, 0x06054b50, true);
+        ev.setUint16(8, central.length, true); ev.setUint16(10, central.length, true);
+        ev.setUint32(12, centralSize, true); ev.setUint32(16, centralStart, true);
+        chunks.push(end);
+        let total = 0;
+        for (const c of chunks) total += c.length;
+        const out = new Uint8Array(total);
+        let p = 0;
+        for (const c of chunks) { out.set(c, p); p += c.length; }
+        return out;
+      }
+
+      /* ---------- render ---------- */
+      function render() {
+        const grid = $('#team-grid');
+        const names = memberNames();
+        $('#count').textContent = names.length ? `${names.length} member${names.length === 1 ? '' : 's'}` : '';
+        if (!names.length) {
+          grid.innerHTML = '<p class="empty">Add some names to build your team.</p>';
+        } else {
+          grid.innerHTML = names.map((name) => {
+            const edited = state.overrides[name] ? ' edited' : '';
+            return `<div class="tile${edited}" data-name="${encodeURIComponent(name)}" title="Customize ${name}">${createAvatar(name, optsFor(name, 72))}<span class="name">${name}</span></div>`;
+          }).join('');
+          grid.querySelectorAll('.tile').forEach((tile) => {
+            tile.addEventListener('click', () => openEditor(decodeURIComponent(tile.dataset.name)));
+          });
+        }
+        updateHash();
+      }
+
+      /* ---------- per-person editor ---------- */
+      let editing = null;
+      function openEditor(name) {
+        editing = name;
+        const ov = state.overrides[name] || {};
+        $('#editor-name').textContent = name;
+        fillSelect($('#ov-style'), ['(team default)', ...STYLES], ov.style || '(team default)');
+        fillSelect($('#ov-expression'), EXPRESSIONS, ov.expression || 'auto');
+        fillSelect($('#ov-status'), STATUSES, ov.status || 'none');
+        refreshEditorPreview();
+        $('#overlay').classList.add('show');
+      }
+      function refreshEditorPreview() {
+        if (editing) $('#editor-preview').innerHTML = createAvatar(editing, optsFor(editing, 92));
+      }
+      function applyEditor() {
+        if (!editing) return;
+        const ov = {};
+        const style = $('#ov-style').value;
+        if (style && style !== '(team default)') ov.style = style;
+        if ($('#ov-expression').value !== 'auto') ov.expression = $('#ov-expression').value;
+        if ($('#ov-status').value !== 'none') ov.status = $('#ov-status').value;
+        if (Object.keys(ov).length) state.overrides[editing] = ov;
+        else delete state.overrides[editing];
+        refreshEditorPreview();
+      }
+      function closeEditor() { $('#overlay').classList.remove('show'); editing = null; render(); }
+
+      /* ---------- exports ---------- */
+      function teamOptions() {
+        const o = { style: state.style, radius: SHAPES[state.shape], background: BACKGROUNDS[state.background] ?? state.background };
+        if (state.theme !== 'default' && THEMES[state.theme]) o.palette = THEMES[state.theme];
+        return o;
+      }
+      function downloadZip() {
+        const names = memberNames();
+        if (!names.length) return toast('Nothing to export');
+        const enc = new TextEncoder();
+        const used = {};
+        const files = names.map((name) => {
+          let base = fileSafe(name);
+          used[base] = (used[base] || 0) + 1;
+          if (used[base] > 1) base += '-' + used[base];
+          return { name: `${base}.svg`, data: enc.encode(createAvatar(name, optsFor(name, 256))) };
+        });
+        const blob = new Blob([zipStore(files)], { type: 'application/zip' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'cast-team.zip';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        toast(`${files.length} SVGs zipped`);
+      }
+      function codeSnippet() {
+        const names = memberNames();
+        const opts = teamOptions();
+        const optsStr = JSON.stringify({ style: opts.style, ...(opts.palette ? { palette: opts.palette } : {}), radius: opts.radius, background: opts.background }, null, 2);
+        return `import { createAvatars } from 'cast-avatar';\n\nconst team = ${JSON.stringify(names, null, 2)};\nconst avatars = createAvatars(team, ${optsStr});`;
+      }
+
+      /* ---------- share via URL ---------- */
+      let suppressHash = false;
+      function updateHash() {
+        suppressHash = true;
+        const snapshot = { names: state.names, style: state.style, theme: state.theme, shape: state.shape, background: state.background, overrides: state.overrides };
+        location.hash = 't=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(snapshot)))));
+      }
+      function restoreHash() {
+        const m = location.hash.match(/t=(.+)/);
+        if (!m) return;
+        try {
+          const saved = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))));
+          Object.assign(state, saved);
+        } catch (e) { console.warn('Could not restore team', e); }
+      }
+
+      /* ---------- wire up ---------- */
+      function init() {
+        restoreHash();
+        $('#names').value = state.names.join('\n');
+        fillSelect($('#style'), STYLES, state.style);
+        fillSelect($('#theme'), Object.keys(THEMES), state.theme);
+        fillSelect($('#shape'), Object.keys(SHAPES), state.shape);
+        fillSelect($('#background'), Object.keys(BACKGROUNDS), state.background);
+
+        $('#names').addEventListener('input', (e) => { state.names = e.target.value.split('\n'); render(); });
+        ['style', 'theme', 'shape', 'background'].forEach((key) => {
+          $('#' + key).addEventListener('change', (e) => { state[key] = e.target.value; render(); });
+        });
+
+        ['ov-style', 'ov-expression', 'ov-status'].forEach((id) => $('#' + id).addEventListener('change', applyEditor));
+        $('#ov-reset').addEventListener('click', () => { if (editing) { delete state.overrides[editing]; openEditor(editing); } });
+        $('#ov-done').addEventListener('click', closeEditor);
+        $('#overlay').addEventListener('click', (e) => { if (e.target === $('#overlay')) closeEditor(); });
+
+        $('#dl-zip').addEventListener('click', downloadZip);
+        $('#copy-sprite').addEventListener('click', () => copyText(createAvatarSprite(memberNames(), { ...teamOptions(), cell: 96 }), 'Sprite SVG copied'));
+        $('#copy-group').addEventListener('click', () => copyText(createAvatarGroup(memberNames(), teamOptions()), 'Group mark copied'));
+        $('#copy-code').addEventListener('click', () => copyText(codeSnippet(), 'Code copied'));
+        $('#copy-link').addEventListener('click', () => { updateHash(); copyText(location.href, 'Link copied'); });
+
+        render();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
