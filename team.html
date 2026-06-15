@@ -71,6 +71,8 @@
       .results { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
       .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
       .count { font-family: var(--font-mono); font-size: 12px; color: var(--dim); margin-right: auto; }
+      .tb-size { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+      .tb-size select { width: auto; padding: 8px 10px; font-size: 13px; }
       .btn {
         font-family: var(--font-display); font-weight: 600; font-size: 13.5px;
         border-radius: 10px; padding: 9px 14px; cursor: pointer; border: 1px solid var(--border);
@@ -148,13 +150,19 @@
               <label class="field-label" for="background">Background</label>
               <select id="background"></select>
             </div>
+            <div class="field">
+              <label class="field-label" for="animate">Animate</label>
+              <select id="animate"></select>
+            </div>
           </div>
         </section>
 
         <section class="results">
           <div class="toolbar">
             <span class="count" id="count"></span>
+            <label class="tb-size">Size<select id="size"></select></label>
             <button class="btn primary" id="dl-zip" type="button">Download SVGs (.zip)</button>
+            <button class="btn" id="dl-png" type="button">Download PNGs (.zip)</button>
             <button class="btn" id="copy-sprite" type="button">Copy sprite</button>
             <button class="btn" id="copy-group" type="button">Copy group mark</button>
             <button class="btn" id="copy-code" type="button">Copy code</button>
@@ -209,10 +217,12 @@
       const STYLES = avatarOptions.style.filter((s) => s !== 'face');
       const EXPRESSIONS = ['auto', ...(avatarOptions.expression || [])];
       const STATUSES = ['none', 'online', 'busy', 'away', 'offline'];
+      const ANIMATIONS = ['none', 'breathe', 'bounce'];
+      const SIZES = ['64', '128', '256', '512'];
 
       const state = {
         names: ['Ada Lovelace', 'Grace Hopper', 'Alan Turing', 'Katherine Johnson', 'Lin Chen', 'Noor', 'Kai', 'June Park'],
-        style: 'portrait', theme: 'default', shape: 'circle', background: 'auto',
+        style: 'portrait', theme: 'default', shape: 'circle', background: 'auto', animate: 'none',
         overrides: {},
       };
 
@@ -235,10 +245,12 @@
         const ov = state.overrides[name] || {};
         const o = { style: ov.style || state.style, size, radius: SHAPES[state.shape], background: BACKGROUNDS[state.background] ?? state.background };
         if (state.theme !== 'default' && THEMES[state.theme]) o.palette = THEMES[state.theme];
+        if (state.animate !== 'none') o.animate = state.animate;
         if (ov.expression && ov.expression !== 'auto') o.expression = ov.expression;
         if (ov.status && ov.status !== 'none') o.status = ov.status;
         return o;
       }
+      function exportSize() { return parseInt($('#size').value, 10) || 256; }
       function fileSafe(name) {
         return name.replace(/[^a-z0-9@._-]+/gi, '_').replace(/^_+|_+$/g, '') || 'avatar';
       }
@@ -350,31 +362,77 @@
       function teamOptions() {
         const o = { style: state.style, radius: SHAPES[state.shape], background: BACKGROUNDS[state.background] ?? state.background };
         if (state.theme !== 'default' && THEMES[state.theme]) o.palette = THEMES[state.theme];
+        if (state.animate !== 'none') o.animate = state.animate;
         return o;
+      }
+      function uniqueFileNamer() {
+        const used = {};
+        return (name, ext) => {
+          let base = fileSafe(name);
+          used[base] = (used[base] || 0) + 1;
+          if (used[base] > 1) base += '-' + used[base];
+          return `${base}.${ext}`;
+        };
+      }
+      function downloadBlob(bytes, filename) {
+        const blob = new Blob([bytes], { type: 'application/zip' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
       }
       function downloadZip() {
         const names = memberNames();
         if (!names.length) return toast('Nothing to export');
         const enc = new TextEncoder();
-        const used = {};
-        const files = names.map((name) => {
-          let base = fileSafe(name);
-          used[base] = (used[base] || 0) + 1;
-          if (used[base] > 1) base += '-' + used[base];
-          return { name: `${base}.svg`, data: enc.encode(createAvatar(name, optsFor(name, 256))) };
-        });
-        const blob = new Blob([zipStore(files)], { type: 'application/zip' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'cast-team.zip';
-        a.click();
-        URL.revokeObjectURL(a.href);
+        const size = exportSize();
+        const named = uniqueFileNamer();
+        const files = names.map((name) => ({ name: named(name, 'svg'), data: enc.encode(createAvatar(name, optsFor(name, size))) }));
+        downloadBlob(zipStore(files), 'cast-team-svg.zip');
         toast(`${files.length} SVGs zipped`);
+      }
+      function svgToPngBytes(svg, size) {
+        return new Promise((resolve, reject) => {
+          const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            canvas.getContext('2d').drawImage(img, 0, 0, size, size);
+            URL.revokeObjectURL(url);
+            canvas.toBlob((b) => {
+              if (!b) return reject(new Error('PNG encode failed'));
+              b.arrayBuffer().then((ab) => resolve(new Uint8Array(ab)), reject);
+            }, 'image/png');
+          };
+          img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('SVG load failed')); };
+          img.src = url;
+        });
+      }
+      async function downloadPng() {
+        const names = memberNames();
+        if (!names.length) return toast('Nothing to export');
+        const size = exportSize();
+        toast(`Rendering ${names.length} PNGs…`);
+        const named = uniqueFileNamer();
+        try {
+          const files = [];
+          for (const name of names) {
+            const svg = createAvatar(name, optsFor(name, size));
+            files.push({ name: named(name, 'png'), data: await svgToPngBytes(svg, size) });
+          }
+          downloadBlob(zipStore(files), 'cast-team-png.zip');
+          toast(`${files.length} PNGs zipped`);
+        } catch (e) {
+          console.error(e);
+          toast('PNG export failed');
+        }
       }
       function codeSnippet() {
         const names = memberNames();
         const opts = teamOptions();
-        const optsStr = JSON.stringify({ style: opts.style, ...(opts.palette ? { palette: opts.palette } : {}), radius: opts.radius, background: opts.background }, null, 2);
+        const optsStr = JSON.stringify({ style: opts.style, ...(opts.palette ? { palette: opts.palette } : {}), radius: opts.radius, background: opts.background, ...(opts.animate ? { animate: opts.animate } : {}) }, null, 2);
         return `import { createAvatars } from 'cast-avatar';\n\nconst team = ${JSON.stringify(names, null, 2)};\nconst avatars = createAvatars(team, ${optsStr});`;
       }
 
@@ -382,7 +440,7 @@
       let suppressHash = false;
       function updateHash() {
         suppressHash = true;
-        const snapshot = { names: state.names, style: state.style, theme: state.theme, shape: state.shape, background: state.background, overrides: state.overrides };
+        const snapshot = { names: state.names, style: state.style, theme: state.theme, shape: state.shape, background: state.background, animate: state.animate, overrides: state.overrides };
         location.hash = 't=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(snapshot)))));
       }
       function restoreHash() {
@@ -402,9 +460,11 @@
         fillSelect($('#theme'), Object.keys(THEMES), state.theme);
         fillSelect($('#shape'), Object.keys(SHAPES), state.shape);
         fillSelect($('#background'), Object.keys(BACKGROUNDS), state.background);
+        fillSelect($('#animate'), ANIMATIONS, state.animate);
+        fillSelect($('#size'), SIZES, '256');
 
         $('#names').addEventListener('input', (e) => { state.names = e.target.value.split('\n'); render(); });
-        ['style', 'theme', 'shape', 'background'].forEach((key) => {
+        ['style', 'theme', 'shape', 'background', 'animate'].forEach((key) => {
           $('#' + key).addEventListener('change', (e) => { state[key] = e.target.value; render(); });
         });
 
@@ -414,6 +474,7 @@
         $('#overlay').addEventListener('click', (e) => { if (e.target === $('#overlay')) closeEditor(); });
 
         $('#dl-zip').addEventListener('click', downloadZip);
+        $('#dl-png').addEventListener('click', downloadPng);
         $('#copy-sprite').addEventListener('click', () => copyText(createAvatarSprite(memberNames(), { ...teamOptions(), cell: 96 }), 'Sprite SVG copied'));
         $('#copy-group').addEventListener('click', () => copyText(createAvatarGroup(memberNames(), teamOptions()), 'Group mark copied'));
         $('#copy-code').addEventListener('click', () => copyText(codeSnippet(), 'Code copied'));
