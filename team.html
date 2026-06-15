@@ -97,6 +97,12 @@
       .tile svg { display: block; width: 72px; height: 72px; }
       .tile .name { font-size: 12.5px; color: var(--text); text-align: center; word-break: break-word; line-height: 1.3; }
       .tile.edited::after { content: ""; position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--acc2); }
+      .tile.dragging { opacity: 0.4; }
+      .tile.drop-target { border-color: var(--acc1); border-style: dashed; }
+      .tile-x { position: absolute; top: 6px; left: 6px; width: 20px; height: 20px; border-radius: 50%; border: 0; cursor: pointer; background: var(--surface-2); color: var(--dim); font-size: 15px; line-height: 1; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.12s; }
+      .tile:hover .tile-x { opacity: 1; }
+      .tile-x:hover { background: #f43f5e; color: #fff; }
+      .grid-hint { font-size: 12px; color: var(--dim); margin: -6px 0 0; }
       .empty { color: var(--dim); font-size: 14px; padding: 30px 0; }
 
       .overlay { position: fixed; inset: 0; background: rgba(5, 8, 20, 0.55); display: none; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
@@ -196,6 +202,7 @@
             <button class="btn" id="copy-code" type="button">Copy code</button>
             <button class="btn" id="copy-link" type="button">Copy link</button>
           </div>
+          <p class="grid-hint" id="grid-hint">Click a tile to customize · drag to reorder · hover to remove.</p>
           <div class="team-grid" id="team-grid"></div>
         </section>
       </div>
@@ -478,18 +485,46 @@
         if (blank) notes.push(`${blank} blank line${blank === 1 ? '' : 's'} skipped`);
         const base = list.length ? `${list.length} member${list.length === 1 ? '' : 's'}` : '';
         $('#count').textContent = [base, ...notes].filter(Boolean).join(' · ');
+        $('#grid-hint').style.display = list.length ? '' : 'none';
         if (!list.length) {
           grid.innerHTML = '<p class="empty">Add some identifiers to build your team.</p>';
         } else {
           grid.innerHTML = list.map((m) => {
             const edited = state.overrides[m.seed] ? ' edited' : '';
-            return `<div class="tile${edited}" data-seed="${encodeURIComponent(m.seed)}" title="Customize ${escapeHtml(m.label)}">${createAvatar(m.seed, optsFor(m.seed, 72))}<span class="name">${escapeHtml(m.label)}</span></div>`;
+            return `<div class="tile${edited}" draggable="true" data-seed="${encodeURIComponent(m.seed)}" title="Customize ${escapeHtml(m.label)}"><button class="tile-x" type="button" aria-label="Remove ${escapeHtml(m.label)}" title="Remove">&times;</button>${createAvatar(m.seed, optsFor(m.seed, 72))}<span class="name">${escapeHtml(m.label)}</span></div>`;
           }).join('');
           grid.querySelectorAll('.tile').forEach((tile) => {
-            tile.addEventListener('click', () => openEditor(decodeURIComponent(tile.dataset.seed)));
+            const seed = decodeURIComponent(tile.dataset.seed);
+            tile.addEventListener('click', (e) => { if (!e.target.closest('.tile-x')) openEditor(seed); });
+            tile.querySelector('.tile-x').addEventListener('click', (e) => { e.stopPropagation(); removeMember(seed); });
+            tile.addEventListener('dragstart', () => { dragSeed = seed; tile.classList.add('dragging'); });
+            tile.addEventListener('dragend', () => { dragSeed = null; grid.querySelectorAll('.tile').forEach((t) => t.classList.remove('dragging', 'drop-target')); });
+            tile.addEventListener('dragover', (e) => { e.preventDefault(); if (seed !== dragSeed) tile.classList.add('drop-target'); });
+            tile.addEventListener('dragleave', () => tile.classList.remove('drop-target'));
+            tile.addEventListener('drop', (e) => { e.preventDefault(); reorder(dragSeed, seed); });
           });
         }
         updateHash();
+      }
+      let dragSeed = null;
+      function setMembers(list) {
+        state.names = list.map((m) => (m.label && m.label !== m.seed ? `${m.seed} | ${m.label}` : m.seed));
+        $('#names').value = state.names.join('\n');
+        render();
+      }
+      function removeMember(seed) {
+        delete state.overrides[seed];
+        setMembers(members().filter((m) => m.seed !== seed));
+      }
+      function reorder(fromSeed, toSeed) {
+        if (!fromSeed || fromSeed === toSeed) return;
+        const list = members();
+        const from = list.findIndex((m) => m.seed === fromSeed);
+        const to = list.findIndex((m) => m.seed === toSeed);
+        if (from < 0 || to < 0) return;
+        const [moved] = list.splice(from, 1);
+        list.splice(to, 0, moved);
+        setMembers(list);
       }
 
       /* ---------- per-person editor ---------- */
