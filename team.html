@@ -67,6 +67,7 @@
       textarea:focus, select:focus { border-color: var(--acc1); }
       select { appearance: none; -webkit-appearance: none; cursor: pointer; }
       .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .panel-section { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin: 4px 0 -4px; padding-top: 14px; border-top: 1px solid var(--border); }
       .hint { margin: 2px 0 0; font-size: 12px; color: var(--dim); line-height: 1.45; }
       .hint .mono { font-family: var(--font-mono); font-size: 11.5px; color: var(--text); }
 
@@ -165,6 +166,21 @@
             <div class="field">
               <label class="field-label" for="animate">Animate</label>
               <select id="animate"></select>
+            </div>
+          </div>
+          <p class="panel-section">Sprite &amp; group exports</p>
+          <div class="grid-2">
+            <div class="field">
+              <label class="field-label" for="sprite-cols">Sprite columns</label>
+              <select id="sprite-cols"></select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="sprite-cell">Sprite cell</label>
+              <select id="sprite-cell"></select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="group-max">Group max</label>
+              <select id="group-max"></select>
             </div>
           </div>
         </section>
@@ -630,6 +646,9 @@
         fillSelect($('#background'), Object.keys(BACKGROUNDS), state.background);
         fillSelect($('#animate'), ANIMATIONS, state.animate);
         fillSelect($('#size'), SIZES, '256');
+        fillSelect($('#sprite-cols'), ['2', '4', '6', '8'], '8');
+        fillSelect($('#sprite-cell'), ['48', '64', '96', '128'], '64');
+        fillSelect($('#group-max'), ['2', '3', '4'], '4');
 
         $('#names').addEventListener('input', (e) => { state.names = e.target.value.split('\n'); render(); });
         ['style', 'theme', 'shape', 'background', 'animate'].forEach((key) => {
@@ -662,8 +681,8 @@
 
         $('#dl-zip').addEventListener('click', downloadZip);
         $('#dl-png').addEventListener('click', downloadPng);
-        $('#copy-sprite').addEventListener('click', () => copyText(createAvatarSprite(memberSeeds(), { ...teamOptions(), cell: 96 }), 'Sprite SVG copied'));
-        $('#copy-group').addEventListener('click', () => copyText(createAvatarGroup(memberSeeds(), teamOptions()), 'Group mark copied'));
+        $('#copy-sprite').addEventListener('click', () => copyText(createAvatarSprite(memberSeeds(), { ...teamOptions(), columns: parseInt($('#sprite-cols').value, 10), cell: parseInt($('#sprite-cell').value, 10), gap: 8 }), 'Sprite SVG copied'));
+        $('#copy-group').addEventListener('click', () => copyText(createAvatarGroup(memberSeeds(), { ...teamOptions(), max: parseInt($('#group-max').value, 10) }), 'Group mark copied'));
         $('#copy-code').addEventListener('click', () => copyText(codeSnippet(), 'Code copied'));
         $('#copy-link').addEventListener('click', () => { updateHash(); copyText(location.href, 'Link copied'); });
 
