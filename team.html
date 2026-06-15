@@ -337,11 +337,13 @@
       }
       function members() { return parseInput().list; }
       function memberSeeds() { return members().map((m) => m.seed); }
-      function optsFor(name, size) {
-        const ov = state.overrides[name] || {};
-        const o = { style: ov.style || state.style, size, radius: SHAPES[state.shape], background: BACKGROUNDS[state.background] ?? state.background };
-        if (state.theme !== 'default' && THEMES[state.theme]) o.palette = THEMES[state.theme];
-        if (state.animate !== 'none') o.animate = state.animate;
+      // The per-person delta only (no team-wide options) — used both to render
+      // and to express overrides as item objects for createAvatars/Sprite.
+      function overrideOptions(name) {
+        const ov = state.overrides[name];
+        if (!ov) return null;
+        const o = {};
+        if (ov.style) o.style = ov.style;
         if (ov.expression && ov.expression !== 'auto') o.expression = ov.expression;
         if (ov.status && ov.status !== 'none') o.status = ov.status;
         if (ov.clothing && ov.clothing !== 'auto') o.clothing = CLOTHING[ov.clothing] ?? ov.clothing;
@@ -350,7 +352,23 @@
           for (const k of TRAIT_KEYS) if (ov.traits[k] && ov.traits[k] !== 'auto') t[k] = ov.traits[k];
           if (Object.keys(t).length) o.traits = t;
         }
+        return Object.keys(o).length ? o : null;
+      }
+      function optsFor(name, size) {
+        const o = { style: state.style, radius: SHAPES[state.shape], background: BACKGROUNDS[state.background] ?? state.background };
+        if (size != null) o.size = size;
+        if (state.theme !== 'default' && THEMES[state.theme]) o.palette = THEMES[state.theme];
+        if (state.animate !== 'none') o.animate = state.animate;
+        const ov = overrideOptions(name);
+        if (ov) Object.assign(o, ov);
         return o;
+      }
+      // Each roster entry as a seed string, or {seed, ...overrides} when customized.
+      function rosterItems() {
+        return members().map((m) => {
+          const ov = overrideOptions(m.seed);
+          return ov ? { seed: m.seed, ...ov } : m.seed;
+        });
       }
       function exportSize() { return parseInt($('#size').value, 10) || 256; }
       function fileSafe(name) {
@@ -651,10 +669,10 @@
         }
       }
       function codeSnippet() {
-        const seeds = memberSeeds();
         const opts = teamOptions();
-        const optsStr = JSON.stringify({ style: opts.style, ...(opts.palette ? { palette: opts.palette } : {}), radius: opts.radius, background: opts.background, ...(opts.animate ? { animate: opts.animate } : {}) }, null, 2);
-        return `import { createAvatars } from 'cast-avatar';\n\nconst team = ${JSON.stringify(seeds, null, 2)};\nconst avatars = createAvatars(team, ${optsStr});`;
+        const shared = { style: opts.style, ...(opts.palette ? { palette: opts.palette } : {}), radius: opts.radius, background: opts.background, ...(opts.animate ? { animate: opts.animate } : {}) };
+        const teamLiteral = JSON.stringify(rosterItems(), null, 2);
+        return `import { createAvatars } from 'cast-avatar';\n\nconst team = ${teamLiteral};\nconst avatars = createAvatars(team, ${JSON.stringify(shared, null, 2)});`;
       }
 
       /* ---------- share via URL ---------- */
@@ -719,7 +737,7 @@
 
         $('#dl-zip').addEventListener('click', downloadZip);
         $('#dl-png').addEventListener('click', downloadPng);
-        $('#copy-sprite').addEventListener('click', () => copyText(createAvatarSprite(memberSeeds(), { ...teamOptions(), columns: parseInt($('#sprite-cols').value, 10), cell: parseInt($('#sprite-cell').value, 10), gap: 8 }), 'Sprite SVG copied'));
+        $('#copy-sprite').addEventListener('click', () => copyText(createAvatarSprite(rosterItems(), { ...teamOptions(), columns: parseInt($('#sprite-cols').value, 10), cell: parseInt($('#sprite-cell').value, 10), gap: 8 }), 'Sprite SVG copied'));
         $('#copy-group').addEventListener('click', () => copyText(createAvatarGroup(memberSeeds(), { ...teamOptions(), max: parseInt($('#group-max').value, 10) }), 'Group mark copied'));
         $('#copy-code').addEventListener('click', () => copyText(codeSnippet(), 'Code copied'));
         $('#copy-link').addEventListener('click', () => { updateHash(); copyText(location.href, 'Link copied'); });

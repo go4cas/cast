@@ -390,6 +390,16 @@ The demo includes:
 - A shareable URL: the current avatar is encoded into the page's URL hash, so any link reproduces the exact avatar.
 - A fixed-seed variation gallery for the `face`, `portrait`, `minimal`, `line`, `initials`, `shapes`, `pixel`, `bot`, and `mesh` styles.
 
+### Team Builder
+
+The **[Team Builder](https://go4cas.github.io/cast/team.html)** (`team.html`) turns a
+pasted list of identifiers — names, emails, or IDs, with optional labels — into a
+whole set of avatars at once. Style the team, customize individuals (style,
+expression, status, and full identity traits), reorder or remove tiles, and
+import a roster from CSV. Export the result as a ZIP of SVGs or PNGs, a sprite
+sheet, a group mark, a `createAvatars` snippet, or a shareable link. Like the
+rest of the demo it's a single static file with no build step.
+
 ## Development
 
 Run the test suite with:
