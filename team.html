@@ -95,10 +95,14 @@
 
       .overlay { position: fixed; inset: 0; background: rgba(5, 8, 20, 0.55); display: none; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
       .overlay.show { display: flex; }
-      .editor { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px; width: 320px; max-width: 100%; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 16px; }
-      .editor h3 { font-family: var(--font-display); margin: 0; font-size: 18px; }
-      .editor .preview { display: flex; justify-content: center; }
-      .editor .preview svg { width: 92px; height: 92px; }
+      .editor { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px; width: 440px; max-width: 100%; max-height: calc(100vh - 40px); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 16px; }
+      .editor h3 { font-family: var(--font-display); margin: 0; font-size: 18px; word-break: break-word; }
+      .editor-head { display: flex; align-items: center; gap: 14px; }
+      .editor-head .preview svg { width: 64px; height: 64px; display: block; }
+      .editor-body { overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 4px; }
+      .ov-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .ov-note { margin: 2px 0 0; font-size: 12px; color: var(--dim); }
+      .ov-section { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin: 6px 0 -4px; }
       .editor-actions { display: flex; gap: 8px; justify-content: space-between; }
 
       .toast { position: fixed; bottom: 28px; left: 50%; transform: translate(-50%, 16px); background: var(--text); color: var(--bg); font-family: var(--font-display); font-weight: 600; font-size: 14px; border-radius: 999px; padding: 10px 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 100; }
@@ -175,19 +179,28 @@
 
     <div class="overlay" id="overlay">
       <div class="editor" role="dialog" aria-modal="true" aria-label="Customize member">
-        <h3 id="editor-name"></h3>
-        <div class="preview" id="editor-preview"></div>
-        <div class="field">
-          <label class="field-label" for="ov-style">Style</label>
-          <select id="ov-style"></select>
+        <div class="editor-head">
+          <div class="preview" id="editor-preview"></div>
+          <h3 id="editor-name"></h3>
         </div>
-        <div class="field">
-          <label class="field-label" for="ov-expression">Expression</label>
-          <select id="ov-expression"></select>
-        </div>
-        <div class="field">
-          <label class="field-label" for="ov-status">Status</label>
-          <select id="ov-status"></select>
+        <div class="editor-body">
+          <div class="field">
+            <label class="field-label" for="ov-style">Style</label>
+            <select id="ov-style"></select>
+          </div>
+          <div class="ov-grid">
+            <div class="field">
+              <label class="field-label" for="ov-expression">Expression</label>
+              <select id="ov-expression"></select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="ov-status">Status</label>
+              <select id="ov-status"></select>
+            </div>
+          </div>
+          <p class="ov-section">Traits</p>
+          <p class="ov-note">Identity traits apply to the illustrated styles (portrait, studio, cartoon).</p>
+          <div class="ov-grid" id="ov-traits"></div>
         </div>
         <div class="editor-actions">
           <button class="btn" id="ov-reset" type="button">Reset</button>
@@ -219,6 +232,18 @@
       const STATUSES = ['none', 'online', 'busy', 'away', 'offline'];
       const ANIMATIONS = ['none', 'breathe', 'bounce'];
       const SIZES = ['64', '128', '256', '512'];
+      const CLOTHING = { auto: 'auto', blue: '#3B82F6', red: '#EF4444', green: '#22C55E', purple: '#8B5CF6', slate: '#64748B' };
+      const TRAIT_KEYS = [
+        'gender', 'skinTone', 'faceShape', 'hairStyle', 'hairColor', 'eyebrows',
+        'eyes', 'nose', 'mouth', 'facialHair', 'freckles', 'blush', 'headwear',
+        'earrings', 'accessories',
+      ];
+      const LABELS = {
+        gender: 'Gender', skinTone: 'Skin tone', faceShape: 'Face shape', hairStyle: 'Hair style',
+        hairColor: 'Hair color', eyebrows: 'Eyebrows', eyes: 'Eyes', nose: 'Nose', mouth: 'Mouth',
+        facialHair: 'Facial hair', freckles: 'Freckles', blush: 'Blush', headwear: 'Headwear',
+        earrings: 'Earrings', accessories: 'Accessories', clothing: 'Clothing',
+      };
 
       const state = {
         names: ['Ada Lovelace', 'Grace Hopper', 'Alan Turing', 'Katherine Johnson', 'Lin Chen', 'Noor', 'Kai', 'June Park'],
@@ -248,6 +273,12 @@
         if (state.animate !== 'none') o.animate = state.animate;
         if (ov.expression && ov.expression !== 'auto') o.expression = ov.expression;
         if (ov.status && ov.status !== 'none') o.status = ov.status;
+        if (ov.clothing && ov.clothing !== 'auto') o.clothing = CLOTHING[ov.clothing] ?? ov.clothing;
+        if (ov.traits) {
+          const t = {};
+          for (const k of TRAIT_KEYS) if (ov.traits[k] && ov.traits[k] !== 'auto') t[k] = ov.traits[k];
+          if (Object.keys(t).length) o.traits = t;
+        }
         return o;
       }
       function exportSize() { return parseInt($('#size').value, 10) || 256; }
@@ -339,11 +370,24 @@
         fillSelect($('#ov-style'), ['(team default)', ...STYLES], ov.style || '(team default)');
         fillSelect($('#ov-expression'), EXPRESSIONS, ov.expression || 'auto');
         fillSelect($('#ov-status'), STATUSES, ov.status || 'none');
+        buildTraitFields(ov);
         refreshEditorPreview();
         $('#overlay').classList.add('show');
       }
+      function buildTraitFields(ov) {
+        const traits = ov.traits || {};
+        const fields = [
+          ...TRAIT_KEYS.map((k) => ({ key: k, values: ['auto', ...(avatarOptions[k] || [])], current: traits[k] || 'auto' })),
+          { key: 'clothing', values: Object.keys(CLOTHING), current: ov.clothing || 'auto' },
+        ];
+        $('#ov-traits').innerHTML = fields.map((f) => `
+          <div class="field">
+            <label class="field-label" for="ovt-${f.key}">${LABELS[f.key]}</label>
+            <select id="ovt-${f.key}">${f.values.map((v) => `<option value="${v}"${v === f.current ? ' selected' : ''}>${v}</option>`).join('')}</select>
+          </div>`).join('');
+      }
       function refreshEditorPreview() {
-        if (editing) $('#editor-preview').innerHTML = createAvatar(editing, optsFor(editing, 92));
+        if (editing) $('#editor-preview').innerHTML = createAvatar(editing, optsFor(editing, 64));
       }
       function applyEditor() {
         if (!editing) return;
@@ -352,6 +396,14 @@
         if (style && style !== '(team default)') ov.style = style;
         if ($('#ov-expression').value !== 'auto') ov.expression = $('#ov-expression').value;
         if ($('#ov-status').value !== 'none') ov.status = $('#ov-status').value;
+        const clothing = $('#ovt-clothing');
+        if (clothing && clothing.value !== 'auto') ov.clothing = clothing.value;
+        const traits = {};
+        for (const k of TRAIT_KEYS) {
+          const el = $('#ovt-' + k);
+          if (el && el.value !== 'auto') traits[k] = el.value;
+        }
+        if (Object.keys(traits).length) ov.traits = traits;
         if (Object.keys(ov).length) state.overrides[editing] = ov;
         else delete state.overrides[editing];
         refreshEditorPreview();
@@ -469,6 +521,7 @@
         });
 
         ['ov-style', 'ov-expression', 'ov-status'].forEach((id) => $('#' + id).addEventListener('change', applyEditor));
+        $('#ov-traits').addEventListener('change', applyEditor);
         $('#ov-reset').addEventListener('click', () => { if (editing) { delete state.overrides[editing]; openEditor(editing); } });
         $('#ov-done').addEventListener('click', closeEditor);
         $('#overlay').addEventListener('click', (e) => { if (e.target === $('#overlay')) closeEditor(); });
