@@ -82,6 +82,9 @@
       }
       .btn:hover { border-color: var(--dim); }
       .btn.primary { background: linear-gradient(135deg, var(--acc1), var(--acc2)); border: 0; color: #0b0f1a; }
+      .btn.mini { font-size: 12.5px; padding: 7px 12px; }
+      .check { display: flex; gap: 8px; align-items: center; font-size: 13.5px; color: var(--text); cursor: pointer; }
+      .check input { width: auto; cursor: pointer; }
 
       .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 16px; }
       .tile {
@@ -139,6 +142,8 @@
             <label class="field-label" for="names">Identifiers (one per line)</label>
             <textarea id="names" spellcheck="false"></textarea>
             <p class="hint">Avatar seeds on the first value. Add a label after a comma, pipe, or tab to show a name: <span class="mono">ada@corp.com, Ada Lovelace</span></p>
+            <div><button class="btn mini" id="csv-open" type="button">Import CSV…</button></div>
+            <input type="file" id="csv-file" accept=".csv,text/csv" hidden>
           </div>
           <div class="grid-2">
             <div class="field">
@@ -208,6 +213,28 @@
         <div class="editor-actions">
           <button class="btn" id="ov-reset" type="button">Reset</button>
           <button class="btn primary" id="ov-done" type="button">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="csv-overlay">
+      <div class="editor" role="dialog" aria-modal="true" aria-label="Import CSV" style="width: 380px;">
+        <h3>Import CSV</h3>
+        <p class="ov-note" id="csv-info"></p>
+        <label class="check"><input type="checkbox" id="csv-header" checked> First row is a header</label>
+        <div class="ov-grid">
+          <div class="field">
+            <label class="field-label" for="csv-seed">Seed column</label>
+            <select id="csv-seed"></select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="csv-label">Label column</label>
+            <select id="csv-label"></select>
+          </div>
+        </div>
+        <div class="editor-actions">
+          <button class="btn" id="csv-cancel" type="button">Cancel</button>
+          <button class="btn primary" id="csv-import" type="button">Import</button>
         </div>
       </div>
     </div>
@@ -365,6 +392,65 @@
 
       function escapeHtml(s) {
         return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      /* ---------- CSV import ---------- */
+      function parseCSV(text) {
+        const rows = [];
+        let row = [];
+        let field = '';
+        let inQ = false;
+        for (let i = 0; i < text.length; i += 1) {
+          const c = text[i];
+          if (inQ) {
+            if (c === '"') {
+              if (text[i + 1] === '"') { field += '"'; i += 1; } else inQ = false;
+            } else field += c;
+          } else if (c === '"') inQ = true;
+          else if (c === ',') { row.push(field); field = ''; }
+          else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+          else if (c !== '\r') field += c;
+        }
+        if (field.length || row.length) { row.push(field); rows.push(row); }
+        return rows.filter((r) => r.some((c) => c.trim() !== ''));
+      }
+      let csvRows = [];
+      function openCsvModal(rows) {
+        csvRows = rows;
+        $('#csv-info').textContent = `${rows.length} row${rows.length === 1 ? '' : 's'} found. Choose which columns to use.`;
+        populateCsvCols();
+        $('#csv-overlay').classList.add('show');
+      }
+      function populateCsvCols() {
+        const hasHeader = $('#csv-header').checked;
+        const width = Math.max(...csvRows.map((r) => r.length));
+        const cols = [];
+        for (let i = 0; i < width; i += 1) {
+          cols.push(hasHeader && csvRows[0][i] ? csvRows[0][i].trim() : `Column ${i + 1}`);
+        }
+        $('#csv-seed').innerHTML = cols.map((c, i) => `<option value="${i}">${escapeHtml(c)}</option>`).join('');
+        $('#csv-label').innerHTML = `<option value="-1">(none)</option>` + cols.map((c, i) => `<option value="${i}">${escapeHtml(c)}</option>`).join('');
+        $('#csv-seed').value = '0';
+        $('#csv-label').value = cols.length > 1 ? '1' : '-1';
+      }
+      function importCsv() {
+        const hasHeader = $('#csv-header').checked;
+        const dataRows = hasHeader ? csvRows.slice(1) : csvRows;
+        const seedIdx = parseInt($('#csv-seed').value, 10);
+        const labelIdx = parseInt($('#csv-label').value, 10);
+        const lines = [];
+        for (const r of dataRows) {
+          const seed = (r[seedIdx] || '').trim();
+          if (!seed) continue;
+          const label = labelIdx >= 0 ? (r[labelIdx] || '').trim() : '';
+          lines.push(label && label !== seed ? `${seed} | ${label}` : seed);
+        }
+        if (!lines.length) return toast('No rows imported');
+        state.names = lines;
+        $('#names').value = lines.join('\n');
+        $('#csv-overlay').classList.remove('show');
+        render();
+        toast(`Imported ${lines.length} member${lines.length === 1 ? '' : 's'}`);
       }
 
       /* ---------- render ---------- */
@@ -555,6 +641,24 @@
         $('#ov-reset').addEventListener('click', () => { if (editing) { delete state.overrides[editing]; openEditor(editing); } });
         $('#ov-done').addEventListener('click', closeEditor);
         $('#overlay').addEventListener('click', (e) => { if (e.target === $('#overlay')) closeEditor(); });
+
+        $('#csv-open').addEventListener('click', () => $('#csv-file').click());
+        $('#csv-file').addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            const rows = parseCSV(String(reader.result));
+            if (!rows.length) return toast('Empty or unreadable CSV');
+            openCsvModal(rows);
+          };
+          reader.readAsText(file);
+          e.target.value = '';
+        });
+        $('#csv-header').addEventListener('change', populateCsvCols);
+        $('#csv-import').addEventListener('click', importCsv);
+        $('#csv-cancel').addEventListener('click', () => $('#csv-overlay').classList.remove('show'));
+        $('#csv-overlay').addEventListener('click', (e) => { if (e.target === $('#csv-overlay')) $('#csv-overlay').classList.remove('show'); });
 
         $('#dl-zip').addEventListener('click', downloadZip);
         $('#dl-png').addEventListener('click', downloadPng);
