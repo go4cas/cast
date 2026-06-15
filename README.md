@@ -199,6 +199,13 @@ import { createAvatarGroup, mergeSeeds, createAvatar } from 'cast-avatar';
 const team = createAvatarGroup(['ada', 'grace', 'lin', 'noor', 'kai'], { style: 'portrait' });
 // '+1' chip for the 5th member; pass { max: 4 } to tune the cap.
 
+// Members can also be objects with per-member overrides:
+const squad = createAvatarGroup([
+  'ada',
+  { seed: 'grace', style: 'bot' },
+  { seed: 'lin', traits: { skinTone: 'dark' } },
+], { style: 'portrait' });
+
 const pair = createAvatar(mergeSeeds('alice', 'bob')); // same avatar regardless of order
 ```
 
@@ -252,9 +259,10 @@ createAvatar('u_8f3a1', { decorative: true });
 ```
 
 For color-vision accessibility, use `palette: 'accessible'` (see
-[Custom palettes](#custom-palettes)). Note that the `status` badge conveys state
-through color and corner position; pair it with visible text where presence is
-important.
+[Custom palettes](#custom-palettes)). The `status` badge otherwise conveys state
+through color and corner position alone — add `status: { state, icon: true }` for
+a shape glyph so it's distinguishable without color, and pair it with visible
+text where presence is important.
 
 ## Expressions
 
@@ -304,8 +312,8 @@ full trait control, render with the JavaScript API instead.
 | `title` | Accessible label (and `<title>` tooltip) for the SVG; defaults to `"<seed> avatar"`. |
 | `decorative` | When `true`, hide the SVG from assistive tech (`aria-hidden`, no role/label/title). Defaults to `false`. See [Accessibility](#accessibility). |
 | `initials` | Optional text override for the `initials` style. |
-| `status` | Presence badge. A state string (`online`/`busy`/`away`/`offline`) for a corner dot, or an object `{ state, shape: 'dot'\|'ring', position, pulse }` for a ring border or custom placement/animation. Omitted = none. Applies to every style. |
-| `animate` | A subtle looping animation: `breathe` or `bounce`. Respects `prefers-reduced-motion`. Works on every style. |
+| `status` | Presence badge. A state string (`online`/`busy`/`away`/`offline`) for a corner dot, or an object `{ state, shape: 'dot'\|'ring', position, pulse, icon }` for a ring border, custom placement/animation, or a colorblind-safe shape glyph (`icon: true`). Omitted = none. Applies to every style. |
+| `animate` | A subtle looping animation: `breathe`, `bounce`, or `blink` (eye-blink, face styles only). Respects `prefers-reduced-motion`. Works on every style. |
 | `palette` | Override the default color sets (object), or a preset name (`'accessible'` / `'colorblind-safe'`) — see [Custom palettes](#custom-palettes). |
 | `fontWeight` | Monogram font weight for the `initials` style (default `800`). |
 | `fontFamily` | Monogram font family for the `initials` style. |

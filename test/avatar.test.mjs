@@ -284,4 +284,25 @@ assert.equal(PALETTE_PRESETS.accessible, COLORBLIND_SAFE_PALETTE, 'accessible pr
 assert.deepEqual(resolvePalette('accessible').shapeColors, COLORBLIND_SAFE_PALETTE.shapeColors, 'resolvePalette resolves the preset by name');
 assert.equal(resolvePalette('accessible').skinTones.dark, resolvePalette().skinTones.dark, 'accessible palette keeps natural skin tones');
 
+// blink animation targets the eyes, scoped to this avatar so it can't blink
+// others on the page; off by default leaves output unchanged.
+const blink = createAvatar('ada', { style: 'portrait', animate: 'blink' });
+assert.match(blink, /<g class="cast-eyes">/, 'blink wraps the eyes');
+assert.match(blink, /id="cast-[a-z0-9]+"/, 'blink scopes via a root id');
+assert.match(blink, /@keyframes cast-blink-/, 'blink emits keyframes');
+assert.match(blink, /prefers-reduced-motion/, 'blink respects reduced-motion');
+assert.doesNotMatch(createAvatar('ada', { style: 'portrait' }), /cast-eyes/, 'no blink leaves eyes unwrapped');
+
+// status icon adds a colorblind-safe shape glyph; off by default.
+const noIcon = createAvatar('a', { status: 'busy' });
+const withIcon = createAvatar('a', { status: { state: 'busy', icon: true } });
+assert.notEqual(noIcon, withIcon, 'status icon changes output');
+assert.doesNotMatch(noIcon, /stroke="#fff" stroke-width="2.2"/, 'no glyph without icon');
+assert.match(withIcon, /stroke="#fff" stroke-width="2.2"/, 'icon draws a glyph');
+
+// group members may be {seed, ...options} objects for per-member looks.
+const plainGroup = createAvatarGroup(['ada', 'grace']);
+assert.notEqual(plainGroup, createAvatarGroup([{ seed: 'ada', style: 'bot' }, 'grace']), 'a customized member changes the group');
+assert.equal(plainGroup, createAvatarGroup(['ada', 'grace']), 'string group stays deterministic');
+
 console.log('avatar tests passed');

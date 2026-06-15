@@ -285,7 +285,7 @@
       const STYLES = avatarOptions.style.filter((s) => s !== 'face');
       const EXPRESSIONS = ['auto', ...(avatarOptions.expression || [])];
       const STATUSES = ['none', 'online', 'busy', 'away', 'offline'];
-      const ANIMATIONS = ['none', 'breathe', 'bounce'];
+      const ANIMATIONS = ['none', 'breathe', 'bounce', 'blink'];
       const SIZES = ['64', '128', '256', '512'];
       const CLOTHING = { auto: 'auto', blue: '#3B82F6', red: '#EF4444', green: '#22C55E', purple: '#8B5CF6', slate: '#64748B' };
       const TRAIT_KEYS = [
@@ -677,12 +677,16 @@
         return `import { createAvatars } from 'cast-avatar';\n\nconst team = ${teamLiteral};\nconst avatars = createAvatars(team, ${JSON.stringify(shared, null, 2)});`;
       }
 
-      /* ---------- share via URL ---------- */
-      let suppressHash = false;
+      /* ---------- share via URL + local persistence ---------- */
+      const STORE_KEY = 'cast-team-v1';
+      function snapshot() {
+        return { names: state.names, style: state.style, theme: state.theme, shape: state.shape, background: state.background, animate: state.animate, overrides: state.overrides };
+      }
       function updateHash() {
-        suppressHash = true;
-        const snapshot = { names: state.names, style: state.style, theme: state.theme, shape: state.shape, background: state.background, animate: state.animate, overrides: state.overrides };
-        location.hash = 't=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(snapshot)))));
+        const snap = snapshot();
+        location.hash = 't=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(snap)))));
+        // Remember the last team locally so it survives a reload without a link.
+        try { localStorage.setItem(STORE_KEY, JSON.stringify(snap)); } catch (e) { /* storage unavailable */ }
       }
       function restoreHash() {
         const m = location.hash.match(/t=(.+)/);
@@ -692,10 +696,18 @@
           Object.assign(state, saved);
         } catch (e) { console.warn('Could not restore team', e); }
       }
+      function restoreLocal() {
+        try {
+          const raw = localStorage.getItem(STORE_KEY);
+          if (raw) Object.assign(state, JSON.parse(raw));
+        } catch (e) { /* storage unavailable or corrupt */ }
+      }
 
       /* ---------- wire up ---------- */
       function init() {
-        restoreHash();
+        // An explicit share link wins; otherwise fall back to the last local team.
+        if (/t=/.test(location.hash)) restoreHash();
+        else restoreLocal();
         $('#names').value = state.names.join('\n');
         fillSelect($('#style'), STYLES, state.style);
         fillSelect($('#theme'), Object.keys(THEMES), state.theme);
@@ -740,7 +752,7 @@
         $('#dl-zip').addEventListener('click', downloadZip);
         $('#dl-png').addEventListener('click', downloadPng);
         $('#copy-sprite').addEventListener('click', () => copyText(createAvatarSprite(rosterItems(), { ...teamOptions(), columns: parseInt($('#sprite-cols').value, 10), cell: parseInt($('#sprite-cell').value, 10), gap: 8 }), 'Sprite SVG copied'));
-        $('#copy-group').addEventListener('click', () => copyText(createAvatarGroup(memberSeeds(), { ...teamOptions(), max: parseInt($('#group-max').value, 10) }), 'Group mark copied'));
+        $('#copy-group').addEventListener('click', () => copyText(createAvatarGroup(rosterItems(), { ...teamOptions(), max: parseInt($('#group-max').value, 10) }), 'Group mark copied'));
         $('#copy-code').addEventListener('click', () => copyText(codeSnippet(), 'Code copied'));
         $('#copy-link').addEventListener('click', () => { updateHash(); copyText(location.href, 'Link copied'); });
 

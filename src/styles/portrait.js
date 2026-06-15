@@ -1,5 +1,5 @@
 import { resolvePalette } from '../palettes.js';
-import { svgFrame } from './common.js';
+import { svgFrame, eyeGroup } from './common.js';
 
 // A refined, less-cartoony illustrative portrait. Shares the face trait set but
 // renders grown-up proportions: an oval head, almond lidded eyes, thin brows, a
@@ -122,8 +122,7 @@ export function renderPortraitAvatar(config) {
   parts.push(`<path d="M82 56q-6 -3 -13 -1" fill="none" stroke="${browColor}" stroke-width="2" stroke-linecap="round"/>`);
 
   // eyes, nose, mouth
-  parts.push(renderEye(52, traits.eyes));
-  parts.push(renderEye(76, traits.eyes));
+  parts.push(eyeGroup(config, renderEye(52, traits.eyes) + renderEye(76, traits.eyes)));
   parts.push(`<path d="M63 65q-3 9 -1 12q2 2 6 1" fill="none" stroke="${SHADOW}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>`);
   parts.push(renderMouth(traits.mouth));
   parts.push(renderFacialHair(traits.facialHair, hairFill));

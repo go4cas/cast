@@ -9,6 +9,14 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-06-15
+
+### Added
+
+- `animate: 'blink'` — a subtle eye-blink for the face styles (`portrait`, `studio`, `cartoon`). The CSS is scoped to the individual avatar (so it never blinks others on the page) and respects `prefers-reduced-motion`. Existing output is unchanged unless `animate: 'blink'` is set.
+- Status badge `icon` option — set `status: { state, icon: true }` to draw a colorblind-safe shape glyph on the dot (check / minus / clock / cross), so presence is distinguishable without relying on color alone. Defaults to `false`.
+- `createAvatarGroup` now accepts member objects (`{ seed, ...perMemberOptions }`) alongside plain seeds, so a customized member renders with its own look inside the group mark. Plain-seed groups are unchanged.
+
 ## [1.5.0] - 2026-06-15
 
 ### Added
@@ -119,7 +127,8 @@ SVG for an existing seed will be a major bump.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/go4cas/cast/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/go4cas/cast/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/go4cas/cast/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/go4cas/cast/compare/v1.2.0...v1.3.0

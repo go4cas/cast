@@ -368,7 +368,7 @@
             </svg>
           </span>
           <span class="logo-word">cast</span>
-          <span class="version-pill">v1.5.0</span>
+          <span class="version-pill">v1.6.0</span>
         </a>
         <div class="nav-links">
           <a href="#playground">Playground</a>
@@ -643,6 +643,7 @@
         statusShape: 'dot',
         statusPosition: 'bottom-right',
         statusPulse: 'off',
+        statusIcon: 'off',
         animate: 'none',
         traits: Object.fromEntries(TRAIT_KEYS.map((k) => [k, 'auto'])),
       };
@@ -669,6 +670,7 @@
             shape: s.statusShape,
             position: s.statusPosition,
             pulse: s.statusPulse === 'on',
+            icon: s.statusIcon === 'on',
           };
         }
         return o;
@@ -718,7 +720,8 @@
             { key: 'statusShape', label: 'Badge shape', values: ['dot', 'ring'] },
             { key: 'statusPosition', label: 'Position', values: opt('statusPosition', ['bottom-right', 'bottom-left', 'top-right', 'top-left']) },
             { key: 'statusPulse', label: 'Pulse', values: ['off', 'on'] },
-            { key: 'animate', label: 'Animate', values: ['none', 'breathe', 'bounce'] },
+            { key: 'statusIcon', label: 'Badge icon', values: ['off', 'on'] },
+            { key: 'animate', label: 'Animate', values: ['none', 'breathe', 'bounce', 'blink'] },
           ],
         },
       ];

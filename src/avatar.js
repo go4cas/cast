@@ -242,11 +242,20 @@ const GROUP_LAYOUTS = {
 // `max` (2–4) caps the tiles; extra members collapse into a "+N" chip.
 export function createAvatarGroup(seeds = [], options = {}) {
   const { size = 128, radius = '50%', max = 4, title, ...shared } = options;
-  const list = (Array.isArray(seeds) ? seeds : [seeds]).map((seed) => String(seed)).filter((seed) => seed.length > 0);
+  // Members may be plain seeds or {seed, ...perMemberOptions} objects, so a
+  // customized member renders with its own look inside the group.
+  const seedOf = (item) => (item && typeof item === 'object'
+    ? String(item.seed ?? item.name ?? item.id ?? '')
+    : String(item ?? ''));
+  const renderMember = (item, dim, r) => (item && typeof item === 'object'
+    ? createAvatar({ ...shared, ...item, size: dim, radius: r })
+    : createAvatar(seedOf(item), { ...shared, size: dim, radius: r }));
+  const items = (Array.isArray(seeds) ? seeds : [seeds]).filter((item) => seedOf(item).length > 0);
+  const list = items.map(seedOf);
   const dimension = clampSize(size);
 
-  if (list.length <= 1) {
-    return createAvatar(list[0] ?? 'cast', { ...shared, size: dimension, radius });
+  if (items.length <= 1) {
+    return items.length ? renderMember(items[0], dimension, radius) : createAvatar('cast', { ...shared, size: dimension, radius });
   }
 
   const cap = Math.max(2, Math.min(4, Math.floor(max)));
@@ -260,7 +269,7 @@ export function createAvatarGroup(seeds = [], options = {}) {
   const content = cells.map((cell, index) => {
     const [x, y, w, h] = cell;
     if (index < memberCount) {
-      const member = createAvatar(list[index], { ...shared, size: 128, radius: 0 });
+      const member = renderMember(items[index], 128, 0);
       return member.replace('width="128" height="128"', `x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice"`);
     }
     const extra = list.length - memberCount;

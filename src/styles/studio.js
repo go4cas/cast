@@ -1,6 +1,6 @@
 import { createRandom, hashString } from '../hash.js';
 import { resolvePalette } from '../palettes.js';
-import { svgFrame } from './common.js';
+import { svgFrame, eyeGroup } from './common.js';
 
 // A softly-shaded "studio portrait" style. It reuses the proven `portrait`
 // geometry but layers depth on top: a flat skin base with translucent
@@ -208,8 +208,7 @@ export function renderStudioAvatar(config) {
     parts.push(`<ellipse cx="78" cy="74" rx="6" ry="4" fill="${BLUSH}" opacity="0.18"/>`);
   }
   parts.push(renderFreckles(traits.freckles, config.seed));
-  parts.push(renderEye(52, traits.eyes, uid));
-  parts.push(renderEye(76, traits.eyes, uid));
+  parts.push(eyeGroup(config, renderEye(52, traits.eyes, uid) + renderEye(76, traits.eyes, uid)));
   parts.push(renderNose());
   parts.push(renderMouth(traits.mouth));
   parts.push(renderFacialHair(traits.facialHair, hairFill));

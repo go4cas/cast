@@ -47,10 +47,11 @@ export type Status = 'online' | 'busy' | 'away' | 'offline';
 export type Expression = 'neutral' | 'happy' | 'sad' | 'surprised' | 'thinking' | 'wink';
 
 /**
- * A subtle, deterministic CSS animation applied to the avatar content. Respects
- * `prefers-reduced-motion`. `breathe` gently scales; `bounce` bobs.
+ * A subtle, deterministic CSS animation. Respects `prefers-reduced-motion`.
+ * `breathe` gently scales; `bounce` bobs; `blink` briefly closes the eyes
+ * (face styles only).
  */
-export type Animate = 'breathe' | 'bounce';
+export type Animate = 'breathe' | 'bounce' | 'blink';
 
 /** Corner placement for a `dot` status badge. */
 export type StatusPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -64,6 +65,11 @@ export interface StatusBadge {
   position?: StatusPosition;
   /** Animate the badge with a pulse. */
   pulse?: boolean;
+  /**
+   * Draw a colorblind-safe shape glyph on the `dot` so the state is
+   * distinguishable without relying on color alone. Defaults to `false`.
+   */
+  icon?: boolean;
 }
 export type Gender = 'neutral' | 'feminine' | 'masculine';
 export type SkinTone = 'light' | 'mediumLight' | 'medium' | 'mediumDark' | 'dark';
@@ -293,9 +299,12 @@ export interface GroupOptions extends AvatarOptions {
   max?: number;
 }
 
-/** Render several member seeds into one cohesive group mark (a clipped mosaic). */
+/** A group member: a plain seed, or an object with per-member option overrides. */
+export type GroupMember = string | number | (AvatarOptions & { seed: string | number });
+
+/** Render several members into one cohesive group mark (a clipped mosaic). */
 export function createAvatarGroup(
-  seeds: Array<string | number>,
+  seeds: Array<GroupMember>,
   options?: GroupOptions
 ): string;
 

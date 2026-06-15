@@ -61,13 +61,31 @@ export function svgFrame(config, children) {
   const label = escapeText(config.title);
   const a11y = config.decorative ? ' aria-hidden="true"' : ` role="img" aria-label="${label}"`;
   const titleEl = config.decorative ? '' : `<title>${label}</title>`;
-  return `<svg xmlns="${SVG_NS}" width="${size}" height="${size}" viewBox="0 0 128 128"${a11y}>${titleEl}<defs>${defs}</defs>${anim.css}<g clip-path="url(#${clipId})">${background}${anim.open}${children}${anim.close}</g>${statusBadge(config.status, radius)}</svg>`;
+  // The `blink` animation scopes its CSS to this avatar via a root id so it only
+  // animates its own eyes, not every avatar on the page.
+  const rootId = config.animate === 'blink' ? ` id="cast-${uid}"` : '';
+  return `<svg xmlns="${SVG_NS}" width="${size}" height="${size}" viewBox="0 0 128 128"${rootId}${a11y}>${titleEl}<defs>${defs}</defs>${anim.css}<g clip-path="url(#${clipId})">${background}${anim.open}${children}${anim.close}</g>${statusBadge(config.status, radius)}</svg>`;
+}
+
+// Wrap the eyes so the `blink` animation can target them. A no-op (and no markup
+// change) for any other animate value, keeping existing output stable.
+export function eyeGroup(config, eyesSvg) {
+  return config && config.animate === 'blink' ? `<g class="cast-eyes">${eyesSvg}</g>` : eyesSvg;
 }
 
 // Optional, deterministic CSS animation applied to the avatar content (not the
 // frame). Respects prefers-reduced-motion. Keyframe/class names are namespaced
 // by `uid` so multiple inlined avatars don't clash.
 function animation(animate, uid) {
+  if (animate === 'blink') {
+    // Eyes (wrapped in .cast-eyes by the face renderers) briefly close. Scoped
+    // to this avatar's root id so it never blinks other avatars on the page.
+    const cls = `cast-blink-${uid}`;
+    const keyframes = `@keyframes ${cls}{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(0.08)}}`;
+    const css = `<style>${keyframes}@media(prefers-reduced-motion:no-preference){#cast-${uid} .cast-eyes{transform-box:fill-box;transform-origin:center;animation:${cls} 4s ease-in-out infinite}}</style>`;
+    return { css, open: '', close: '' };
+  }
+
   if (animate !== 'breathe' && animate !== 'bounce') {
     return { css: '', open: '', close: '' };
   }
@@ -116,7 +134,18 @@ function statusBadge(status, radius) {
   const pulse = config.pulse
     ? `<circle cx="${cx}" cy="${cy}" r="10" fill="${color}" opacity="0.55"><animate attributeName="r" values="10;20" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.55;0" dur="1.5s" repeatCount="indefinite"/></circle>`
     : '';
-  return `${pulse}<circle cx="${cx}" cy="${cy}" r="14" fill="#fff"/><circle cx="${cx}" cy="${cy}" r="10" fill="${color}"/>`;
+  const glyph = config.icon ? statusGlyph(config.state, cx, cy) : '';
+  return `${pulse}<circle cx="${cx}" cy="${cy}" r="14" fill="#fff"/><circle cx="${cx}" cy="${cy}" r="10" fill="${color}"/>${glyph}`;
+}
+
+// Opt-in shape affordance so the badge state is distinguishable without relying
+// on color alone (a white glyph on the dot): check / minus / clock / cross.
+function statusGlyph(state, cx, cy) {
+  const s = 'fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"';
+  if (state === 'online') return `<path d="M${cx - 4} ${cy + 0.5}l3 3.2l5.5 -6" ${s}/>`;
+  if (state === 'busy') return `<path d="M${cx - 4.5} ${cy}h9" ${s}/>`;
+  if (state === 'away') return `<path d="M${cx} ${cy}V${cy - 4}M${cx} ${cy}h3.6" ${s}/>`;
+  return `<path d="M${cx - 3.4} ${cy - 3.4}l6.8 6.8M${cx + 3.4} ${cy - 3.4}l-6.8 6.8" ${s}/>`;
 }
 
 export function colorAt(colors, random, offset = 0) {
