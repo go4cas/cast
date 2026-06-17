@@ -324,11 +324,18 @@ default `50%` for a circle, and use `fontWeight`/`fontFamily` to restyle the tex
 
 The styles are deterministic from the seed. `portrait` (the default), `studio`,
 `cartoon`, `minimal`, `line`, and `pixel` use the trait set below — `portrait`
-is a refined illustrative face, `studio` a softly-shaded version of it with
-gradient skin and detailed eyes, `cartoon` a playful one (formerly `face`),
-`minimal` a flat geometric one, and `line` a monochrome thin-line one.
+is a refined illustrative face, `studio` a semi-realistic, sculpted portrait of
+the same person (a faceShape-driven head, multi-layer skin modelling, a sculpted
+nose, volumetric lips, and lidded eyes), `cartoon` a playful one (formerly
+`face`), `minimal` a flat geometric one, and `line` a monochrome thin-line one.
 `initials` renders a monogram, and `bot`/`shapes`/`mesh` derive their colors and
 composition from the seed alone (`mesh` is an abstract gradient-blob style).
+
+Not every trait applies to every style: the illustrative faces (`portrait`,
+`studio`, `cartoon`) honour the full set; `minimal` and `line` render a
+style-appropriate subset (and `line`, being monochrome, ignores colour traits);
+and `pixel`/`initials`/`bot`/`shapes`/`mesh` derive everything from the seed and
+ignore face traits. The playground only shows the controls a given style uses.
 
 ## Trait options
 

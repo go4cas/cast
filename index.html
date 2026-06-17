@@ -629,6 +629,35 @@
         'earrings', 'accessories',
       ];
 
+      // Which traits each style actually renders, so the builder can hide
+      // controls that would do nothing for the selected style. The illustrative
+      // faces honour the full set; minimal/line render a style-appropriate
+      // subset (line is monochrome, so it skips colour traits); the abstract
+      // styles derive everything from the seed and honour no face traits.
+      const FACE_STYLES = ['portrait', 'studio', 'cartoon', 'minimal', 'line'];
+      const CLOTHING_STYLES = ['portrait', 'studio', 'cartoon', 'minimal'];
+      const STYLE_TRAITS = {
+        portrait: TRAIT_KEYS, studio: TRAIT_KEYS, cartoon: TRAIT_KEYS,
+        minimal: ['skinTone', 'hairStyle', 'hairColor', 'eyebrows', 'eyes', 'mouth', 'headwear', 'earrings', 'accessories'],
+        line: ['hairStyle', 'eyebrows', 'eyes', 'mouth', 'facialHair', 'headwear', 'earrings', 'accessories'],
+        pixel: [], initials: [], bot: [], shapes: [], mesh: [],
+      };
+
+      function fieldAppliesToStyle(key, style) {
+        if (TRAIT_KEYS.includes(key)) return (STYLE_TRAITS[style] || []).includes(key);
+        if (key === 'expression') return FACE_STYLES.includes(style);
+        if (key === 'fontWeight') return style === 'initials';
+        if (key === 'clothing') return CLOTHING_STYLES.includes(style);
+        return true; // style, size, shape, theme, background, status*, animate
+      }
+
+      function applyStyleGating() {
+        document.querySelectorAll('#pg-controls .field').forEach((wrap) => {
+          if (!wrap.dataset.key) return;
+          wrap.style.display = fieldAppliesToStyle(wrap.dataset.key, state.style) ? '' : 'none';
+        });
+      }
+
       const state = {
         seed: 'ada@example.com',
         style: 'portrait',
@@ -682,6 +711,7 @@
 
       function renderPreview() {
         try {
+          applyStyleGating();
           currentSvg = createAvatar(buildOptions());
           $('#preview-stage').innerHTML = currentSvg;
         } catch (e) {
@@ -743,11 +773,13 @@
           section.appendChild(grid);
           root.appendChild(section);
         }
+        applyStyleGating();
       }
 
       function buildField(f) {
         const wrap = document.createElement('label');
         wrap.className = 'field';
+        wrap.dataset.key = f.key;
         const label = document.createElement('span');
         label.className = 'field-label';
         label.textContent = f.label;
@@ -908,7 +940,7 @@
       const GALLERY_SEEDS = ['ada@example.com', 'grace.h', 'lin.chen', 'kai_dev', 'noor'];
       const STYLE_BLURBS = {
         portrait: 'Refined illustrative face — the default.',
-        studio: 'Softly-shaded studio portrait.',
+        studio: 'Semi-realistic, sculpted portrait.',
         cartoon: 'Playful, expressive face style.',
         minimal: 'Flat geometric face.',
         line: 'Monochrome thin-line face.',

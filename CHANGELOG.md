@@ -9,6 +9,14 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-06-17
+
+### Changed
+
+- `studio` style redesigned as a semi-realistic, sculpted portrait, replacing the previous softly-shaded version (which had grown too close to `portrait`). It shares the face trait set with `portrait` (so a seed renders as the same person) and pushes fidelity further: a `faceShape`-driven head silhouette, multi-layer color-agnostic skin modelling (vertical light, upper-left key light, rim-shadow vignette, cheekbone highlights, jaw/temple core shadows), a sculpted nose, volumetric upper/lower lips, almond lidded eyes with a gradient iris and catch-light, and hair with a gradient sheen. Deterministic, dependency-free, and SSR-safe like the other styles.
+- Trait coverage filled in so selections are honoured consistently: `portrait` now renders `eyebrows`, `nose`, `freckles`, `blush`, `earrings`, all head coverings (beanie/cap/bucket/turban/hijab) and a `faceShape`-driven head; `minimal` and `line` gain `eyebrows`, eye-shape variants, head coverings and `earrings` in their own visual language (`line` stays monochrome). The abstract styles (`pixel`/`initials`/`bot`/`shapes`/`mesh`) continue to derive everything from the seed.
+- Demo playground now hides controls that the selected style doesn't render, so every visible control affects the avatar.
+
 ## [1.6.0] - 2026-06-15
 
 ### Added
@@ -127,7 +135,8 @@ SVG for an existing seed will be a major bump.
 - TypeScript declarations for the library and the custom element.
 - Dependency-free with no build step.
 
-[Unreleased]: https://github.com/go4cas/cast/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/go4cas/cast/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/go4cas/cast/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/go4cas/cast/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/go4cas/cast/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/go4cas/cast/compare/v1.3.0...v1.4.0

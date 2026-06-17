@@ -71,6 +71,43 @@ function renderFacialHair(facialHair, stroke) {
   return '';
 }
 
+function renderBrows(eyebrows, stroke) {
+  if (eyebrows === 'raised') {
+    return `<path d="M47 50q5 -3 10 0" ${stroke}/><path d="M71 50q5 -3 10 0" ${stroke}/>`;
+  }
+  if (eyebrows === 'angled') {
+    return `<path d="M47 50l10 3" ${stroke}/><path d="M81 50l-10 3" ${stroke}/>`;
+  }
+  return `<path d="M47 52q5 -2 10 0" ${stroke}/><path d="M71 52q5 -2 10 0" ${stroke}/>`;
+}
+
+// Line-art hats over the crown. `turban` covers the hair (see main).
+function renderHeadwear(headwear, stroke) {
+  if (headwear === 'beanie') {
+    return `<path d="M36 52c0-22 13-34 28-34s28 12 28 34" ${stroke}/><path d="M33 52h62" ${stroke}/>`;
+  }
+  if (headwear === 'cap') {
+    return `<path d="M38 52c0-20 12-32 26-32s26 12 26 32" ${stroke}/><path d="M34 52q14 -5 30 -5" ${stroke}/>`;
+  }
+  if (headwear === 'bucket') {
+    return `<path d="M44 48c0-15 9-24 20-24s20 9 20 24" ${stroke}/><path d="M33 48h62" ${stroke}/>`;
+  }
+  if (headwear === 'turban') {
+    return `<path d="M36 54c0-20 12-34 28-34s28 14 28 34" ${stroke}/><path d="M40 44q24 -10 44 4" ${stroke}/>`;
+  }
+  return '';
+}
+
+function renderEarrings(earrings, stroke, ink) {
+  if (earrings === 'studs') {
+    return `<circle cx="36" cy="72" r="1.8" fill="${ink}"/><circle cx="92" cy="72" r="1.8" fill="${ink}"/>`;
+  }
+  if (earrings === 'hoops') {
+    return `<circle cx="36" cy="74" r="3" ${stroke}/><circle cx="92" cy="74" r="3" ${stroke}/>`;
+  }
+  return '';
+}
+
 function renderAccessories(accessories, stroke, ink) {
   if (accessories === 'glasses') {
     return `<circle cx="52" cy="60" r="9" ${stroke}/><circle cx="76" cy="60" r="9" ${stroke}/><path d="M61 60h6" ${stroke}/>`;
@@ -89,6 +126,9 @@ export function renderLineAvatar(config) {
   const ink = pick(resolvePalette(config.palette).inks, random);
   const stroke = `fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"`;
   const isHijab = traits.headwear === 'hijab' || traits.hairStyle === 'hijab';
+  // In line-art there are no fills to occlude with, so any hat replaces the hair
+  // outline rather than layering over it (which would double the strokes).
+  const hidesHair = isHijab || ['beanie', 'cap', 'bucket', 'turban'].includes(traits.headwear);
 
   const parts = [
     `<path d="M30 118c5-14 17-20 34-20s29 6 34 20" ${stroke}/>`,
@@ -98,16 +138,19 @@ export function renderLineAvatar(config) {
   if (isHijab) {
     parts.push(`<path d="M34 102c-4-24-2-52 6-66 6-10 14-16 24-16s18 6 24 16c8 14 10 42 6 66" ${stroke}/>`);
   } else {
-    parts.push(renderHair(traits.hairStyle, stroke));
+    if (!hidesHair) {
+      parts.push(renderHair(traits.hairStyle, stroke));
+    }
+    parts.push(renderHeadwear(traits.headwear, stroke));
   }
 
-  parts.push(`<path d="M47 52q5 -2 10 0" ${stroke}/>`);
-  parts.push(`<path d="M71 52q5 -2 10 0" ${stroke}/>`);
+  parts.push(renderBrows(traits.eyebrows, stroke));
   parts.push(renderEyes(traits.eyes, stroke, ink));
   parts.push(`<path d="M64 60v8q-3 2 -5 1" ${stroke}/>`);
   parts.push(renderMouth(traits.mouth, stroke));
   parts.push(renderFacialHair(traits.facialHair, stroke));
   parts.push(renderAccessories(traits.accessories, stroke, ink));
+  parts.push(renderEarrings(traits.earrings, stroke, ink));
 
   return svgFrame(config, parts.join(''));
 }

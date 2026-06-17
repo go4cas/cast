@@ -174,6 +174,28 @@ for (const headwear of AVATAR_OPTIONS.headwear) {
   assert.match(createAvatar({ seed: 'hat', style: 'face', traits: { headwear } }), /^<svg /, `headwear ${headwear} renders`);
 }
 
+// Distinctive opening of the studio `oval` face silhouette (see FACE.oval).
+const FACE_OVAL_RE = /M64 30C81 30 92 44/;
+// The studio style: a semi-realistic, sculpted portrait — deterministic,
+// trait-driven, and faceShape-aware. It shares the face trait set with portrait
+// so identity stays stable across styles.
+const studioBase = { seed: 'studio-user', style: 'studio', size: 96 };
+assert.equal(createAvatar(studioBase), createAvatar(studioBase), 'studio is deterministic for the same options');
+const studioDark = createAvatar({
+  seed: 'studio-snap',
+  style: 'studio',
+  traits: { skinTone: 'dark', hairColor: 'black', eyes: 'round', mouth: 'smile', faceShape: 'oval' }
+});
+assert.match(studioDark, /fill="#5c3424"/, 'studio reflects the selected skin tone');
+assert.match(studioDark, /cast-st-iris-/, 'studio round eyes draw a gradient iris');
+assert.match(studioDark, FACE_OVAL_RE, 'studio honours the oval faceShape silhouette');
+const studioRound = createAvatar({ seed: 'studio-snap', style: 'studio', traits: { faceShape: 'round' } });
+assert.doesNotMatch(studioRound, FACE_OVAL_RE, 'a different faceShape changes the head silhouette');
+// Every faceShape, plus turban/hijab head coverings, render valid SVG.
+for (const faceShape of AVATAR_OPTIONS.faceShape) {
+  assert.match(createAvatar({ seed: 'face-shape', style: 'studio', traits: { faceShape } }), /^<svg /, `studio faceShape ${faceShape} renders`);
+}
+
 // Status badge: string shorthand (corner dot), ring shape, position, and pulse.
 const statusDot = createAvatar('s', { style: 'face', status: 'online' });
 assert.match(statusDot, /<circle cx="102" cy="102" r="10" fill="#22c55e"\/>/, 'string status renders a bottom-right dot');
