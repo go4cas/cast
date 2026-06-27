@@ -1,6 +1,6 @@
 import { createRandom, hashString } from '../hash.js';
 import { resolvePalette } from '../palettes.js';
-import { svgFrame, eyeGroup } from './common.js';
+import { svgFrame, eyeGroup, mouthGroup } from './common.js';
 
 // A semi-realistic, sculpted "studio portrait". It shares the face trait set and
 // feature layout with `portrait` (so a given seed reads as the same person), but
@@ -364,7 +364,7 @@ export function renderStudioAvatar(config) {
   parts.push(renderFreckles(traits.freckles, config.seed));
   parts.push(eyeGroup(config, renderEye(52, traits.eyes, uid) + renderEye(76, traits.eyes, uid)));
   parts.push(renderNose(traits.nose));
-  parts.push(renderMouth(traits.mouth));
+  parts.push(mouthGroup(config, renderMouth(traits.mouth)));
   parts.push(renderFacialHair(traits.facialHair, hairFill));
   parts.push(renderAccessories(traits.accessories));
   parts.push(renderEarrings(traits.earrings));

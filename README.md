@@ -313,7 +313,7 @@ full trait control, render with the JavaScript API instead.
 | `decorative` | When `true`, hide the SVG from assistive tech (`aria-hidden`, no role/label/title). Defaults to `false`. See [Accessibility](#accessibility). |
 | `initials` | Optional text override for the `initials` style. |
 | `status` | Presence badge. A state string (`online`/`busy`/`away`/`offline`) for a corner dot, or an object `{ state, shape: 'dot'\|'ring', position, pulse, icon }` for a ring border, custom placement/animation, or a colorblind-safe shape glyph (`icon: true`). Omitted = none. Applies to every style. |
-| `animate` | A subtle looping animation: `breathe`, `bounce`, or `blink` (eye-blink, face styles only). Respects `prefers-reduced-motion`. Works on every style. |
+| `animate` | A subtle looping animation: `breathe`, `bounce`, `blink` (eye-blink), or `talk` (mouth flap). `blink`/`talk` are face styles only. Respects `prefers-reduced-motion`. Works on every style. |
 | `palette` | Override the default color sets (object), or a preset name (`'accessible'` / `'colorblind-safe'`) — see [Custom palettes](#custom-palettes). |
 | `fontWeight` | Monogram font weight for the `initials` style (default `800`). |
 | `fontFamily` | Monogram font family for the `initials` style. |

@@ -315,6 +315,14 @@ assert.match(blink, /@keyframes cast-blink-/, 'blink emits keyframes');
 assert.match(blink, /prefers-reduced-motion/, 'blink respects reduced-motion');
 assert.doesNotMatch(createAvatar('ada', { style: 'portrait' }), /cast-eyes/, 'no blink leaves eyes unwrapped');
 
+// talk animation targets the mouth, same scoping rig as blink.
+const talk = createAvatar('ada', { style: 'portrait', animate: 'talk' });
+assert.match(talk, /<g class="cast-mouth">/, 'talk wraps the mouth');
+assert.match(talk, /id="cast-[a-z0-9]+"/, 'talk scopes via a root id');
+assert.match(talk, /@keyframes cast-talk-/, 'talk emits keyframes');
+assert.match(talk, /prefers-reduced-motion/, 'talk respects reduced-motion');
+assert.doesNotMatch(createAvatar('ada', { style: 'portrait' }), /cast-mouth/, 'no talk leaves mouth unwrapped');
+
 // status icon adds a colorblind-safe shape glyph; off by default.
 const noIcon = createAvatar('a', { status: 'busy' });
 const withIcon = createAvatar('a', { status: { state: 'busy', icon: true } });

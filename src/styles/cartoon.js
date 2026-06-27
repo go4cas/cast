@@ -1,5 +1,5 @@
 import { resolvePalette } from '../palettes.js';
-import { svgFrame, eyeGroup } from './common.js';
+import { svgFrame, eyeGroup, mouthGroup } from './common.js';
 
 // Deterministic dot pattern used for the stubble hair/beard styles. Walks a
 // hex-packed grid over the given box and emits a tiny circle wherever `test`
@@ -275,7 +275,7 @@ export function renderCartoonAvatar(config) {
     renderNose(traits.nose),
     renderFreckles(traits.freckles),
     renderBlush(traits.blush),
-    renderMouth(traits.mouth),
+    mouthGroup(config, renderMouth(traits.mouth)),
     renderFacialHair(traits.facialHair),
     renderAccessories(traits.accessories)
   ].join(''));

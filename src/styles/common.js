@@ -61,9 +61,9 @@ export function svgFrame(config, children) {
   const label = escapeText(config.title);
   const a11y = config.decorative ? ' aria-hidden="true"' : ` role="img" aria-label="${label}"`;
   const titleEl = config.decorative ? '' : `<title>${label}</title>`;
-  // The `blink` animation scopes its CSS to this avatar via a root id so it only
-  // animates its own eyes, not every avatar on the page.
-  const rootId = config.animate === 'blink' ? ` id="cast-${uid}"` : '';
+  // The `blink` and `talk` animations scope their CSS to this avatar via a root
+  // id so they only animate its own eyes/mouth, not every avatar on the page.
+  const rootId = config.animate === 'blink' || config.animate === 'talk' ? ` id="cast-${uid}"` : '';
   return `<svg xmlns="${SVG_NS}" width="${size}" height="${size}" viewBox="0 0 128 128"${rootId}${a11y}>${titleEl}<defs>${defs}</defs>${anim.css}<g clip-path="url(#${clipId})">${background}${anim.open}${children}${anim.close}</g>${statusBadge(config.status, radius)}</svg>`;
 }
 
@@ -71,6 +71,12 @@ export function svgFrame(config, children) {
 // change) for any other animate value, keeping existing output stable.
 export function eyeGroup(config, eyesSvg) {
   return config && config.animate === 'blink' ? `<g class="cast-eyes">${eyesSvg}</g>` : eyesSvg;
+}
+
+// Wrap the mouth so the `talk` animation can target it. Same pattern as
+// eyeGroup: a no-op for any other animate value so existing output is unchanged.
+export function mouthGroup(config, mouthSvg) {
+  return config && config.animate === 'talk' ? `<g class="cast-mouth">${mouthSvg}</g>` : mouthSvg;
 }
 
 // Optional, deterministic CSS animation applied to the avatar content (not the
@@ -83,6 +89,16 @@ function animation(animate, uid) {
     const cls = `cast-blink-${uid}`;
     const keyframes = `@keyframes ${cls}{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(0.08)}}`;
     const css = `<style>${keyframes}@media(prefers-reduced-motion:no-preference){#cast-${uid} .cast-eyes{transform-box:fill-box;transform-origin:center;animation:${cls} 4s ease-in-out infinite}}</style>`;
+    return { css, open: '', close: '' };
+  }
+
+  if (animate === 'talk') {
+    // Mouth (wrapped in .cast-mouth by the face renderers) opens and closes on a
+    // quick loop to suggest speech. Scoped to this avatar's root id so it never
+    // animates other avatars on the page. ponytail: idle flap, not speech-synced.
+    const cls = `cast-talk-${uid}`;
+    const keyframes = `@keyframes ${cls}{0%,100%{transform:scaleY(0.6)}50%{transform:scaleY(1.25)}}`;
+    const css = `<style>${keyframes}@media(prefers-reduced-motion:no-preference){#cast-${uid} .cast-mouth{transform-box:fill-box;transform-origin:center;animation:${cls} 0.62s ease-in-out infinite}}</style>`;
     return { css, open: '', close: '' };
   }
 

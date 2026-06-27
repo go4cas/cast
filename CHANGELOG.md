@@ -9,6 +9,12 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-06-27
+
+### Added
+
+- `animate: 'talk'` — a subtle mouth flap for the face styles (`portrait`, `studio`, `cartoon`), as if the avatar is speaking. The CSS is scoped to the individual avatar (so it never animates others on the page) and respects `prefers-reduced-motion`. Existing output is unchanged unless `animate: 'talk'` is set.
+
 ## [1.7.0] - 2026-06-17
 
 ### Changed

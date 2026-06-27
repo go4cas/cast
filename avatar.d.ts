@@ -48,10 +48,10 @@ export type Expression = 'neutral' | 'happy' | 'sad' | 'surprised' | 'thinking' 
 
 /**
  * A subtle, deterministic CSS animation. Respects `prefers-reduced-motion`.
- * `breathe` gently scales; `bounce` bobs; `blink` briefly closes the eyes
- * (face styles only).
+ * `breathe` gently scales; `bounce` bobs; `blink` briefly closes the eyes;
+ * `talk` flaps the mouth as if speaking (`blink`/`talk` are face styles only).
  */
-export type Animate = 'breathe' | 'bounce' | 'blink';
+export type Animate = 'breathe' | 'bounce' | 'blink' | 'talk';
 
 /** Corner placement for a `dot` status badge. */
 export type StatusPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
