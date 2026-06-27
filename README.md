@@ -296,8 +296,45 @@ A zero-dependency `<cast-avatar>` custom element is available from the
 ```
 
 Attributes: `seed`, `variant` (the style name — `style` is reserved by HTML),
-`size`, and `background`. The element re-renders when any of these change. For
-full trait control, render with the JavaScript API instead.
+`size`, `background`, and `animate`. The element re-renders when any of these
+change. For full trait control, render with the JavaScript API instead.
+
+## Talking avatars
+
+An avatar rendered with `animate: 'talk'` (face styles `portrait`, `studio`,
+`cartoon`) can speak text aloud with its mouth moving in time, via the browser's
+native speech engine — no dependency. Import the opt-in `cast-avatar/speak`
+helper:
+
+```js
+import { createAvatar } from 'cast-avatar';
+import { speak } from 'cast-avatar/speak';
+
+document.body.innerHTML = createAvatar('ada', { style: 'studio', animate: 'talk' });
+const avatar = document.body.querySelector('svg');
+
+await speak(avatar, 'Hello, I am Ada.', { rate: 1.1 });
+```
+
+`speak(target, text, opts?)` accepts the avatar `<svg>`, a `<cast-avatar>`, or any
+container of one. It returns a `Promise` that resolves when speech ends. `opts`
+(`voice`, `rate`, `pitch`, `volume`, `lang`) pass through to the utterance.
+`stopSpeaking(target?)` cancels and rests the mouth.
+
+The `<cast-avatar>` element exposes the same thing as a method:
+
+```html
+<cast-avatar seed="ada" variant="studio" animate="talk"></cast-avatar>
+<script type="module">
+  import 'cast-avatar/element';
+  document.querySelector('cast-avatar').speak('Hi there!');
+</script>
+```
+
+Notes: requires `animate: 'talk'` (that's what emits the mouth rig). Respects
+`prefers-reduced-motion` — it still speaks, but skips mouth motion. Importing the
+module is SSR-safe; with no speech engine `speak()` resolves as a no-op. Speech
+support and available voices vary by browser/OS.
 
 ## Options
 

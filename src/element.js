@@ -1,4 +1,5 @@
 import { createAvatar } from './avatar.js';
+import { speak } from './speak.js';
 
 // `<cast-avatar seed="ada" variant="face" size="96">` — a zero-dependency
 // custom element wrapper around createAvatar. The style name is exposed as the
@@ -10,7 +11,7 @@ const Base = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
 export class CastAvatarElement extends Base {
   static get observedAttributes() {
-    return ['seed', 'variant', 'size', 'background'];
+    return ['seed', 'variant', 'size', 'background', 'animate'];
   }
 
   connectedCallback() {
@@ -36,7 +37,17 @@ export class CastAvatarElement extends Base {
       options.background = this.getAttribute('background');
     }
 
+    if (this.hasAttribute('animate')) {
+      options.animate = this.getAttribute('animate');
+    }
+
     this.innerHTML = createAvatar(this.getAttribute('seed') || '', options);
+  }
+
+  // Speak `text` aloud, flapping the mouth in time. Requires the avatar to be
+  // rendered with `variant`/`animate: 'talk'` so the `.cast-mouth` rig is present.
+  speak(text, opts) {
+    return speak(this, text, opts);
   }
 }
 

@@ -18,6 +18,7 @@ import {
 } from '../src/avatar.js';
 import { AVATAR_OPTIONS } from '../src/palettes.js';
 import { CastAvatarElement } from '../src/element.js';
+import { speak, stopSpeaking, findMouth } from '../src/speak.js';
 
 const base = { seed: 'ada@example.com', style: 'face', size: 96 };
 const first = createAvatar(base);
@@ -277,7 +278,7 @@ assert.equal(createAvatarGroup(['solo']), createAvatar('solo', { size: 128 }), '
 
 // The <cast-avatar> custom element wraps createAvatar (tested without a DOM by
 // stubbing the attribute accessors on an instance).
-assert.deepEqual([...CastAvatarElement.observedAttributes], ['seed', 'variant', 'size', 'background'], 'element observes the expected attributes');
+assert.deepEqual([...CastAvatarElement.observedAttributes], ['seed', 'variant', 'size', 'background', 'animate'], 'element observes the expected attributes');
 const element = new CastAvatarElement();
 const elementAttrs = { seed: 'ada', variant: 'bot', size: '64' };
 element.getAttribute = (key) => (key in elementAttrs ? elementAttrs[key] : null);
@@ -323,6 +324,20 @@ assert.match(talk, /@keyframes cast-talk-/, 'talk emits keyframes');
 assert.match(talk, /prefers-reduced-motion/, 'talk respects reduced-motion');
 assert.doesNotMatch(createAvatar('ada', { style: 'portrait' }), /cast-mouth/, 'no talk leaves mouth unwrapped');
 
+// speak() is SSR-safe: with no window (Node) it resolves as a no-op and never
+// throws, so importing cast-avatar/speak on the server is harmless.
+assert.equal(typeof window, 'undefined', 'test runs without a DOM');
+await assert.doesNotReject(speak(null, 'hello'), 'speak resolves as a no-op without a speech engine');
+assert.doesNotThrow(() => stopSpeaking(), 'stopSpeaking is a no-op without a speech engine');
+
+// findMouth resolves the rig from the group itself, a container, or neither.
+const mouthNode = { classList: { contains: (c) => c === 'cast-mouth' } };
+assert.equal(findMouth(mouthNode), mouthNode, 'findMouth returns the group when given it directly');
+const container = { querySelector: (sel) => (sel === '.cast-mouth' ? mouthNode : null) };
+assert.equal(findMouth(container), mouthNode, 'findMouth digs the group out of a container');
+assert.equal(findMouth(null), null, 'findMouth tolerates a missing target');
+assert.equal(findMouth({}), null, 'findMouth returns null when there is no mouth');
+
 // status icon adds a colorblind-safe shape glyph; off by default.
 const noIcon = createAvatar('a', { status: 'busy' });
 const withIcon = createAvatar('a', { status: { state: 'busy', icon: true } });
@@ -334,5 +349,41 @@ assert.match(withIcon, /stroke="#fff" stroke-width="2.2"/, 'icon draws a glyph')
 const plainGroup = createAvatarGroup(['ada', 'grace']);
 assert.notEqual(plainGroup, createAvatarGroup([{ seed: 'ada', style: 'bot' }, 'grace']), 'a customized member changes the group');
 assert.equal(plainGroup, createAvatarGroup(['ada', 'grace']), 'string group stays deterministic');
+
+// Drive speak() with a stubbed speech engine + mouth node to verify the talking
+// controller (the browser path the SSR check can't reach): it cancels the idle
+// CSS loop while speaking, flaps the mouth, and restores everything on end.
+{
+  const style = {};
+  const fakeMouth = { style, classList: { contains: (c) => c === 'cast-mouth' } };
+  const stage = { querySelector: (sel) => (sel === '.cast-mouth' ? fakeMouth : null) };
+  let utterance = null;
+  const realSetInterval = globalThis.setInterval;
+  const realClearInterval = globalThis.clearInterval;
+  let tick = null;
+  globalThis.setInterval = (fn) => { tick = fn; return 1; };
+  globalThis.clearInterval = () => { tick = null; };
+  globalThis.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
+  globalThis.window = {
+    matchMedia: () => ({ matches: false }),
+    speechSynthesis: { cancel() {}, speak(u) { utterance = u; u.onstart(); } }
+  };
+
+  try {
+    const done = speak(stage, 'hello there');
+    assert.equal(style.animation, 'none', 'speak cancels the idle CSS loop while talking');
+    tick();
+    assert.match(style.transform, /scaleY\(/, 'speak flaps the mouth');
+    utterance.onend();
+    await done;
+    assert.equal(style.transform, '', 'mouth transform clears when speech ends');
+    assert.equal(style.animation, 'none', 'mouth stays still (idle loop not resumed) when speech ends');
+  } finally {
+    globalThis.setInterval = realSetInterval;
+    globalThis.clearInterval = realClearInterval;
+    delete globalThis.window;
+    delete globalThis.SpeechSynthesisUtterance;
+  }
+}
 
 console.log('avatar tests passed');

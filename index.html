@@ -368,7 +368,7 @@
             </svg>
           </span>
           <span class="logo-word">cast</span>
-          <span class="version-pill">v1.8.0</span>
+          <span class="version-pill">v1.9.0</span>
         </a>
         <div class="nav-links">
           <a href="#playground">Playground</a>
@@ -430,6 +430,11 @@
                 <button class="btn btn-ghost btn-sm" id="btn-copy-uri" type="button">Copy URI</button>
                 <button class="btn btn-ghost btn-sm" id="btn-png" type="button">PNG</button>
                 <button class="btn btn-ghost btn-sm" id="btn-link" type="button">Share</button>
+              </div>
+              <div class="seed-field">
+                <span class="field-label">Say</span>
+                <input id="say-input" spellcheck="false" autocomplete="off" aria-label="Text to speak" value="Hello, I am a cast avatar.">
+                <button class="btn btn-ghost btn-sm" id="btn-speak" type="button">Speak</button>
               </div>
             </div>
           </div>
@@ -550,6 +555,7 @@
         avatarOptions,
         toDataUri,
       } from './src/avatar.js';
+      import { speak } from './src/speak.js';
 
       /* ---------------- helpers ---------------- */
 
@@ -876,6 +882,15 @@
         $('#btn-link').addEventListener('click', () => {
           const url = location.origin + location.pathname + '#a=' + encodeURIComponent(btoa(JSON.stringify(state)));
           copyText(url, 'Link copied');
+        });
+
+        $('#btn-speak').addEventListener('click', () => {
+          const svg = $('#preview-stage svg');
+          if (!svg) return;
+          if (!svg.querySelector('.cast-mouth')) {
+            toast('Set Animate → talk on a face style to see the lips move');
+          }
+          speak(svg, $('#say-input').value).catch(() => toast('Speech unavailable in this browser'));
         });
 
         $('#hero-install').addEventListener('click', () => copyText('npm install cast-avatar', 'Install command copied'));

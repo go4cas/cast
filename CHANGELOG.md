@@ -9,6 +9,13 @@ change — see "Stability and versioning" in the README.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-06-27
+
+### Added
+
+- `cast-avatar/speak` — make an avatar talk out loud. `speak(target, text, opts?)` reads `text` with the browser's native speech engine (Web Speech API, no dependency) and flaps the mouth of an avatar rendered with `animate: 'talk'` in time with it; `stopSpeaking(target?)` cancels. Returns a `Promise` that resolves when speech ends. SSR-safe (a no-op with no speech engine) and respects `prefers-reduced-motion` (speaks, but skips mouth motion).
+- `<cast-avatar>` gains a `.speak(text, opts?)` method and now accepts an `animate` attribute (so `<cast-avatar animate="talk">` is speakable).
+
 ## [1.8.0] - 2026-06-27
 
 ### Added

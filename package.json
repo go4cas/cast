@@ -1,6 +1,6 @@
 {
   "name": "cast-avatar",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Dependency-free deterministic SVG avatar generator for browsers.",
   "type": "module",
   "main": "./src/avatar.js",
@@ -14,6 +14,10 @@
     "./element": {
       "types": "./element.d.ts",
       "import": "./src/element.js"
+    },
+    "./speak": {
+      "types": "./speak.d.ts",
+      "import": "./src/speak.js"
     }
   },
   "sideEffects": [
@@ -22,7 +26,8 @@
   "files": [
     "src",
     "avatar.d.ts",
-    "element.d.ts"
+    "element.d.ts",
+    "speak.d.ts"
   ],
   "scripts": {
     "test": "node test/avatar.test.mjs",
