@@ -226,7 +226,7 @@
         display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 12px;
       }
       .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-      .field select {
+      .field select, .seed-field select {
         appearance: none; -webkit-appearance: none;
         font-family: var(--font-body); font-size: 14px; color: var(--text);
         background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
@@ -237,8 +237,8 @@
         background-repeat: no-repeat;
         transition: border-color 0.15s ease;
       }
-      .field select:hover { border-color: var(--dim); }
-      .field select:focus { border-color: var(--acc1); }
+      .field select:hover, .seed-field select:hover { border-color: var(--dim); }
+      .field select:focus, .seed-field select:focus { border-color: var(--acc1); }
       .field input[type="range"] { accent-color: var(--acc1); width: 100%; margin: 8px 0 4px; }
 
       /* ---------- Gallery ---------- */
@@ -434,6 +434,10 @@
               <div class="seed-field">
                 <span class="field-label">Say</span>
                 <input id="say-input" spellcheck="false" autocomplete="off" aria-label="Text to speak" value="Hello, I am a cast avatar.">
+              </div>
+              <div class="seed-field">
+                <span class="field-label">Voice</span>
+                <select id="voice-select" aria-label="Speech voice"></select>
                 <button class="btn btn-ghost btn-sm" id="btn-speak" type="button">Speak</button>
               </div>
             </div>
@@ -884,13 +888,31 @@
           copyText(url, 'Link copied');
         });
 
+        // The available voices come from the OS/browser, not cast-avatar. Chrome
+        // loads them async, so refresh the list on `voiceschanged` too.
+        const synth = window.speechSynthesis;
+        function populateVoices() {
+          const sel = $('#voice-select');
+          const chosen = sel.value;
+          const voices = synth ? synth.getVoices() : [];
+          sel.innerHTML = '<option value="">Browser default</option>'
+            + voices.map((v, i) => `<option value="${i}">${v.name} (${v.lang})</option>`).join('');
+          sel.value = chosen;
+        }
+        if (synth) {
+          populateVoices();
+          synth.addEventListener('voiceschanged', populateVoices);
+        }
+
         $('#btn-speak').addEventListener('click', () => {
           const svg = $('#preview-stage svg');
           if (!svg) return;
           if (!svg.querySelector('.cast-mouth')) {
             toast('Set Animate → talk on a face style to see the lips move');
           }
-          speak(svg, $('#say-input').value).catch(() => toast('Speech unavailable in this browser'));
+          const picked = $('#voice-select').value;
+          const opts = picked === '' ? {} : { voice: synth.getVoices()[Number(picked)] };
+          speak(svg, $('#say-input').value, opts).catch(() => toast('Speech unavailable in this browser'));
         });
 
         $('#hero-install').addEventListener('click', () => copyText('npm install cast-avatar', 'Install command copied'));
